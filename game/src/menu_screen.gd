@@ -310,7 +310,8 @@ static func build(app) -> void:
 		parts.append("Dominio: " + " · ".join(lvls))
 	if app.stats.ach.size() > 0:
 		var names := []
-		for a in app.stats.ach: names.append(app.ACH.get(a, a))
+		for a in app.stats.ach:
+			names.append(StatsStore.ACH.get(a, a))
 		parts.append("Logros: " + ", ".join(names))
 	st.text = " · ".join(parts)
 	select_ui.add_child(st)

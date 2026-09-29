@@ -81,7 +81,7 @@ static func build(app) -> void:
 	else:
 		for a in ach:
 			box.add_child(Widgets.lbl(
-				"  🏆 " + str(app.ACH.get(a, a))))
+				"  🏆 " + str(StatsStore.ACH.get(a, a))))
 	var b := Widgets.secondary("Volver")
 	b.pressed.connect(app._close_editor)
 	box.add_child(b)
