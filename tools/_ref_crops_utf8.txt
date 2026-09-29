@@ -1,0 +1,683 @@
+### _aquontes_full.png
+  (no detectado)
+
+### _best_full.png
+  ....@Epp
+  E.@@pp@@
+  ..@@@c@@
+  ........
+  J..j.T.d
+  J..j3Tq.
+  o.j.....
+  ...TpT..
+
+### _bestiarios_full.png
+  ....@Epp
+  E.@@pp@@
+  ..@@@c@@
+  ........
+  J..j.T.d
+  J..j3Tq.
+  o.j.....
+  ...TpT..
+
+### _enanos_full.png
+  (no detectado)
+
+### aquontes_alevin.png
+  ...E....
+  ........
+  ...q....
+  ...q....
+  ...q....
+  ..cmc...
+  ...p....
+  ........
+
+### aquontes_anfitrite.png
+  q..d...q
+  .q.....q
+  ..q....q
+  ...q...q
+  ....T..T
+  .....J.J
+  ......oo
+  qqqqTJo@
+
+### aquontes_carchar.png
+  ...pp..q
+  .......q
+  .......q
+  .......q
+  .......T
+  .......J
+  .......o
+  qqqqTJo@
+
+### aquontes_leviatan.png
+  q......q
+  .q.....q
+  ..q....q
+  ...q...q
+  ....q..q
+  .....q.q
+  ......oo
+  qqqqqqo.
+
+### aquontes_mako.png
+  q..dq...
+  .q......
+  ..q.....
+  ...q....
+  ....T...
+  .....J..
+  ......o.
+  .......@
+
+### aquontes_setup1.png
+  (no detectado)
+
+### aquontes_setup2.png
+  (no detectado)
+
+### aquontes_triton.png
+  (no detectado)
+
+### bestiarios_audaz.png
+  (no detectado)
+
+### bestiarios_edaz.png
+  (no detectado)
+
+### bestiarios_fugaz.png
+  (no detectado)
+
+### bestiarios_lider.png
+  (no detectado)
+
+### bestiarios_lideresa.png
+  (no detectado)
+
+### bestiarios_rahez.png
+  (no detectado)
+
+### bestiarios_rapaz.png
+  (no detectado)
+
+### bestiarios_sagaz.png
+  (no detectado)
+
+### bestiarios_setup1.png
+  (no detectado)
+
+### bestiarios_setup2.png
+  (no detectado)
+
+### bestiarios_voraz.png
+  (no detectado)
+
+### big_aqu_s1.png
+  (no detectado)
+
+### big_aqu_s2.png
+  (no detectado)
+
+### big_bes_s1.png
+  (no detectado)
+
+### big_bes_s2.png
+  (no detectado)
+
+### big_elf_s.png
+  (no detectado)
+
+### big_ena_s1.png
+  (no detectado)
+
+### big_ena_s2.png
+  (no detectado)
+
+### big_hum_s.png
+  (no detectado)
+
+### big_kro_s1.png
+  (no detectado)
+
+### big_kro_s2.png
+  (no detectado)
+
+### big_mor_s1.png
+  (no detectado)
+
+### big_mor_s2.png
+  (no detectado)
+
+### bq00.png
+  (no detectado)
+
+### bq01.png
+  (no detectado)
+
+### bq10.png
+  (no detectado)
+
+### bq11.png
+  (no detectado)
+
+### bq20.png
+  o..p....
+  .o......
+  ..o.....
+  ...o....
+  ....o...
+  .....o.m
+  ......om
+  .....mm@
+
+### bq21.png
+  c.......
+  .c......
+  ..c.....
+  ...c....
+  ....o...
+  .....o..
+  ......oc
+  ......c.
+
+### bq30.png
+  ........
+  ........
+  ........
+  ........
+  .......J
+  .....J..
+  ........
+  ....J..d
+
+### bq31.png
+  ....d...
+  ........
+  ........
+  ........
+  ........
+  .....J.J
+  ........
+  .....J.@
+
+### bq40.png
+  ...dp...
+  ........
+  ........
+  .......o
+  ....o..o
+  .....o.o
+  ......oo
+  ...oooo.
+
+### bq41.png
+  ...d....
+  ........
+  ........
+  ........
+  ........
+  .....jjj
+  .....joo
+  .....jo@
+
+### chl_cefiro.png
+  ....p...
+  ........
+  ........
+  ........
+  ....j..j
+  .....jjj
+  .....j..
+  ....jj.w
+
+### chl_gerarca.png
+  ...pp...
+  ........
+  ........
+  ........
+  ........
+  .......j
+  ......oo
+  .....jo.
+
+### chl_hoplita.png
+  ........
+  ........
+  ........
+  ........
+  ....J..J
+  .....J.J
+  ........
+  ....JJ.@
+
+### chl_matriarca.png
+  c......c
+  pc.....c
+  ..c....c
+  ...c...c
+  ....J..J
+  .....J.J
+  ......cc
+  ccccJJc@
+
+### chl_raptor.png
+  ...@....
+  ........
+  ..c....c
+  ...c...c
+  ....c..j
+  .....j.j
+  ......cc
+  ..ccjjc@
+
+### chl_s1_big.png
+  (no detectado)
+
+### chl_s2_big.png
+  (no detectado)
+
+### chl_zangano.png
+  ...@@...
+  ...@....
+  ........
+  ........
+  ...c....
+  ..cmc...
+  ........
+  ........
+
+### chlontos_cefiro.png
+  ....p...
+  ........
+  ........
+  ........
+  ....j..j
+  .....jjj
+  .....j..
+  ....jj.w
+
+### chlontos_gerarca.png
+  ...pp...
+  ........
+  ........
+  ........
+  ........
+  .......j
+  ......oo
+  .....jo.
+
+### chlontos_hoplita.png
+  ........
+  ........
+  ........
+  ........
+  ....J..J
+  .....J.J
+  ........
+  ....JJ.@
+
+### chlontos_matriarca.png
+  c......c
+  pc.....c
+  ..c....c
+  ...c...c
+  ....J..J
+  .....J.J
+  ......cc
+  ccccJJc@
+
+### chlontos_raptor.png
+  ...@....
+  ........
+  ..c....c
+  ...c...c
+  ....c..j
+  .....j.j
+  ......cc
+  ..ccjjc@
+
+### chlontos_setup1.png
+  (no detectado)
+
+### chlontos_setup2.png
+  (no detectado)
+
+### chlontos_zangano.png
+  ...@@...
+  ...@....
+  ........
+  ........
+  ...c....
+  ..cmc...
+  ........
+  ........
+
+### elfos_centinela.png
+  ....@...
+  ...w....
+  ........
+  ........
+  ........
+  ..oto...
+  ...q....
+  ........
+
+### elfos_dama.png
+  t...p..t
+  .t.....t
+  ..t....t
+  ...t...t
+  ....t..t
+  .....tjt
+  .....jtt
+  ttttttt@
+
+### elfos_explorador.png
+  Q.......
+  .Q......
+  .Q......
+  ..Q.....
+  ...Q....
+  ....Q...
+  ....Q...
+  .....Qj.
+
+### elfos_forestal.png
+  (no detectado)
+
+### elfos_hostigador.png
+  (no detectado)
+
+### elfos_monarca.png
+  (no detectado)
+
+### elfos_setup.png
+  (no detectado)
+
+### enanos_califa.png
+  ....d...
+  ........
+  ........
+  ........
+  ........
+  .......p
+  ......P3
+  .....p3.
+
+### enanos_raudo.png
+  ...@p...
+  ........
+  ........
+  ........
+  .......J
+  .....m.m
+  ......cc
+  ....Jmc@
+
+### enanos_setup1.png
+  (no detectado)
+
+### enanos_setup2.png
+  (no detectado)
+
+### enanos_sultana.png
+  ...@....
+  ........
+  ........
+  ........
+  ....o..o
+  .....oJo
+  .....Joo
+  ....ooo@
+
+### enanos_vasallo.png
+  ........
+  ...@....
+  ........
+  ........
+  ........
+  ..PpP...
+  ...@....
+  ........
+
+### enanos_verdugo.png
+  ....w...
+  ........
+  ........
+  .......P
+  ....P..o
+  .....o.c
+  ......cc
+  ...Pocc.
+
+### enanos_zaguero.png
+  ....E...
+  ........
+  ........
+  ........
+  .......P
+  .....P.3
+  ......33
+  ....P33d
+
+### humenex_caballero.png
+  ...@d...
+  ........
+  ........
+  ........
+  ........
+  ......J.
+  .....J..
+  .......d
+
+### humenex_emperador.png
+  (no detectado)
+
+### humenex_emperatriz.png
+  o......o
+  .o.....o
+  ..o....o
+  ...o...o
+  ....o..o
+  .....o.o
+  ......oo
+  ooooooo@
+
+### humenex_espia.png
+  o..@....
+  .o......
+  ..o.....
+  ...o....
+  ....o...
+  .....o..
+  ......o.
+  .......@
+
+### humenex_peon.png
+  ....p...
+  ....@...
+  ........
+  ........
+  ....d...
+  ...EmE..
+  ....p...
+  ........
+
+### humenex_setup.png
+  (no detectado)
+
+### humenex_torre.png
+  .......o
+  .......o
+  .......o
+  .......o
+  .......o
+  .......o
+  .......o
+  ooooooo.
+
+### kronturs_ariete.png
+  ...p....
+  ........
+  ........
+  ...p...p
+  ....p..p
+  .....P.P
+  ......PP
+  ...ppPP@
+
+### kronturs_dique.png
+  ....p...
+  ........
+  ........
+  ........
+  .......p
+  .....p.3
+  ......33
+  ....p33.
+
+### kronturs_goliat.png
+  ........
+  ........
+  ........
+  .......P
+  ....P..P
+  .....P.P
+  ......33
+  ...PPP3p
+
+### kronturs_mole.png
+  ........
+  ...@....
+  ........
+  ........
+  ...e....
+  ..cpc...
+  ...d....
+  ........
+
+### kronturs_setup1.png
+  (no detectado)
+
+### kronturs_setup2.png
+  (no detectado)
+
+### kronturs_zar.png
+  ........
+  ........
+  ........
+  ........
+  ........
+  .......e
+  ......33
+  .....e3.
+
+### kronturs_zarina.png
+  ....p...
+  ........
+  .......P
+  .......3
+  ....P..3
+  .....3.3
+  ......33
+  ..P3333@
+
+### letra_D.png
+  (no detectado)
+
+### letra_califa.png
+  (no detectado)
+
+### letra_califa2.png
+  (no detectado)
+
+### letra_raudo.png
+  (no detectado)
+
+### letra_raudo2.png
+  (no detectado)
+
+### letra_sultana.png
+  (no detectado)
+
+### letra_sultana2.png
+  (no detectado)
+
+### letra_vasallo.png
+  (no detectado)
+
+### letra_verdugo.png
+  (no detectado)
+
+### letra_verdugo2.png
+  (no detectado)
+
+### letra_zaguero.png
+  (no detectado)
+
+### letra_zaguero2.png
+  (no detectado)
+
+### mortifers_carronero.png
+  ....p...
+  ...w....
+  ........
+  ........
+  ........
+  ..coc...
+  ...@....
+  ........
+
+### mortifers_consorte.png
+  c..@@..c
+  .c.....c
+  ..c....o
+  ...c...o
+  ....o..o
+  .....J.J
+  ......oo
+  ccoooJo@
+
+### mortifers_corruptor.png
+  ...p....
+  ........
+  ........
+  ...c....
+  ....o...
+  .....J..
+  ......oc
+  ......cp
+
+### mortifers_incubo.png
+  ...@....
+  ........
+  .......c
+  .......c
+  ....c..c
+  .....c.J
+  ......co
+  ..cccJo.
+
+### mortifers_merodeador.png
+  ...@E...
+  ........
+  ........
+  ...c...c
+  ....c..c
+  .....m.m
+  ......mm
+  ...ccmm@
+
+### mortifers_setup1.png
+  (no detectado)
+
+### mortifers_setup2.png
+  (no detectado)
+
+### mortifers_tirano.png
+  (no detectado)
+

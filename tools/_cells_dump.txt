@@ -1,0 +1,459 @@
+﻿Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+### humenex/peon
+sym=lit
+0,-1=m
+0,-2=d
+-1,-1=E
+1,-1=E
+### humenex/emperatriz
+sym=all
+1,0=o
+2,0=o
+3,0=o
+4,0=o
+5,0=o
+6,0=o
+7,0=o
+1,1=o
+2,2=o
+3,3=o
+4,4=o
+5,5=o
+6,6=o
+7,7=o
+### humenex/emperador
+sym=lit
+-1,-1=o
+0,-1=o
+1,-1=o
+-1,0=K
+1,0=K
+-4,0=k
+-3,0=k
+-2,0=k
+2,0=k
+3,0=k
+4,0=k
+### humenex/espia
+sym=all
+1,1=o
+2,2=o
+3,3=o
+4,4=o
+5,5=o
+6,6=o
+7,7=o
+### humenex/caballero
+sym=all
+1,2=J
+### humenex/torre
+sym=all
+1,0=o
+2,0=o
+3,0=o
+4,0=o
+5,0=o
+6,0=o
+7,0=o
+### elfos/centinela
+sym=lit
+0,-1=t
+-1,-1=o
+1,-1=o
+### elfos/dama
+sym=all
+1,0=w
+2,0=w
+3,0=w
+4,0=t
+5,0=t
+6,0=t
+7,0=t
+1,1=w
+2,2=w
+3,3=t
+4,4=t
+5,5=t
+6,6=t
+7,7=t
+1,2=j
+2,1=j
+### elfos/monarca
+sym=all
+1,0=w
+1,1=w
+### elfos/hostigador
+sym=all
+1,1=w
+2,2=w
+3,3=w
+4,4=T
+5,5=T
+6,6=T
+7,7=T
+0,-1=t
+### elfos/explorador
+sym=all
+2,2=T
+3,3=T
+4,4=T
+5,5=T
+6,6=T
+7,7=T
+1,2=j
+2,1=j
+### elfos/forestal
+sym=all
+1,0=w
+2,0=w
+3,0=w
+4,0=t
+1,1=t
+2,2=t
+### mortifers/carronero
+sym=lit
+0,-1=o
+-1,-1=c
+1,-1=c
+### mortifers/consorte
+sym=all
+1,0=o
+2,0=J
+3,0=o
+4,0=o
+5,0=o
+6,0=c
+7,0=c
+1,1=o
+2,2=J
+3,3=o
+4,4=c
+5,5=c
+6,6=c
+7,7=c
+### mortifers/tirano
+sym=all
+1,0=o
+0,1=o
+1,1=o
+2,0=c
+0,2=c
+2,2=c
+### mortifers/corruptor
+sym=all
+1,1=o
+2,2=J
+3,3=o
+4,4=c
+0,-1=c
+-1,0=c
+### mortifers/merodeador
+sym=all
+1,1=m
+2,2=m
+3,3=c
+4,4=c
+1,0=m
+2,0=m
+3,0=c
+4,0=c
+### mortifers/incubo
+sym=all
+1,0=o
+2,0=J
+3,0=c
+4,0=c
+5,0=c
+1,1=c
+2,2=c
+3,3=c
+### bestiarios/rahez
+sym=lit
+0,-1=m
+0,-2=m
+-1,-1=c
+1,-1=c
+### bestiarios/rapaz
+sym=all
+1,1=o
+2,2=o
+3,3=o
+4,4=o
+5,5=o
+6,6=o
+7,7=o
+0,-1=m
+0,-2=m
+-1,0=m
+-2,0=m
+### bestiarios/fugaz
+sym=all
+1,3=J
+### bestiarios/edaz
+sym=all
+0,-1=o
+0,-2=o
+0,-3=o
+0,-4=o
+1,1=o
+2,2=o
+3,3=o
+### bestiarios/voraz
+sym=all
+1,1=o
+2,2=o
+3,3=o
+4,4=c
+5,5=c
+6,6=c
+7,7=c
+0,-1=c
+-1,0=c
+### bestiarios/sagaz
+sym=all
+2,0=J
+0,2=J
+2,2=J
+### bestiarios/audaz
+sym=all
+0,-1=o
+-1,0=o
+-1,-1=o
+-2,-2=j
+-2,-1=j
+-2,0=j
+-1,-2=j
+0,-2=j
+### bestiarios/lideresa
+sym=all
+2,0=J
+0,2=J
+2,1=J
+1,2=J
+2,2=J
+### bestiarios/lider
+sym=all
+0,-1=o
+-1,0=o
+-1,-1=o
+0,-2=J
+0,-3=J
+-2,0=J
+-3,0=J
+-2,-2=J
+### enanos/vasallo
+sym=lit
+0,-1=p
+-1,-1=P
+1,-1=P
+### enanos/sultana
+sym=all
+1,0=o
+2,0=o
+3,0=o
+1,1=o
+2,2=o
+3,3=o
+1,2=J
+2,1=J
+### enanos/califa
+sym=all
+0,-1=3
+-1,0=3
+-1,-1=P
+0,-2=p
+-2,0=p
+### enanos/verdugo
+sym=all
+1,0=c
+2,0=c
+3,0=o
+4,0=P
+1,1=c
+2,2=o
+3,3=P
+### enanos/raudo
+sym=all
+1,0=c
+2,0=m
+3,0=J
+1,1=c
+2,2=m
+### enanos/zaguero
+sym=all
+1,0=3
+2,0=3
+3,0=P
+1,1=3
+2,2=P
+### chlontos/zangano
+sym=lit
+0,-1=m
+0,-2=c
+-1,-1=c
+1,-1=c
+### chlontos/matriarca
+sym=all
+1,1=c
+2,2=J
+3,3=J
+4,4=c
+5,5=c
+6,6=c
+7,7=c
+1,0=c
+2,0=J
+3,0=J
+4,0=c
+5,0=c
+6,0=c
+7,0=c
+### chlontos/gerarca
+sym=all
+1,0=o
+2,0=j
+1,1=o
+### chlontos/raptor
+sym=all
+1,0=c
+2,0=j
+3,0=j
+4,0=c
+5,0=c
+1,1=c
+2,2=j
+3,3=c
+4,4=c
+5,5=c
+### chlontos/cefiro
+sym=all
+0,-2=g
+0,-3=g
+-2,-2=g
+-3,-3=g
+-2,0=g
+-3,0=g
+-1,-2=j
+-2,-1=j
+### chlontos/hoplita
+sym=all
+0,-2=J
+0,-3=J
+-2,-2=J
+-3,-3=J
+-3,0=J
+-2,0=J
+-1,0=p
+### aquontes/alevin
+sym=lit
+0,-1=m
+-1,-1=c
+1,-1=c
+0,-2=q
+0,-3=q
+0,-4=q
+0,-5=q
+### aquontes/anfitrite
+sym=all
+1,0=o
+2,0=J
+3,0=Q
+4,0=q
+5,0=q
+6,0=q
+7,0=q
+1,1=o
+2,2=J
+3,3=Q
+4,4=q
+5,5=q
+6,6=q
+7,7=q
+### aquontes/leviatan
+sym=all
+1,1=o
+2,2=q
+3,3=q
+4,4=q
+5,5=q
+6,6=q
+7,7=q
+1,0=o
+2,0=q
+3,0=q
+4,0=q
+5,0=q
+6,0=q
+7,0=q
+### aquontes/mako
+sym=all
+1,1=o
+2,2=J
+3,3=Q
+4,4=q
+5,5=q
+6,6=q
+7,7=q
+### aquontes/triton
+sym=lit
+-1,-1=o
+1,-1=o
+-2,-2=g
+2,-2=g
+### aquontes/carchar
+sym=all
+1,0=o
+2,0=J
+3,0=Q
+4,0=q
+5,0=q
+6,0=q
+7,0=q
+### kronturs/mole
+sym=lit
+0,-1=p
+0,-2=e
+-1,-1=c
+1,-1=c
+### kronturs/zarina
+sym=all
+1,0=3
+2,0=3
+3,0=3
+4,0=3
+5,0=P
+1,1=3
+2,2=3
+3,3=P
+### kronturs/zar
+sym=all
+1,0=3
+2,0=e
+1,1=3
+### kronturs/ariete
+sym=all
+1,0=P
+2,0=P
+3,0=p
+4,0=p
+1,1=P
+2,2=P
+3,3=p
+4,4=p
+### kronturs/dique
+sym=all
+1,0=3
+2,0=3
+3,0=p
+1,1=3
+2,2=p
+### kronturs/goliat
+sym=all
+1,0=3
+2,0=P
+3,0=P
+4,0=P
+1,1=3
+2,2=P
+3,3=P

@@ -1,0 +1,45 @@
+### bes_audaz.png
+  ....p...
+  ........
+  ........
+  ........
+  ........
+  ......jj
+  ......jo
+  ......jo
+
+### bes_edaz.png
+  ....pp..
+  ........
+  ........
+  ........
+  .....o..
+  ......o.
+  .......o
+  ....oooo
+
+### bes_lider.png
+  (no detectado)
+
+### bes_lideresa.png
+  (no detectado)
+
+### bes_sagaz.png
+  (no detectado)
+
+### bes_voraz.png
+  c.......
+  .c......
+  ..c.....
+  ...c....
+  ....o...
+  .....o..
+  ......oc
+  ......cd
+
+### hum_emperador.png
+  (no detectado)
+
+### hum_emperador2.png
+  (no detectado)
+

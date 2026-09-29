@@ -1,0 +1,9 @@
+.godot/
+.import/
+export.cfg
+export_presets.cfg
+*.translation
+*.tmp
+user://
+__pycache__/
+*.pyc
