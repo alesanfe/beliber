@@ -53,8 +53,11 @@ var coop_turn := 0               # 0 = humano A, 1 = humano B
 var chk_coop: CheckBox
 var bot: BeliberBot
 var ai_player := -1            # jugador controlado por la IA (-1 = ninguno)
-var sfx: AudioStreamPlayer
-var muted := false
+var sfx: BeliberSfx
+var muted := false:
+	set(v):
+		muted = v
+		if sfx != null: sfx.muted = v
 var ui_theme_mode := "dark"      # dark / light / contrast
 const STATS_PATH := "user://beliber_stats.json"
 const CFG_PATH := "user://beliber.cfg"
@@ -97,7 +100,10 @@ func _ready() -> void:
 	theme = BeliberTheme.make(ui_theme_mode)
 	RenderingServer.set_default_clear_color(BeliberTheme._v.bg)
 	# sonido de interfaz: los componentes llaman Juice.ui_sfx
-	Juice.ui_sfx = _beep
+	sfx = BeliberSfx.new()
+	add_child(sfx)
+	sfx.muted = muted
+	Juice.ui_sfx = sfx.beep
 	factions = PiecesData.all()
 	PieceEditor.apply_overrides(factions)
 	ArmyBuilder.apply(factions)
@@ -194,441 +200,13 @@ func _record_result() -> void:
 		_grant("caza5")
 	_save_stats()
 
+## Menú principal (delegado a MenuScreen).
 func _build_menu() -> void:
-	var margin := MarginContainer.new()
-	menu_root = margin
-	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
-	margin.add_theme_constant_override("margin_left", 24)
-	margin.add_theme_constant_override("margin_right", 24)
-	margin.add_theme_constant_override("margin_top", 12)
-	add_child(margin)
-	var scroll := SmoothScroll.new()
-	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	margin.add_child(scroll)
-	var wrapper := CenterContainer.new()
-	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.add_child(wrapper)
-	select_ui = VBoxContainer.new()
-	select_ui.custom_minimum_size = Vector2(560, 0)
-	select_ui.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	wrapper.add_child(select_ui)
-	# transición de entrada (fade suave al abrir el menú)
-	select_ui.modulate.a = 0.0
-	var _mt := create_tween()
-	_mt.tween_property(select_ui, "modulate:a", 1.0, 0.2)
+	MenuScreen.build(self)
 
-	var title := Label.new()
-	title.text = "BELIBER"
-	title.add_theme_font_size_override("font_size", 64)
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	select_ui.add_child(title)
-
-	var sub := Label.new()
-	sub.text = "Ajedrez asimétrico por facciones"
-	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	select_ui.add_child(sub)
-
-	# ── NIVEL 1: acciones principales (botones enormes) ──
-	var row1 := HBoxContainer.new()
-	row1.alignment = BoxContainer.ALIGNMENT_CENTER
-	row1.add_theme_constant_override("separation", 10)
-	select_ui.add_child(row1)
-	var btn := Widgets.primary("Jugar", 64)
-	btn.custom_minimum_size.x = 210
-	btn.tooltip_text = "Partida local con la configuración elegida"
-	btn.pressed.connect(_start_game)
-	row1.add_child(btn)
-	var btn_onl := Button.new()
-	btn_onl.text = "Online"
-	btn_onl.custom_minimum_size = Vector2(145, 64)
-	btn_onl.tooltip_text = "Matchmaking, salas, LAN y clasificación"
-	btn_onl.pressed.connect(_open_online)
-	row1.add_child(btn_onl)
-	var btn_tut := Button.new()
-	btn_tut.text = "Tutorial"
-	btn_tut.custom_minimum_size = Vector2(135, 64)
-	btn_tut.tooltip_text = "Partida guiada con objetivos paso a paso"
-	btn_tut.pressed.connect(_start_tutorial)
-	row1.add_child(btn_tut)
-	var btn_prof := Button.new()
-	btn_prof.text = "Perfil"
-	btn_prof.custom_minimum_size = Vector2(105, 64)
-	btn_prof.tooltip_text = "Estadísticas, logros y récords"
-	btn_prof.pressed.connect(_open_profile)
-	row1.add_child(btn_prof)
-
-	select_ui.add_child(HSeparator.new())
-
-	# selector de facción + emblema dibujado por código (config del vs)
-	var grid := GridContainer.new()
-	grid.columns = 3
-	select_ui.add_child(grid)
-
-	grid.add_child(_lbl("Jugador 1 (abajo)"))
-	grid.add_child(_lbl("Jugador 2 (arriba)"))
-	grid.add_child(Control.new())
-
-	opt_p0 = _faction_picker()
-	var pic0 := HBoxContainer.new()
-	var ic0 := FactionIcon.new(factions[0].id, factions[0].color, 30)
-	pic0.add_child(ic0)
-	opt_p0.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	pic0.add_child(opt_p0)
-	grid.add_child(pic0)
-	opt_p0.item_selected.connect(func(i):
-		ic0.fid = factions[i].id; ic0.col = factions[i].color
-		ic0.queue_redraw(); _refresh_values())
-
-	opt_p1 = _faction_picker(); opt_p1.select(1)
-	var pic1 := HBoxContainer.new()
-	var ic1 := FactionIcon.new(factions[1].id, factions[1].color, 30)
-	pic1.add_child(ic1)
-	opt_p1.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	pic1.add_child(opt_p1)
-	grid.add_child(pic1)
-	opt_p1.item_selected.connect(func(i):
-		ic1.fid = factions[i].id; ic1.col = factions[i].color
-		ic1.queue_redraw(); _refresh_values())
-	grid.add_child(Control.new())
-
-	# valor del ejército (regla de equilibrio estilo Betza/CEO)
-	val_lbl0 = _lbl(""); grid.add_child(val_lbl0)
-	val_lbl1 = _lbl(""); grid.add_child(val_lbl1)
-	grid.add_child(Control.new())
-
-	grid.add_child(_lbl("Equipo"))
-	grid.add_child(_lbl("Equipo"))
-	grid.add_child(Control.new())
-
-	opt_eq0 = OptionButton.new()
-	opt_eq0.add_item("Eq1"); opt_eq0.add_item("Eq2"); opt_eq0.add_item("Personalizado")
-	opt_eq0.item_selected.connect(func(_i): _refresh_values())
-	grid.add_child(opt_eq0)
-	opt_eq1 = OptionButton.new()
-	opt_eq1.add_item("Eq1"); opt_eq1.add_item("Eq2"); opt_eq1.add_item("Personalizado")
-	opt_eq1.item_selected.connect(func(_i): _refresh_values())
-	grid.add_child(opt_eq1)
-	grid.add_child(Control.new())
-
-	opt_p0.item_selected.connect(func(_i): _refresh_values())
-	opt_p1.item_selected.connect(func(_i): _refresh_values())
-
-	# ── CONFIGURACIÓN AVANZADA (colapsada por defecto — reduce la
-	# carga visual del menú; todo sigue a un clic de distancia) ──
-	var adv_t := CheckButton.new()
-	adv_t.text = "⚙ Configuración avanzada"
-	adv_t.tooltip_text = "Reglas, rival IA, reloj, co-op y tema"
-	select_ui.add_child(adv_t)
-	var adv := VBoxContainer.new()
-	adv.visible = false
-	adv_t.toggled.connect(func(on): adv.visible = on)
-	select_ui.add_child(adv)
-
-	# reglas opcionales (de la competencia: Chess 2 midline, anti-stall)
-	chk_midline = CheckBox.new()
-	chk_midline.text = "Invasión de línea (líder llega a la última fila rival)"
-	adv.add_child(chk_midline)
-	var stall_row := HBoxContainer.new()
-	adv.add_child(stall_row)
-	chk_stall = CheckBox.new()
-	chk_stall.text = "Anti-estancamiento"
-	stall_row.add_child(chk_stall)
-	stall_row.add_child(_lbl("turnos sin captura:"))
-	stall_spin = SpinBox.new()
-	stall_spin.min_value = 10; stall_spin.max_value = 60
-	stall_spin.value = 30
-	stall_row.add_child(stall_spin)
-
-	# rival IA + reloj
-	var opt_row := HBoxContainer.new()
-	adv.add_child(opt_row)
-	opt_row.add_child(_lbl("Jugador 2:"))
-	opt_ai = OptionButton.new()
-	for t in ["Humano", "IA nivel 1", "IA nivel 2", "IA nivel 3",
-			"IA vs IA"]:
-		opt_ai.add_item(t)
-	opt_row.add_child(opt_ai)
-	opt_row.add_child(_lbl("  Estilo:"))
-	opt_style = OptionButton.new()
-	for t in ["Auto (facción)", "Equilibrada", "Agresiva", "Defensiva"]:
-		opt_style.add_item(t)
-	opt_row.add_child(opt_style)
-	var opt_row2 := HBoxContainer.new()
-	adv.add_child(opt_row2)
-	opt_row2.add_child(_lbl("Reloj:"))
-	opt_clock = OptionButton.new()
-	for t in ["Sin reloj", "1+0 Bullet", "3+2 Blitz", "5+0 Blitz",
-			"10+5 Rapid", "30 min Clásico"]:
-		opt_clock.add_item(t)
-	opt_row2.add_child(opt_clock)
-	chk_handicap = CheckBox.new()
-	chk_handicap.text = "La IA juega con la mitad de tiempo"
-	opt_row2.add_child(chk_handicap)
-	chk_coop = CheckBox.new()
-	chk_coop.text = "Co-op: 2 humanos vs IA"
-	chk_coop.tooltip_text = "Dos jugadores alternan los movimientos de J1"
-	opt_row2.add_child(chk_coop)
-	var opt_row3 := HBoxContainer.new()
-	adv.add_child(opt_row3)
-	opt_row3.add_child(_lbl("Tema:"))
-	var opt_skin := OptionButton.new()
-	var modes := ["dark", "light", "contrast"]
-	for t in ["Oscuro", "Claro", "Alto contraste"]:
-		opt_skin.add_item(t)
-	opt_skin.select(maxi(0, modes.find(ui_theme_mode)))
-	opt_skin.item_selected.connect(func(i):
-		ui_theme_mode = modes[i]
-		theme = BeliberTheme.make(ui_theme_mode)
-		RenderingServer.set_default_clear_color(BeliberTheme._v.bg)
-		_save_settings())
-	opt_row3.add_child(opt_skin)
-	chk_flip = CheckBox.new()
-	chk_flip.text = "Girar el tablero cada turno (modo local)"
-	adv.add_child(chk_flip)
-
-	# ── NIVEL 2: modos de juego (botones medianos) ──
-	select_ui.add_child(HSeparator.new())
-	select_ui.add_child(_lbl("Modos"))
-	var row2 := HBoxContainer.new()
-	row2.alignment = BoxContainer.ALIGNMENT_CENTER
-	row2.add_theme_constant_override("separation", 8)
-	select_ui.add_child(row2)
-
-	var btn_daily := Button.new()
-	var _d := Time.get_date_dict_from_system()
-	var today: int = int(_d.year) * 10000 + int(_d.month) * 100 + int(_d.day)
-	var played_today: bool = int(stats.get("daily", 0)) == today
-	btn_daily.text = "Desafío diario" + (" ✓" if played_today else "")
-	btn_daily.custom_minimum_size = Vector2(130, 42)
-	btn_daily.tooltip_text = "Enfrentamiento determinista por fecha" + \
-		(" (ya jugado hoy)" if played_today else "")
-	btn_daily.pressed.connect(_daily_challenge)
-	row2.add_child(btn_daily)
-	var btn_run := Button.new()
-	btn_run.text = "Modo Run"
-	btn_run.custom_minimum_size = Vector2(105, 42)
-	btn_run.tooltip_text = "Racha: cada victoria sube el nivel del rival"
-	btn_run.pressed.connect(_start_run)
-	row2.add_child(btn_run)
-	var btn_draft := Button.new()
-	btn_draft.text = "Draft"
-	btn_draft.custom_minimum_size = Vector2(90, 42)
-	btn_draft.tooltip_text = "Pick alterno de piezas con presupuesto (CEO)"
-	btn_draft.pressed.connect(_open_draft)
-	row2.add_child(btn_draft)
-	var btn_puz := Button.new()
-	btn_puz.text = "Puzzles"
-	btn_puz.custom_minimum_size = Vector2(100, 42)
-	btn_puz.tooltip_text = "Encuentra la captura del líder"
-	btn_puz.pressed.connect(_open_puzzles)
-	row2.add_child(btn_puz)
-
-	# ── NIVEL 3: herramientas (discretas) ──
-	select_ui.add_child(_lbl("Herramientas"))
-	var row3 := HBoxContainer.new()
-	row3.alignment = BoxContainer.ALIGNMENT_CENTER
-	row3.add_theme_constant_override("separation", 6)
-	select_ui.add_child(row3)
-	var btn_ed := Button.new()
-	btn_ed.text = "Editor de piezas"
-	btn_ed.custom_minimum_size = Vector2(125, 36)
-	btn_ed.pressed.connect(_open_editor)
-	row3.add_child(btn_ed)
-	var btn_ab := Button.new()
-	btn_ab.text = "Constructor"
-	btn_ab.custom_minimum_size = Vector2(115, 36)
-	btn_ab.tooltip_text = "Constructor de ejército personalizado"
-	btn_ab.pressed.connect(_open_builder)
-	row3.add_child(btn_ab)
-	var btn_pos := Button.new()
-	btn_pos.text = "Editor de posición"
-	btn_pos.custom_minimum_size = Vector2(135, 36)
-	btn_pos.pressed.connect(_open_pos_editor)
-	row3.add_child(btn_pos)
-	var btn_guide := Button.new()
-	btn_guide.text = "Guía"
-	btn_guide.custom_minimum_size = Vector2(70, 36)
-	btn_guide.tooltip_text = "Aprende cada facción: ejército, reglas y patrones"
-	btn_guide.pressed.connect(_open_guide)
-	row3.add_child(btn_guide)
-	var btn_load := Button.new()
-	btn_load.text = "Cargar"
-	btn_load.custom_minimum_size = Vector2(80, 36)
-	btn_load.tooltip_text = "Cargar partida guardada"
-	btn_load.disabled = not FileAccess.file_exists(
-		SAVE_PATH)
-	btn_load.pressed.connect(_load_game)
-	row3.add_child(btn_load)
-
-	# microinteracciones en los botones principales (hover + squash)
-	for r in [row1, row2, row3]:
-		for b in r.get_children():
-			Juice.hover_pop(b)
-			Juice.squash(b)
-	# iconos procedurales en los botones principales (estilo Lucide)
-	Icons.apply_icons({
-		btn: "swords", btn_onl: "clock", btn_tut: "hint",
-		btn_prof: "trophy", btn_daily: "bolt", btn_run: "flag",
-		btn_puz: "puzzle", btn_draft: "clock", btn_ab: "gear",
-		btn_guide: "book", btn_load: "back", btn_ed: "gear",
-		btn_pos: "gear"}, self)
-
-	# estadísticas y logros (línea dim al pie)
-	var st := _lbl("")
-	var parts := []
-	parts.append("Partidas: %d" % int(stats.games))
-	for fid in stats.wins:
-		parts.append("%s: %dV" % [fid, stats.wins[fid]])
-	# dominio por facción (XP): nivel = xp/100 + 1
-	if stats.has("xp") and stats.xp.size() > 0:
-		var lvls := []
-		for fid in stats.xp:
-			lvls.append("%s nv%d" % [fid, _faction_level(fid)])
-		parts.append("Dominio: " + " · ".join(lvls))
-	if stats.ach.size() > 0:
-		var names := []
-		for a in stats.ach: names.append(ACH.get(a, a))
-		parts.append("Logros: " + ", ".join(names))
-	st.text = " · ".join(parts)
-	select_ui.add_child(st)
-	_refresh_values()
-
-## Pantalla "Jugar online" — pestañas propias (estilo lichess):
-## Rápida / Salas / LAN / Ladder. El menú queda oculto (visible=false)
-## para que los opt_* de configuración sigan vivos para el matchmaking.
+## Pantalla "Jugar online" (delegada a OnlineScreen).
 func _open_online() -> void:
-	editor_ui = Control.new()
-	editor_ui.set_anchors_preset(Control.PRESET_FULL_RECT)
-	menu_root.visible = false
-	add_child(editor_ui)
-	var cc := CenterContainer.new()
-	cc.set_anchors_preset(Control.PRESET_FULL_RECT)
-	editor_ui.add_child(cc)
-	var box := VBoxContainer.new()
-	box.custom_minimum_size = Vector2(560, 0)
-	cc.add_child(box)
-	var title := _lbl("Jugar online")
-	title.add_theme_font_size_override("font_size", 28)
-	box.add_child(title)
-	var tabs := TabContainer.new()
-	tabs.custom_minimum_size = Vector2(0, 300)
-	tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	box.add_child(tabs)
-
-	# — Rápida: matchmaking por cola (preferencias = tu facción/equipo) —
-	var t_q := VBoxContainer.new()
-	t_q.name = "Rápida"
-	tabs.add_child(t_q)
-	var srv := HBoxContainer.new()
-	t_q.add_child(srv)
-	srv.add_child(_lbl("Servidor:"))
-	ws_url = LineEdit.new()
-	ws_url.text = _ws_last_addr
-	ws_url.custom_minimum_size = Vector2(190, 0)
-	ws_url.text_changed.connect(func(t): _ws_last_addr = t)
-	srv.add_child(ws_url)
-	ws_name = LineEdit.new()
-	ws_name.placeholder_text = "Tu nick"
-	ws_name.text = _ws_last_nick
-	ws_name.text_changed.connect(func(t): _ws_last_nick = t)
-	srv.add_child(ws_name)
-	t_q.add_child(_lbl(
-		"Cola automática: se empareja con tu facción, equipo y reloj."))
-	var b_queue := Widgets.primary("Buscar rival", 44)
-	b_queue.tooltip_text = "Matchmaking: cola automática (tu facción/equipo)"
-	b_queue.pressed.connect(func():
-		if ws != null and ws.get_ready_state() \
-				== WebSocketPeer.STATE_OPEN:
-			_ws_pending = "queue"
-			_ws_send({"op": "queue", "name": ws_name.text.strip_edges(),
-				"prefs": {
-					"f": opt_p0.selected, "eq": opt_eq0.selected,
-					"clock": opt_clock.selected,
-					"mid": chk_midline.button_pressed}})
-		else:
-			ws = WebSocketPeer.new()
-			if ws.connect_to_url(ws_url.text.strip_edges()) != OK:
-				hud_alert("No se pudo conectar")
-				return
-			_ws_pending = "queue")
-	t_q.add_child(b_queue)
-
-	# — Salas: crear / entrar por código / reconexión —
-	var t_r := VBoxContainer.new()
-	t_r.name = "Salas"
-	tabs.add_child(t_r)
-	var rrow := HBoxContainer.new()
-	t_r.add_child(rrow)
-	rrow.add_child(_lbl("Código:"))
-	ws_code = LineEdit.new()
-	ws_code.placeholder_text = "ABCD"
-	ws_code.custom_minimum_size = Vector2(90, 0)
-	rrow.add_child(ws_code)
-	var b_ws_host := Button.new()
-	b_ws_host.text = "Crear sala"
-	b_ws_host.tooltip_text = "Crear sala online en el servidor"
-	b_ws_host.pressed.connect(func(): _ws_connect(true))
-	rrow.add_child(b_ws_host)
-	var b_ws_join := Button.new()
-	b_ws_join.text = "Entrar"
-	b_ws_join.tooltip_text = "Unirse a una sala por código"
-	b_ws_join.pressed.connect(func(): _ws_connect(false))
-	rrow.add_child(b_ws_join)
-	t_r.add_child(_lbl(
-		"El creador comparte el código. " +
-		"Sin código y con sala previa, «Entrar» intenta reconectar."))
-
-	# — LAN: ENet directo por IP/puerto —
-	var t_l := VBoxContainer.new()
-	t_l.name = "LAN"
-	tabs.add_child(t_l)
-	var lrow := HBoxContainer.new()
-	t_l.add_child(lrow)
-	lrow.add_child(_lbl("IP:"))
-	net_ip = LineEdit.new()
-	net_ip.placeholder_text = "127.0.0.1"
-	net_ip.custom_minimum_size = Vector2(140, 0)
-	lrow.add_child(net_ip)
-	lrow.add_child(_lbl("Puerto:"))
-	net_port = LineEdit.new()
-	net_port.text = "7777"
-	net_port.custom_minimum_size = Vector2(70, 0)
-	lrow.add_child(net_port)
-	var b_host := Button.new()
-	b_host.text = "Crear partida"
-	b_host.pressed.connect(_host_game)
-	lrow.add_child(b_host)
-	var b_join := Button.new()
-	b_join.text = "Unirse"
-	b_join.pressed.connect(_join_game)
-	lrow.add_child(b_join)
-	t_l.add_child(_lbl(
-		"Conexión directa punto a punto — el host juega como J1."))
-
-	# — Ladder: clasificación ELO del servidor —
-	var t_d := VBoxContainer.new()
-	t_d.name = "Ladder"
-	tabs.add_child(t_d)
-	var b_ladder := Button.new()
-	b_ladder.text = "Ver clasificación"
-	b_ladder.tooltip_text = "Clasificación ELO del servidor"
-	t_d.add_child(b_ladder)
-	var lad_lbl := Label.new()
-	lad_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
-	t_d.add_child(lad_lbl)
-	b_ladder.pressed.connect(func():
-		lad_lbl.text = "…"
-		if ws == null or ws.get_ready_state() \
-				!= WebSocketPeer.STATE_OPEN:
-			ws = WebSocketPeer.new()
-			if ws.connect_to_url(ws_url.text.strip_edges()) != OK:
-				lad_lbl.text = "No se pudo conectar"
-				return
-			_ws_pending = "ladder"
-		else:
-			_ws_send({"op": "ladder"}))
-	_ladder_label = lad_lbl
-	_add_back()
+	OnlineScreen.build(self)
 
 ## ===== Red (ENet) =====
 ## Host = J1 (jugador 0), cliente = J2 (jugador 1). Solo se sincronizan
@@ -742,219 +320,28 @@ func hud_alert(t: String) -> void:
 
 ## ===== Relay WebSocket (salas por código + reconexión) =====
 
+## ===== Relay WebSocket (delegado a NetClient) =====
+
 func _ws_connect(create: bool) -> void:
-	# si ya tenemos sala+token y no se pide crear, es una reconexión
-	var rejoin := not create and ws_room != "" \
-		and ws_code.text.strip_edges() == ""
-	ws = WebSocketPeer.new()
-	var url := ws_url.text.strip_edges()
-	if ws.connect_to_url(url) != OK:
-		hud_alert("No se pudo conectar a %s" % url)
-		return
-	_ws_pending = "create" if create \
-		else ("rejoin" if rejoin else "join")
+	NetClient.open(self, create)
 
 var _ws_pending := ""
 var _ws_cfg := {}          # última cfg aplicada (para resync sin cfg)
 
 func _ws_send(msg: Dictionary) -> void:
-	if ws != null and ws.get_ready_state() == WebSocketPeer.STATE_OPEN:
-		ws.send_text(JSON.stringify(msg))
+	NetClient.send(self, msg)
 
 func _ws_poll() -> void:
-	ws.poll()
-	var st := ws.get_ready_state()
-	if st == WebSocketPeer.STATE_OPEN and not ws_open:
-		ws_open = true
-		if _ws_pending == "create":
-			_ws_send({"op": "create", "cfg": _game_cfg(),
-				"name": ws_name.text.strip_edges()})
-		elif _ws_pending == "join":
-			_ws_send({"op": "join", "code": ws_code.text.strip_edges(),
-				"name": ws_name.text.strip_edges()})
-		elif _ws_pending == "rejoin":
-			_ws_send({"op": "rejoin", "code": ws_room,
-				"side": ws_side, "token": ws_token})
-		elif _ws_pending == "ladder":
-			_ws_send({"op": "ladder"})
-		elif _ws_pending == "queue":
-			# matchmaking: envío mis preferencias, el server empareja
-			var prefs := {
-				"f": opt_p0.selected, "eq": opt_eq0.selected,
-				"clock": opt_clock.selected,
-				"mid": chk_midline.button_pressed}
-			# ejército custom: las filas viajan (el rival no tiene
-			# mi archivo local)
-			if opt_eq0.selected >= 2:
-				var cf: Dictionary = factions[opt_p0.selected]
-				if cf.setups.size() > opt_eq0.selected:
-					prefs["rows"] = cf.setups[opt_eq0.selected]
-			_ws_send({"op": "queue", "name": ws_name.text.strip_edges(),
-				"prefs": prefs})
-		_ws_pending = ""
-	elif st == WebSocketPeer.STATE_CLOSED and ws_open:
-		ws_open = false
-		hud_alert("Conexión perdida — usa Entrar con el mismo código")
-	while ws.get_ready_state() == WebSocketPeer.STATE_OPEN \
-			and ws.get_available_packet_count() > 0:
-		var msg = JSON.parse_string(
-			ws.get_packet().get_string_from_utf8())
-		if typeof(msg) == TYPE_DICTIONARY:
-			_ws_dispatch(msg)
-
-func _ws_dispatch(m: Dictionary) -> void:
-	match str(m.get("op", "")):
-		"hello":
-			# el árbitro Godot saluda → modo autoritativo
-			ws_auth = true
-			if board != null: board.defer_play = true
-		"queued":
-			hud_alert("Buscando rival… (%d en cola)" % int(m.get("n", 1)))
-		"dequeued":
-			hud_alert("Cola abandonada")
-		"room":
-			ws_room = str(m.code)
-			ws_token = str(m.token)
-			ws_side = int(m.side)
-			online = true
-			my_net = ws_side
-			if ws_side == 1 and m.has("cfg"):
-				_apply_cfg(m.cfg)
-				_start_game()
-			elif ws_side == 0 and m.has("cfg"):
-				# matchmaking: la cfg llega fusionada a ambos lados
-				_apply_cfg(m.cfg)
-			else:
-				hud_alert("Sala %s — esperando rival. Comparte el código."
-					% ws_room)
-		"start":
-			if ws_side == 0 and tm == null:
-				_start_game()
-		"move":
-			var mv: Dictionary = NetCodec.dec(m.mv)
-			if mv.get("resign", false):
-				tm.resign(int(mv.get("side", 1 - ws_side)))
-			elif mv.get("draw", false):
-				tm.agree_draw()   # tablas declaradas por el rival
-			else:
-				tm.play(mv)  # eco autoritativo (también del propio)
-		"resync":
-			_ws_resync(m)
-		"offline":
-			if hud_info:
-				hud_info.text += "\n%s" % \
-					("Rival desconectado" if m.on else "Rival reconectado")
-		"over":
-			if tm != null and not tm.over:
-				tm.over = true
-				# con servidor autoritativo el ganador viene explícito
-				tm.winner = int(m.get("winner", ws_side))
-				tm.game_over.emit(tm.winner)
-		"chat":
-			_chat_log("[rival] " + str(m.text).left(200))
-		"rating":
-			# ELO actualizado tras la partida
-			var lines := []
-			for n in m.you.keys():
-				var r: Dictionary = m.you[n]
-				lines.append("%s: %d (%dV)" % [
-					n, int(r.elo), int(r.wins)])
-			if hud_info: hud_info.text += "\nELO — " + " · ".join(lines)
-		"ladder":
-			var txt := ""
-			for r in m.rows:
-				txt += "%s  %d  (%d partidas)\n" % [
-					r.name, int(r.elo), int(r.games)]
-			if is_instance_valid(_ladder_label):
-				_ladder_label.text = \
-					txt.strip_edges() if txt != "" else "Sin datos"
-			else:
-				hud_alert(txt.strip_edges())
-		"err":
-			hud_alert("Servidor: " + str(m.msg))
+	NetClient.poll(self)
 
 func _apply_cfg(cfg: Dictionary) -> void:
-	_ws_cfg = cfg   # memorizada para reconstruir en resync
-	opt_p0.select(int(cfg.f0)); opt_eq0.select(int(cfg.eq0))
-	opt_p1.select(int(cfg.f1)); opt_eq1.select(int(cfg.eq1))
-	# inyectar filas custom recibidas como setups[2] (eq Personalizado)
-	for si in [0, 1]:
-		if cfg.has("rows%d" % si):
-			var fac: Dictionary = factions[int(cfg["f%d" % si])]
-			if fac.setups.size() > 2: fac.setups[2] = cfg["rows%d" % si]
-			else: fac.setups.append(cfg["rows%d" % si])
-	chk_midline.button_pressed = bool(cfg.mid)
-	# stall: activar el check + volcar el valor, si no el cliente
-	# jugaría con su propio límite y divergiría del host
-	var stall: int = int(cfg.get("stall", 0))
-	chk_stall.button_pressed = stall > 0
-	if stall > 0:
-		stall_spin.value = stall
-	opt_clock.select(int(cfg.clock))
-	ai_player = -1
-
-## Reconstruye la partida reproduciendo el historial del servidor.
-func _ws_resync(m: Dictionary) -> void:
-	_over_handled = false   # el resync puede abrir una partida nueva
-	# el relay Python no adjunta cfg en resync (llegó en 'room'); el
-	# servidor autoritativo sí — solo aplicar/reconstruir si viene
-	var c: Dictionary = m.get("cfg", {})
-	if not c.is_empty(): _apply_cfg(c)
-	# reconstruir siempre desde cero: replay sobre un tm existente
-	# duplicaría jugadas; sin cfg en el mensaje usar la memorizada
-	var c2: Dictionary = c if not c.is_empty() else _ws_cfg
-	ai_player = -1
-	var from_ply := 0
-	if not c2.is_empty():
-		# cfg completa: reconstruir desde cero y retraer TODO el historial
-		tm = TurnManager.new(factions[int(c2.f0)], int(c2.eq0),
-			factions[int(c2.f1)], int(c2.eq1),
-			{"midline": bool(c2.mid),
-				"stall_limit": int(c2.stall),
-				"clock_secs": CLOCK_CHOICES[int(c2.clock)][0],
-				"clock_inc": CLOCK_CHOICES[int(c2.clock)][1]})
-	elif tm != null:
-		# sin cfg no conocemos el despliegue inicial (p.ej. draft) —
-		# no se puede reconstruir; aplicar solo la cola que falta
-		from_ply = tm.log.size()
-	else:
-		return   # sin cfg ni partida previa — nada que resincronizar
-	for i in range(from_ply, m.moves.size()):
-		var mv: Dictionary = NetCodec.dec(m.moves[i])
-		if mv.get("resign", false):
-			# el lado que se rindió viaja en el mv (host autoritativo);
-			# en relay sin 'side' solo cabe asumir que fue el rival
-			tm.resign(int(mv.get("side", 1 - ws_side)))
-		elif mv.get("draw", false):
-			tm.agree_draw()
-		else:
-			tm.play(mv)
-	if game_ui == null:
-		menu_root.queue_free()
-		_build_game()
-		# si la partida ya terminó durante el replay, la señal
-		# game_over disparó antes de conectarla — disparar a mano
-		if tm.over and not _over_handled:
-			_over_handled = true
-			_on_game_over(tm.winner)
-	else:
-		# board quedaba apuntando al TurnManager viejo — reasignar
-		# estado mutable y reconectar señales del tm nuevo
-		board.bind(tm)   # reasigna tm y reconecta sus señales
-		board.selected = Vector2i(-1, -1)
-		board.legal = []
-		board.premove = {}
-		board.pre_sel = Vector2i(-1, -1)
-		board.flipped = (my_net == 1)
-		_wire_tm()
-		board.queue_redraw()
-		_update_hud()
+	NetClient.apply_cfg(self, cfg)
 
 ## Conecta las señales del TurnManager con sonido/HUD/juice.
 ## Separada porque _ws_resync puede sustituir el tm en caliente.
 func _wire_tm() -> void:
-	if not tm.move_made.is_connected(_on_move_sound):
-		tm.move_made.connect(_on_move_sound)
+	if not tm.move_made.is_connected(sfx.play_move):
+		tm.move_made.connect(sfx.play_move)
 	if not tm.game_over.is_connected(_on_game_over):
 		tm.game_over.connect(_on_game_over)
 	if not tm.move_made.is_connected(_tm_move_ui):
@@ -1283,81 +670,9 @@ func _open_editor() -> void:
 		_build_menu())
 	add_child(back)
 
-## Panel de perfil: estadísticas agregadas, logros y récords
-## (equivalente al /perfil de lichess, versión local).
+## Panel de perfil (delegado a ProfileScreen).
 func _open_profile() -> void:
-	menu_root.queue_free()
-	editor_ui = Widgets.screen("Perfil", 560)
-	add_child(editor_ui)
-	var box := Widgets.screen_body(editor_ui)
-
-	# — global —
-	var g: int = int(stats.get("games", 0))
-	var w: int = int(stats.get("w", 0))
-	var l: int = int(stats.get("l", 0))
-	var d: int = int(stats.get("d", 0))
-	var played := w + l + d
-	box.add_child(Widgets.heading("General"))
-	box.add_child(_lbl(
-		"Partidas: %d   ·   %dV %dE %dD   ·   %d%% de victorias" % [
-			g, w, d, l, int(100.0 * w / maxi(played, 1))]))
-
-	# — por facción: winrate + dominio (nivel XP) —
-	var fstat: Dictionary = stats.get("fstat", {})
-	if not fstat.is_empty():
-		box.add_child(HSeparator.new())
-		box.add_child(Widgets.heading("Por facción"))
-		var fav := ""; var fav_g := 0
-		var eff := ""; var eff_wr := -1.0
-		for fid in fstat:
-			var fs: Dictionary = fstat[fid]
-			var wr := 100.0 * int(fs.w) / maxi(int(fs.g), 1)
-			box.add_child(_lbl("  %s  nv%d  —  %d partidas, %d%% victorias" % [
-				fid.capitalize(), _faction_level(fid), int(fs.g), int(wr)]))
-			if int(fs.g) > fav_g: fav = fid; fav_g = int(fs.g)
-			if int(fs.g) >= 3 and wr > eff_wr: eff = fid; eff_wr = wr
-		var extra := "  Favorita: %s" % fav.capitalize()
-		if eff != "": extra += "   ·   Más efectiva: %s" % eff.capitalize()
-		box.add_child(_lbl(extra))
-
-	# — historial reciente —
-	var hist: Array = stats.get("history", [])
-	if not hist.is_empty():
-		box.add_child(HSeparator.new())
-		box.add_child(Widgets.heading("Últimas partidas"))
-		var marks := {"V": "✔", "E": "½", "D": "✘"}
-		var n := mini(8, hist.size())
-		for i in range(hist.size() - n, hist.size()):
-			var h: Dictionary = hist[i]
-			box.add_child(_lbl("  %s  %s vs %s — %d jugadas (%s)" % [
-				marks.get(h.r, "?"), String(h.me).capitalize(),
-				String(h.vs).capitalize(), int(h.mv), h.mode]))
-
-	# — récords —
-	box.add_child(HSeparator.new())
-	box.add_child(Widgets.heading("Récords"))
-	var recs := []
-	if int(stats.get("rec_fast", 0)) > 0:
-		recs.append("Victoria más rápida: %d jugadas" % int(stats.rec_fast))
-	if int(stats.get("rec_long", 0)) > 0:
-		recs.append("Partida más larga: %d jugadas" % int(stats.rec_long))
-	if int(stats.get("run_best", 0)) > 0:
-		recs.append("Mejor racha Run: nivel %d" % int(stats.run_best))
-	box.add_child(_lbl("  ".join(recs) if not recs.is_empty()
-		else "Sin récords todavía."))
-
-	# — logros —
-	var ach: Array = stats.get("ach", [])
-	box.add_child(HSeparator.new())
-	box.add_child(Widgets.heading("Logros"))
-	if ach.is_empty():
-		box.add_child(_lbl("Ninguno aún — gana tu primera partida."))
-	else:
-		for a in ach:
-			box.add_child(_lbl("  🏆 " + str(ACH.get(a, a))))
-	var b := Widgets.secondary("Volver")
-	b.pressed.connect(_close_editor)
-	box.add_child(b)
+	ProfileScreen.build(self)
 
 func _open_guide() -> void:
 	menu_root.queue_free()
@@ -1830,7 +1145,7 @@ func _process(dt: float) -> void:
 			if tm.clock[pl] < 10.0 and not _low_warned[pl]:
 				_low_warned[pl] = true
 				if pl == my_net or my_net < 0:
-					_beep(880.0, 0.08)
+					sfx.beep(880.0, 0.08)
 			elif tm.clock[pl] >= 10.0:
 				_low_warned[pl] = false
 
@@ -1911,57 +1226,6 @@ func _suggest() -> void:
 	board.legal = [mv]
 	board.queue_redraw()
 	hud_info.text = "Sugerencia: %s" % tm.state.describe(mv)
-
-## SFX por tipo de jugada (mini-pack sintetizado estilo lichess):
-## captura = golpe grave+ruido, especial = trino, castillo = doble tono,
-## push/attract = barrido, normal = click.
-func _on_move_sound(mv: Dictionary) -> void:
-	if muted: return
-	if mv.get("captures", []).size() > 0:
-		_beep(180.0, 0.07); _beep(90.0, 0.12); return
-	if mv.has("castle") or mv.has("second"):
-		_beep(392.0, 0.07); _beep(523.0, 0.10); return
-	if mv.has("push") or mv.has("attract") \
-			or mv.get("immobilize", []).size() > 0:
-		_sweep(300.0, 620.0, 0.10); return
-	_beep(440.0, 0.07)
-
-func _beep(freq: float, dur := 0.1) -> void:
-	if muted: return
-	_ensure_sfx()
-	var pb: AudioStreamGeneratorPlayback = sfx.get_stream_playback()
-	var rate := 22050.0
-	var frames := int(dur * rate)
-	for i in frames:
-		var t := float(i) / rate
-		var env := 1.0 - t / dur
-		pb.push_frame(Vector2(sin(TAU * freq * t) * env,
-			sin(TAU * freq * t) * env))
-
-## Barrido de frecuencia (push/atract/inmovilizar).
-func _sweep(f0: float, f1: float, dur := 0.1) -> void:
-	if muted: return
-	_ensure_sfx()
-	var pb: AudioStreamGeneratorPlayback = sfx.get_stream_playback()
-	var rate := 22050.0
-	var frames := int(dur * rate)
-	var phase := 0.0
-	for i in frames:
-		var k := float(i) / frames
-		var freq := lerpf(f0, f1, k)
-		phase += TAU * freq / rate
-		pb.push_frame(Vector2(sin(phase) * (1.0 - k),
-			sin(phase) * (1.0 - k)))
-
-func _ensure_sfx() -> void:
-	if sfx != null: return
-	sfx = AudioStreamPlayer.new()
-	var gen := AudioStreamGenerator.new()
-	gen.mix_rate = 22050
-	sfx.stream = gen
-	sfx.volume_db = -14.0
-	add_child(sfx)
-	sfx.play()
 
 func _update_hud() -> void:
 	var f: Dictionary = tm.state.factions[tm.current]
@@ -2060,7 +1324,7 @@ func _on_game_over(w: int) -> void:
 		hud_turn.text = "¡Tablas!"
 	else:
 		hud_turn.text = "¡Ganan %s!" % tm.state.factions[w].name
-		_beep(523.0, 0.12); _beep(659.0, 0.12); _beep(784.0, 0.18)
+		sfx.fanfare()
 	# resumen post-partida + análisis de errores
 	var cap0 := " ".join(tm.captured_by[0])
 	var cap1 := " ".join(tm.captured_by[1])
@@ -2096,106 +1360,14 @@ func _on_game_over(w: int) -> void:
 			resumen += "\nRun terminada — racha: %d (mejor: %d)" \
 				% [run_level - 1, stats.run_best]
 			run_active = false
-	_end_modal(w, resumen)
+	PostGame.modal(self, w, resumen)
 
-## Panel de fin de partida (estilo chess.com): overlay + resumen +
-## análisis + revancha.
+## Fin de partida y análisis delegados a PostGame.
 func _end_modal(w: int, resumen: String) -> void:
-	hud_info.text = resumen
-	var overlay := ColorRect.new()
-	overlay.color = Color(0, 0, 0, 0.55)
-	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	game_ui.add_child(overlay)
-	var cc := CenterContainer.new()
-	cc.set_anchors_preset(Control.PRESET_FULL_RECT)
-	overlay.add_child(cc)
-	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(340, 0)
-	cc.add_child(panel)
-	var box := VBoxContainer.new()
-	panel.add_child(box)
-	var title := _lbl("¡Tablas!" if w < 0 else \
-		"¡Ganan %s!" % tm.state.factions[w].name)
-	title.add_theme_font_size_override("font_size", 30)
-	if w >= 0:
-		title.add_theme_color_override("font_color",
-			tm.state.factions[w].color)
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	box.add_child(title)
-	var res := _lbl(resumen)
-	res.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	box.add_child(res)
-	var row := HBoxContainer.new()
-	row.alignment = BoxContainer.ALIGNMENT_CENTER
-	box.add_child(row)
-	var b_re := Button.new()
-	b_re.text = "Revancha"
-	b_re.pressed.connect(_rematch)
-	row.add_child(b_re)
-	var b_close := Button.new()
-	b_close.text = "Ver tablero"
-	b_close.pressed.connect(func():
-		Juice.fade_out(overlay, 0.2))
-	row.add_child(b_close)
-	Juice.pop_in(panel)
+	PostGame.modal(self, w, resumen)
 
-## Análisis post-partida (estilo lichess): evalúa cada posición del
-## replay y reporta los errores más grandes de cada jugador.
 func _postgame_analysis() -> String:
-	var snaps: Array = tm._replay_pos
-	if snaps.size() < 2: return ""
-	var evals := []
-	var bs := BoardState.new()
-	bs.factions = tm.state.factions
-	for snap in snaps:
-		bs.restore(snap)
-		evals.append(BeliberBot.evaluate(bs, 0))
-	var worst := {0: {"d": 0, "i": -1}, 1: {"d": 0, "i": -1}}
-	var best := {0: {"d": 0, "i": -1}, 1: {"d": 0, "i": -1}}
-	var loss := {0: 0.0, 1: 0.0}
-	var moves_n := {0: 0, 1: 0}
-	var decisive_i := -1
-	var decisive_swing := 0.0
-	for i in mini(tm.log.size(), tm.history.size()):
-		# en partida cargada history está vacío pero log conserva las
-		# jugadas pasadas — sin el límite esto indexaba fuera de rango
-		if i + 1 >= evals.size(): break
-		var mover: int = int(tm.history[i].current)
-		var d: float = evals[i + 1] - evals[i]
-		if mover == 1: d = -d   # delta desde la perspectiva del que mueve
-		if d < worst[mover].d: worst[mover] = {"d": d, "i": i}
-		if d > best[mover].d: best[mover] = {"d": d, "i": i}
-		if d < 0: loss[mover] += -d
-		moves_n[mover] += 1
-		# momento decisivo: el mayor cambio absoluto de evaluación
-		if absf(d) > decisive_swing:
-			decisive_swing = absf(d); decisive_i = i
-	var lines := []
-	# precisión aproximada: 100% menos el error medio por jugada
-	var acc := []
-	for pl in [0, 1]:
-		var avg: float = loss[pl] / maxi(int(moves_n[pl]), 1)
-		acc.append(int(clampf(100.0 - avg * 2.0, 5.0, 100.0)))
-	lines.append("Precisión (aprox): J1 %d%% · J2 %d%%" % [acc[0], acc[1]])
-	for pl in [0, 1]:
-		var bst: Dictionary = best[pl]
-		if int(bst.i) >= 0 and float(bst.d) > 30:
-			lines.append("Mejor J%d en jugada %d: %s (+%d)" % [
-				pl + 1, int(bst.i) + 1,
-				tm.log[int(bst.i)].get_slice(" ", 1), int(bst.d)])
-	for pl in [0, 1]:
-		var w: Dictionary = worst[pl]
-		if int(w.i) >= 0 and float(w.d) < -30:
-			lines.append("Error J%d en jugada %d: %s (perdió %d)" % [
-				pl + 1, int(w.i) + 1,
-				tm.log[int(w.i)].get_slice(" ", 1), int(-w.d)])
-	if decisive_i >= 0 and decisive_swing > 40:
-		lines.append("Momento decisivo: jugada %d (%s, swing %d)" % [
-			decisive_i + 1, tm.log[decisive_i].get_slice(" ", 1),
-			int(decisive_swing)])
-	if lines.size() <= 1:
-		lines.append("Sin errores graves detectados.")
-	return "Análisis: " + "\n".join(lines)
+	return PostGame.analysis(tm)
 
 ## Captura el tablero a PNG (zona del BoardView).
 func _export_png() -> void:
