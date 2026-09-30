@@ -217,3 +217,8 @@ static func resync(app, m: Dictionary) -> void:
 		app._wire_tm()
 		app.board.queue_redraw()
 		app._update_hud()
+		# igual que arriba: si el replay terminó la partida, la señal
+		# game_over salió antes de reconectar — disparar a mano
+		if app.tm.over and not app._over_handled:
+			app._over_handled = true
+			app._on_game_over(app.tm.winner)

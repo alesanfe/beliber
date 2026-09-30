@@ -86,9 +86,6 @@ func _find_leader_capture(t: TurnManager) -> Variant:
 			var p: Variant = t.state.at(c)
 			if p != null and p.def.get("leader", false):
 				return mv
-		if mv.has("attract") or mv.has("push"):
-			# capturas indirectas también cuentan (por empuje)
-			pass
 	return null
 
 func _setup(t: TurnManager) -> void:

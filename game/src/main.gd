@@ -478,8 +478,7 @@ func _start_tutorial() -> void:
 					and mv.get("piece_letter") == "X"})
 		"bestiarios":
 			tut_steps.append({"t": "Presiona: salta con un saltador (J/j)",
-				"chk": func(mv): return mv.get("fx", 0) & FX.JUMP != 0 \
-					or false})
+				"chk": func(mv): return mv.get("fx", 0) & FX.JUMP != 0})
 		"enanos", "kronturs":
 			tut_steps.append({"t": "Empuja a un enemigo",
 				"chk": func(mv): return mv.has("push")})
@@ -490,7 +489,7 @@ func _start_tutorial() -> void:
 		"aquontes":
 			tut_steps.append({"t": "Salto de Aquonte o cadena del Tritón",
 				"chk": func(mv): return mv.has("second") or \
-					mv.get("fx", 0) & FX.JUMP != 0 or false})
+					mv.get("fx", 0) & FX.JUMP != 0})
 	tut_steps.append({"t": "Elimina al líder enemigo (o invade su línea)",
 		"chk": func(_mv): return tm.over and tm.winner == 0})
 	hud_alert("Tutorial: completa los objetivos del panel")

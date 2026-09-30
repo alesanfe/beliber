@@ -15,6 +15,7 @@ var opt: OptionButton
 var quiz_on := false
 var quiz_cell := Vector2i(-1, -1)
 var quiz_targets: Array = []       # destinos legales de la pieza quiz
+var quiz_moves: Array = []         # jugadas completas (dicts p/ BoardView)
 var quiz_done := false             # ya respondió la pregunta actual
 var quiz_ok := 0
 var quiz_total := 0
@@ -145,6 +146,7 @@ func _quiz_next() -> void:
 	var pick: Dictionary = cands[randi() % cands.size()]
 	quiz_cell = pick.c
 	quiz_targets = []
+	quiz_moves = pick.mv   # board.legal exige dicts de jugada, no celdas
 	for m in pick.mv: quiz_targets.append(m.to)
 	quiz_done = false
 	var p: Dictionary = tm.state.at(quiz_cell)
@@ -162,7 +164,7 @@ func _quiz_click(c: Vector2i) -> void:
 	quiz_done = true
 	quiz_total += 1
 	var p: Dictionary = tm.state.at(quiz_cell)
-	board.legal = quiz_targets    # revela la respuesta correcta
+	board.legal = quiz_moves      # revela la respuesta correcta
 	if c in quiz_targets:
 		quiz_ok += 1
 		quiz_lbl.text = ("✔ ¡Correcto! %s sí puede ir ahí. " + \

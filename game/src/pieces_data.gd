@@ -474,7 +474,7 @@ static func _aquontes() -> Dictionary:
 		_ray(Vector2i(1, 1), ["o","J","Q","q","q","q","q"]))
 	var triton := _pc("T", "Tritón", 4, _cells([
 		[Vector2i(1, -1), "o"],
-	]), {"chain": true, "leg2": _cells([
+	]), {"leg2": _cells([
 		[Vector2i(-2, -2), "Q"],
 	]), "sym": "lit"})
 	var carchar := _pc("C", "Carchar", 4,

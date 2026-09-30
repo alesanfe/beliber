@@ -2,15 +2,15 @@ class_name BeliberBot
 extends RefCounted
 
 ## IA por minimax con poda alfa-beta sobre el estado puro del tablero.
-## Niveles: 1=profundidad 1 (rápido), 2=profundidad 2, 3=profundidad 3.
-## Evalúa material + actividad + peligro sobre líderes.
+## Niveles: 1=profundidad 1 (rÃ¡pido), 2=profundidad 2, 3=profundidad 3.
+## EvalÃºa material + actividad + peligro sobre lÃ­deres.
 
 const INF := 1_000_000
 const LEADER_VAL := 200
 
 var depth := 2
 var style := "normal"            # normal | aggro | defense
-var blunder := 0.0               # probabilidad de jugada subóptima (nivel humano)
+var blunder := 0.0               # probabilidad de jugada subÃ³ptima (nivel humano)
 var rng := RandomNumberGenerator.new()
 
 func _init(p_depth := 2, p_style := "normal", p_blunder := 0.0) -> void:
@@ -35,7 +35,7 @@ func _style_bonus(state: BoardState, mv: Dictionary, player: int) -> float:
 		b += mv.get("captures", []).size() * 1.5
 	return b
 
-## Evaluación estática desde el punto de vista de 'player'.
+## EvaluaciÃ³n estÃ¡tica desde el punto de vista de 'player'.
 static func evaluate(state: BoardState, player: int) -> int:
 	var score := 0
 	for p in state.grid:
@@ -46,7 +46,7 @@ static func evaluate(state: BoardState, player: int) -> int:
 		score += v if p.owner == player else -v
 	return score
 
-## Recoge todos los movimientos de un jugador (con posición de origen).
+## Recoge todos los movimientos de un jugador (con posiciÃ³n de origen).
 static func _all_moves(state: BoardState, player: int) -> Array:
 	var out: Array = []
 	for y in BoardState.SIZE:
@@ -58,8 +58,8 @@ static func _all_moves(state: BoardState, player: int) -> Array:
 	return out
 
 ## Clona el estado copiando las piezas (apply() muta has_moved,
-## immobilized y cells_override — una copia superficial corrompería
-## el estado real durante la búsqueda).
+## immobilized y cells_override â€” una copia superficial corromperÃ­a
+## el estado real durante la bÃºsqueda).
 static func _clone_state(state: BoardState) -> BoardState:
 	var s := BoardState.new()
 	for i in state.grid.size():
@@ -68,10 +68,6 @@ static func _clone_state(state: BoardState) -> BoardState:
 	s.factions = state.factions
 	s.last_move = state.last_move
 	return s
-
-## Aplica un movimiento en un estado clonado.
-static func _apply_on(cloned: BoardState, mv: Dictionary) -> void:
-	cloned.apply(mv)
 
 static func _leader_dead(state: BoardState, player: int) -> bool:
 	for p in state.grid:
@@ -91,12 +87,12 @@ func _minimax(state: BoardState, player: int, me: int, d: int,
 		return evaluate(state, me)
 	var moves := _all_moves(state, player)
 	if moves.is_empty():
-		return evaluate(state, me)  # sin movimientos: posición estática
+		return evaluate(state, me)  # sin movimientos: posiciÃ³n estÃ¡tica
 	if player == me:
 		var best := -INF
 		for mv in moves:
 			var s := _clone_state(state)
-			_apply_on(s, mv)
+			s.apply(mv)
 			best = maxi(best, _minimax(s, 1 - player, me, d - 1,
 				alpha, beta))
 			alpha = maxi(alpha, best)
@@ -106,7 +102,7 @@ func _minimax(state: BoardState, player: int, me: int, d: int,
 		var best := INF
 		for mv in moves:
 			var s := _clone_state(state)
-			_apply_on(s, mv)
+			s.apply(mv)
 			best = mini(best, _minimax(s, 1 - player, me, d - 1,
 				alpha, beta))
 			beta = mini(beta, best)
@@ -117,7 +113,7 @@ func _minimax(state: BoardState, player: int, me: int, d: int,
 func best_move(tm: TurnManager, player: int) -> Dictionary:
 	var moves := _all_moves(tm.state, player)
 	if moves.is_empty(): return {}
-	# mezclar para variedad a igualdad de evaluación
+	# mezclar para variedad a igualdad de evaluaciÃ³n
 	moves.shuffle()
 	var best: Dictionary = moves[0]
 	var second: Dictionary = {}
@@ -125,7 +121,7 @@ func best_move(tm: TurnManager, player: int) -> Dictionary:
 	var second_val := -INF
 	for mv in moves:
 		var s := _clone_state(tm.state)
-		_apply_on(s, mv)
+		s.apply(mv)
 		var v := float(_minimax(s, 1 - player, player, depth - 1,
 			-INF, INF))
 		# premio a capturas + sesgo de personalidad
@@ -136,7 +132,7 @@ func best_move(tm: TurnManager, player: int) -> Dictionary:
 			best_val = v; best = mv
 		elif v > second_val:
 			second_val = v; second = mv
-	# errores humanos: a veces elige la 2ª mejor
+	# errores humanos: a veces elige la 2Âª mejor
 	if blunder > 0 and not second.is_empty() \
 			and rng.randf() < blunder:
 		return second
