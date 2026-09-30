@@ -4,6 +4,43 @@ extends RefCounted
 ## Fin de partida: modal de resumen (estilo chess.com) + análisis de
 ## errores por swing de evaluación (estilo lichess).
 
+## Clasifica la jugada i del log por su swing de evaluación
+## (estilo chess.com): ! buena, ? error, ?? blunder.
+static func classify_move(tm: TurnManager, i: int) -> String:
+	var mover := int(tm.log[i].substr(1, 1)) - 1
+	var snap0: Variant = tm.replay_snapshot(i)
+	var snap1: Variant = tm.replay_snapshot(i + 1)
+	if snap0 == null or snap1 == null: return ""
+	var st := BoardState.new()
+	st.restore(snap0)
+	var e0 := BeliberBot.evaluate(st, mover)
+	st.restore(snap1)
+	var e1 := BeliberBot.evaluate(st, mover)
+	var d := e1 - e0
+	if d >= 4: return " !"
+	elif d <= -7: return " ??"
+	elif d <= -3: return " ?"
+	return ""
+
+## Nombre de apertura tipo lichess: la primera jugada de cada bando
+## define el nombre ("Apertura Torre" = salió la Torre primero).
+## El log es "J{n} {letra}{desde}→{hasta}" — se parsea la letra.
+static func opening_name(tm: TurnManager) -> String:
+	if tm.log.is_empty(): return ""
+	var parts := []
+	var seen := [false, false]
+	for i in mini(tm.log.size(), 6):
+		var entry: String = tm.log[i]
+		if entry.length() < 3 or entry[0] != "J": continue
+		var pl := int(entry.substr(1, 1)) - 1
+		if seen[pl]: continue
+		seen[pl] = true
+		var letter := entry.substr(3, 1)
+		var f: Dictionary = tm.state.factions[pl]
+		var pn: String = f.pieces.get(letter, {}).get("name", letter)
+		parts.append("%s: %s" % [f.name, pn])
+	return "Apertura — " + " · ".join(parts) if parts else ""
+
 ## Panel de fin de partida: overlay + resumen + análisis + revancha.
 static func modal(app, w: int, resumen: String) -> void:
 	app.hud_info.text = resumen

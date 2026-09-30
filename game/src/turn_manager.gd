@@ -7,6 +7,11 @@ signal move_made(mv: Dictionary)
 signal turn_started(player: int)
 signal game_over(winner: int)
 
+## Relojes seleccionables [segundos, incremento] — compartido por el
+## menú, el cliente WS y el servidor autoritativo (antes duplicado).
+const CLOCK_CHOICES := [[0, 0], [60, 0], [180, 2], [300, 0],
+	[600, 5], [1800, 0]]
+
 var state: BoardState
 var current := 0
 var over := false

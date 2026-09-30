@@ -187,9 +187,8 @@ func _on_create(p: WebSocketPeer, m: Dictionary) -> void:
 	r.code = _code()
 	r.cfg = cfg
 	var clock := int(cfg.get("clock", 0))
-	var clocks := [[0, 0], [60, 0], [180, 2], [300, 0], [600, 5],
-		[1800, 0]]
-	var cs: Array = clocks[clampi(clock, 0, clocks.size() - 1)]
+	var cs: Array = TurnManager.CLOCK_CHOICES[
+		clampi(clock, 0, TurnManager.CLOCK_CHOICES.size() - 1)]
 	# ejércitos custom: las filas viajan en cfg (rows0/rows1) — si no
 	# se inyectan, cada lado desplegaría su propio archivo local
 	for si in [0, 1]:

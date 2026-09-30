@@ -392,3 +392,79 @@ static func build(app) -> void:
 	app._opt_toggles.mute.set_pressed_no_signal(app.muted)
 	app._update_hud()
 	app._maybe_bot()
+
+## Refresco del HUD tras cada jugada: turno, líderes, material,
+## bandejas, eval bar y lista clickeable de jugadas.
+static func update(app) -> void:
+	var tm: TurnManager = app.tm
+	var f: Dictionary = tm.state.factions[tm.current]
+	var extra := ""
+	if tm.moves_left > 1:
+		extra = "  (quedan %d movimientos)" % tm.moves_left
+	var who: String = f.name
+	if app.online:
+		who += "  (eres J%d — %s)" % [app.my_net + 1,
+			"tu turno" if tm.current == app.my_net else "turno rival"]
+	elif app.coop and tm.current == 0:
+		who += "  (%s mueve)" % \
+			("Humano A" if app.coop_turn == 0 else "Humano B")
+	app.hud_turn.text = "Turno: %s" % who
+	app.hud_turn.add_theme_color_override("font_color", f.color)
+	# tarjeta del rival (arriba del panel): facción + bando
+	var riv: int = 1 - app.my_net if app.online else \
+		(1 if not app.board.flipped else 0)
+	var rf: Dictionary = tm.state.factions[riv]
+	app.hud_rival.text = "%s  J%d" % [rf.name, riv + 1]
+	app.hud_rival.add_theme_color_override("font_color", rf.color)
+	app.hud_rival_icon.fid = rf.id
+	app.hud_rival_icon.col = rf.color
+	app.hud_rival_icon.queue_redraw()
+	var l0 := tm.state.leaders_alive(0)
+	var l1 := tm.state.leaders_alive(1)
+	app.hud_info.text = \
+		"Líderes — %s: %d  |  %s: %d%s\nMaterial — %d vs %d" % [
+			tm.state.factions[0].name, l0,
+			tm.state.factions[1].name, l1, extra,
+			tm.material_value(0), tm.material_value(1)]
+	# bandejas: las piezas de la facción víctima en su color
+	var m0 := tm.material_value(0)
+	var m1 := tm.material_value(1)
+	app.tray0.setup(tm.captured_by[0], tm.state.factions[1],
+		maxi(0, m0 - m1))
+	app.tray1.setup(tm.captured_by[1], tm.state.factions[0],
+		maxi(0, m1 - m0))
+	# nombre de apertura (primeras jugadas, estilo lichess)
+	app.hud_opening.text = "" if tm.log.size() > 10 \
+		else PostGame.opening_name(tm)
+	# barra de evaluación (motor propio, vista de J1)
+	var ev := BeliberBot.evaluate(tm.state, 0)
+	app.hud_eval.text = "Eval: %s  (J1 %+d)" % [
+		"+" if ev > 0 else ("-" if ev < 0 else "="), ev]
+	app.eval_bar.frac = clampf(0.5 + ev / 400.0, 0.0, 1.0)
+	app.eval_bar.queue_redraw()
+	# lista de jugadas clickeable (solo reconstruir si cambia)
+	if tm.log.size() != app._log_n:
+		app._log_n = tm.log.size()
+		# clasificación incremental: solo las jugadas nuevas (undo
+		# recorta el array; sin esto era O(n²) evaluaciones)
+		while app._move_marks.size() > tm.log.size():
+			app._move_marks.pop_back()
+		for i in range(app._move_marks.size(), tm.log.size()):
+			app._move_marks.append(PostGame.classify_move(tm, i))
+		for c in app.move_list.get_children(): c.queue_free()
+		for i in tm.log.size():
+			var b := Button.new()
+			var mark: String = app._move_marks[i] \
+				if i < app._move_marks.size() else ""
+			b.text = "%d. %s%s" % [i + 1, tm.log[i], mark]
+			if mark != "":
+				b.add_theme_color_override("font_color",
+					Color(0.45, 0.9, 0.5) if mark[0] == "!" \
+					else Color(1, 0.5, 0.45))
+			b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+			b.flat = true
+			b.add_theme_font_size_override("font_size", 12)
+			b.pressed.connect(func(idx := i):
+				app.board.view_i = idx + 1   # snapshot tras la jugada idx
+				app.board.queue_redraw())
+			app.move_list.add_child(b)

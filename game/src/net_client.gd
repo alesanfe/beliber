@@ -180,8 +180,8 @@ static func resync(app, m: Dictionary) -> void:
 			app.factions[int(c2.f1)], int(c2.eq1),
 			{"midline": bool(c2.mid),
 				"stall_limit": int(c2.stall),
-				"clock_secs": app.CLOCK_CHOICES[int(c2.clock)][0],
-				"clock_inc": app.CLOCK_CHOICES[int(c2.clock)][1]})
+				"clock_secs": TurnManager.CLOCK_CHOICES[int(c2.clock)][0],
+				"clock_inc": TurnManager.CLOCK_CHOICES[int(c2.clock)][1]})
 	elif app.tm != null:
 		# sin cfg no conocemos el despliegue inicial (p.ej. draft) —
 		# no se puede reconstruir; aplicar solo la cola que falta

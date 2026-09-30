@@ -297,10 +297,6 @@ func _tm_turn_ui(p: int) -> void:
 	_update_hud()
 	_maybe_bot()
 
-## Codificación recursiva: Vector2i → {"x":…,"y":…}
-func _lbl(t: String) -> Label:
-	return Widgets.lbl(t)
-
 func _faction_picker() -> OptionButton:
 	var o := OptionButton.new()
 	for f in factions:
@@ -320,8 +316,7 @@ func _refresh_values() -> void:
 	val_lbl0.add_theme_color_override("font_color", f0.color)
 	val_lbl1.add_theme_color_override("font_color", f1.color)
 
-const CLOCK_CHOICES := [[0, 0], [60, 0], [180, 2], [300, 0],
-	[600, 5], [1800, 0]]
+const CLOCK_CHOICES := TurnManager.CLOCK_CHOICES
 
 ## Opciones del TurnManager leídas del menú (midline/stall/reloj).
 ## Las tres rutas de arranque (normal, draft, editor de posición)
@@ -440,8 +435,8 @@ func _run_boon() -> void:
 			"f": func(): run_first = true},
 	]
 	var box := VBoxContainer.new()
-	box.add_child(_lbl("Victoria — combate %d. Elige bendición:"
-		% run_level))
+	box.add_child(Widgets.lbl(
+		"Victoria — combate %d. Elige bendición:" % run_level))
 	for o in opts:
 		var b := Button.new()
 		b.text = o.t
@@ -715,24 +710,9 @@ func _do_resign(me: int) -> void:
 		_rpc_move.rpc({"from": Vector2i(-1, -1),
 			"to": Vector2i(-1, -1), "resign": true})
 
-## Nombre de apertura tipo lichess: la primera jugada de cada bando
-## define el nombre ("Apertura Torre" = salió la Torre primero).
-## El log es "J{n} {letra}{desde}→{hasta}" — se parsea la letra.
+## Nombre de apertura (delegado a PostGame).
 func _opening_name() -> String:
-	if tm.log.is_empty(): return ""
-	var parts := []
-	var seen := [false, false]
-	for i in mini(tm.log.size(), 6):
-		var entry: String = tm.log[i]
-		if entry.length() < 3 or entry[0] != "J": continue
-		var pl := int(entry.substr(1, 1)) - 1
-		if seen[pl]: continue
-		seen[pl] = true
-		var letter := entry.substr(3, 1)
-		var f: Dictionary = tm.state.factions[pl]
-		var pn: String = f.pieces.get(letter, {}).get("name", letter)
-		parts.append("%s: %s" % [f.name, pn])
-	return "Apertura — " + " · ".join(parts) if parts else ""
+	return PostGame.opening_name(tm)
 
 func _fmt_time(s: float) -> String:
 	return "%d:%02d" % [int(s) / 60, int(s) % 60]
@@ -780,91 +760,13 @@ func _suggest() -> void:
 	board.queue_redraw()
 	hud_info.text = "Sugerencia: %s" % tm.state.describe(mv)
 
+## Refresco del HUD (delegado a GameHUD).
 func _update_hud() -> void:
-	var f: Dictionary = tm.state.factions[tm.current]
-	var extra := ""
-	if tm.moves_left > 1:
-		extra = "  (quedan %d movimientos)" % tm.moves_left
-	var who: String = f.name
-	if online:
-		who += "  (eres J%d — %s)" % [my_net + 1,
-			"tu turno" if tm.current == my_net else "turno rival"]
-	elif coop and tm.current == 0:
-		who += "  (%s mueve)" % ("Humano A" if coop_turn == 0 else "Humano B")
-	hud_turn.text = "Turno: %s" % who
-	hud_turn.add_theme_color_override("font_color", f.color)
-	# tarjeta del rival (arriba del panel): facción + bando
-	var riv := 1 - my_net if online else \
-		(1 if not board.flipped else 0)
-	var rf: Dictionary = tm.state.factions[riv]
-	hud_rival.text = "%s  J%d" % [rf.name, riv + 1]
-	hud_rival.add_theme_color_override("font_color", rf.color)
-	hud_rival_icon.fid = rf.id
-	hud_rival_icon.col = rf.color
-	hud_rival_icon.queue_redraw()
-	var l0 := tm.state.leaders_alive(0)
-	var l1 := tm.state.leaders_alive(1)
-	hud_info.text = "Líderes — %s: %d  |  %s: %d%s\nMaterial — %d vs %d" % [
-		tm.state.factions[0].name, l0, tm.state.factions[1].name, l1, extra,
-		tm.material_value(0), tm.material_value(1)]
-	# bandejas: las piezas de la facción víctima en su color
-	var m0 := tm.material_value(0)
-	var m1 := tm.material_value(1)
-	tray0.setup(tm.captured_by[0], tm.state.factions[1],
-		maxi(0, m0 - m1))
-	tray1.setup(tm.captured_by[1], tm.state.factions[0],
-		maxi(0, m1 - m0))
-	# nombre de apertura (primeras jugadas, estilo lichess)
-	hud_opening.text = "" if tm.log.size() > 10 else _opening_name()
-	# barra de evaluación (motor propio, vista de J1)
-	var ev := BeliberBot.evaluate(tm.state, 0)
-	hud_eval.text = "Eval: %s  (J1 %+d)" % [
-		"+" if ev > 0 else ("-" if ev < 0 else "="), ev]
-	eval_bar.frac = clampf(0.5 + ev / 400.0, 0.0, 1.0)
-	eval_bar.queue_redraw()
-	# lista de jugadas clickeable (solo reconstruir si cambia)
-	if tm.log.size() != _log_n:
-		_log_n = tm.log.size()
-		# clasificación incremental: solo las jugadas nuevas (undo
-		# recorta el array; sin esto era O(n²) evaluaciones)
-		while _move_marks.size() > tm.log.size():
-			_move_marks.pop_back()
-		for i in range(_move_marks.size(), tm.log.size()):
-			_move_marks.append(_classify_move(i))
-		for c in move_list.get_children(): c.queue_free()
-		for i in tm.log.size():
-			var b := Button.new()
-			var mark: String = _move_marks[i] if i < _move_marks.size() else ""
-			b.text = "%d. %s%s" % [i + 1, tm.log[i], mark]
-			if mark != "":
-				b.add_theme_color_override("font_color",
-					Color(0.45, 0.9, 0.5) if mark[0] == "!" \
-					else Color(1, 0.5, 0.45))
-			b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-			b.flat = true
-			b.add_theme_font_size_override("font_size", 12)
-			b.pressed.connect(func(idx := i):
-				board.view_i = idx + 1   # snapshot tras la jugada idx
-				board.queue_redraw())
-			move_list.add_child(b)
+	GameHUD.update(self)
 
-## Clasifica la jugada i del log por su swing de evaluación
-## (estilo chess.com): ! buena, ? error, ?? blunder.
+## Clasificación !/?/?? delegada a PostGame.
 func _classify_move(i: int) -> String:
-	var mover := int(tm.log[i].substr(1, 1)) - 1
-	var snap0: Variant = tm.replay_snapshot(i)
-	var snap1: Variant = tm.replay_snapshot(i + 1)
-	if snap0 == null or snap1 == null: return ""
-	var st := BoardState.new()
-	st.restore(snap0)
-	var e0 := BeliberBot.evaluate(st, mover)
-	st.restore(snap1)
-	var e1 := BeliberBot.evaluate(st, mover)
-	var d := e1 - e0
-	if d >= 4: return " !"
-	elif d <= -7: return " ??"
-	elif d <= -3: return " ?"
-	return ""
+	return PostGame.classify_move(tm, i)
 
 func _on_game_over(w: int) -> void:
 	# la señal puede dispararse dos veces (jugada con resign + msg
