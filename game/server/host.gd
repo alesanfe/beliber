@@ -155,8 +155,14 @@ func _dispatch(p: WebSocketPeer, m: Dictionary) -> void:
 	var side: int = info.get("side", -1)
 	match str(m.get("op", "")):
 		"create":
+			# un peer en sala que crea otra dejaría un sides[] huérfano
+			# apuntándole en la sala vieja
+			if room != null: return _send(p,
+				{"op": "err", "msg": "Ya estás en una sala"})
 			_on_create(p, m)
 		"join":
+			if room != null: return _send(p,
+				{"op": "err", "msg": "Ya estás en una sala"})
 			_on_join(p, m)
 		"rejoin":
 			_on_rejoin(p, m)
@@ -193,10 +199,8 @@ func _on_create(p: WebSocketPeer, m: Dictionary) -> void:
 	# se inyectan, cada lado desplegaría su propio archivo local
 	for si in [0, 1]:
 		if cfg.has("rows%d" % si):
-			var rows: Array = cfg["rows%d" % si]
-			var fac: Dictionary = factions[int(cfg["f%d" % si])]
-			if fac.setups.size() > 2: fac.setups[2] = rows
-			else: fac.setups.append(rows)
+			ArmyBuilder.inject(factions[int(cfg["f%d" % si])],
+				cfg["rows%d" % si])
 	r.tm = TurnManager.new(factions[f0i], int(cfg.get("eq0", 0)),
 		factions[f1i], int(cfg.get("eq1", 0)),
 		{"midline": bool(cfg.get("mid", false)),
@@ -253,10 +257,9 @@ func _on_queue(p: WebSocketPeer, m: Dictionary) -> void:
 	if pb.has("rows"): cfg["rows1"] = pb.rows
 	# crear la sala como si 'a' fuera el host
 	_on_create(a, {"cfg": cfg, "name": peers[a].get("name", "")})
-	var code: String = peers[a].get("room", Room.new()).code
-	if code == "": return
-	var r: Room = rooms.get(code)
-	if r == null: return
+	var r: Room = peers[a].get("room")
+	if r == null or r.code == "": return
+	var code: String = r.code
 	# entrada directa de 'b' (equivale a join sin código)
 	r.sides[1] = b
 	r.tokens[1] = _token()
@@ -329,6 +332,13 @@ func _on_leave(r: Room, side: int) -> void:
 		_record_result(r, r.other(side))
 	if r.sides[r.other(side)] != null:
 		_send(r.sides[r.other(side)], {"op": "over", "reason": "leave"})
+	# liberar referencias: sin esto peers[p].room seguía apuntando a
+	# una sala borrada y los ops siguientes usaban estado muerto
+	for s in [0, 1]:
+		var q: WebSocketPeer = r.sides[s]
+		if q != null and peers.has(q):
+			peers[q]["room"] = null
+			peers[q]["side"] = -1
 	rooms.erase(r.code)
 
 ## Top 20 del ladder (op "ladder").

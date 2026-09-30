@@ -319,6 +319,14 @@ static func _load_all() -> Dictionary:
 	f.close()
 	return parsed if parsed is Dictionary else {}
 
+## Inserta (o sustituye) las filas custom como setups[2] (Eq3).
+## Compartido por la carga local, el host autoritativo y el cliente WS.
+static func inject(fac: Dictionary, rows: Array) -> void:
+	if fac.setups.size() > 2:
+		fac.setups[2] = rows
+	else:
+		fac.setups.append(rows)
+
 ## Aplica ejércitos personalizados: se insertan como setups[2] (Eq3).
 static func apply(facs: Array) -> void:
 	var data := _load_all()
@@ -326,7 +334,4 @@ static func apply(facs: Array) -> void:
 		if data.has(fac.id):
 			var rows: Array = []
 			for r in data[fac.id].rows: rows.append(r)
-			if fac.setups.size() > 2:
-				fac.setups[2] = rows
-			else:
-				fac.setups.append(rows)
+			inject(fac, rows)

@@ -41,6 +41,32 @@ static func opening_name(tm: TurnManager) -> String:
 		parts.append("%s: %s" % [f.name, pn])
 	return "Apertura — " + " · ".join(parts) if parts else ""
 
+## Texto del resumen de fin de partida: movimientos, capturas,
+## piezas restantes vs iniciales, material, ritmo y análisis.
+static func summary(tm: TurnManager) -> String:
+	var cap0 := " ".join(tm.captured_by[0])
+	var cap1 := " ".join(tm.captured_by[1])
+	# piezas restantes sobre el ejército inicial (tm.started lo
+	# registraba pero nadie lo leía)
+	var n0 := 0
+	var n1 := 0
+	for p in tm.state.grid:
+		if p != null and p.owner == 0: n0 += 1
+		elif p != null: n1 += 1
+	# ritmo medio por jugada (tm.move_times se recogía pero nadie lo
+	# leía — movidas rápidas/lentas son un buen sello de la partida)
+	var mt := ""
+	if not tm.move_times.is_empty():
+		var acc := 0.0
+		for t in tm.move_times: acc += float(t)
+		mt = "Ritmo medio: %.1f s/jugada\n" % [acc / tm.move_times.size()]
+	return "Movimientos: %d\n%sCapturado J1: %s\nCapturado J2: %s\nPiezas: %d/%d vs %d/%d\nMaterial: %d vs %d\n%s" % [
+		tm.log.size(), mt, cap0 if cap0 != "" else "—",
+		cap1 if cap1 != "" else "—",
+		n0, tm.started[0].size(), n1, tm.started[1].size(),
+		tm.material_value(0), tm.material_value(1),
+		analysis(tm)]
+
 ## Panel de fin de partida: overlay + resumen + análisis + revancha.
 static func modal(app, w: int, resumen: String) -> void:
 	app.hud_info.text = resumen

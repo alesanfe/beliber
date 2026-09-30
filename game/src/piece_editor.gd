@@ -270,8 +270,15 @@ func _ready() -> void:
 	var b_reset := Button.new(); b_reset.text = "Restaurar por defecto"
 	b_reset.pressed.connect(_reset)
 	right.add_child(b_reset)
-	var b_wipe := Button.new(); b_wipe.text = "Borrar TODAS las sobrescrituras"
-	b_wipe.pressed.connect(_wipe_all)
+	var b_wipe := Widgets.danger("Borrar TODAS las sobrescrituras")
+	b_wipe.pressed.connect(func():
+		var dlg := ConfirmationDialog.new()
+		dlg.title = "Borrar sobrescrituras"
+		dlg.dialog_text = "¿Eliminar TODAS las piezas y despliegues personalizados de todas las facciones? No se puede deshacer."
+		add_child(dlg)
+		dlg.confirmed.connect(_wipe_all)
+		dlg.canceled.connect(dlg.queue_free)
+		dlg.popup_centered())
 	right.add_child(b_wipe)
 	right.add_child(HSeparator.new())
 	status_lbl = Label.new()
@@ -324,7 +331,9 @@ func _switch_mode() -> void:
 
 func on_deploy_cell(cell: Vector2i, button: int) -> void:
 	if cell.y >= deploy_rows.size(): return
-	var row: String = deploy_rows[cell.y]
+	# rellenar a 8 columnas: una fila corta hacía inmunes las
+	# casillas a la derecha de su último carácter
+	var row: String = deploy_rows[cell.y].rpad(8, ".")
 	var ch := "." if button == MOUSE_BUTTON_RIGHT else dep_paint
 	# reconstruye la fila sustituyendo la columna
 	var parts := PackedStringArray()
@@ -453,7 +462,6 @@ func _build_preview() -> void:
 	var f1: Dictionary = {"pieces": {}, "color": Color.WHITE}
 	st.factions = [f0, f1]
 	var p := st.new_piece(_def_from_editor(), 0)
-	p.def = _def_from_editor()
 	st.set_at(anchor, p)
 	# piezas enemigas de prueba para ver capturas/empujes
 	var dummy_def := {"letter": "E", "name": "Dummy", "value": 1,
@@ -506,12 +514,9 @@ func _reload_defaults() -> void:
 	_load_piece()
 
 func _apply_to_memory() -> void:
-	piece_def.cells = cells.duplicate()
-	piece_def.name = name_edit.text
-	piece_def.value = int(value_spin.value)
-	piece_def["sym"] = "lit" if sym_opt.selected == 1 else "all"
-	piece_def["leader"] = leader_chk.button_pressed
-	piece_def["swap_on_capture"] = swap_chk.button_pressed
+	var d := _def_from_editor()
+	for k in d:
+		piece_def[k] = d[k]
 
 func _saved_overrides() -> Dictionary:
 	if not FileAccess.file_exists(SAVE_PATH): return {}

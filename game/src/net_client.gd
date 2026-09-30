@@ -149,9 +149,8 @@ static func apply_cfg(app, cfg: Dictionary) -> void:
 	# inyectar filas custom recibidas como setups[2] (eq Personalizado)
 	for si in [0, 1]:
 		if cfg.has("rows%d" % si):
-			var fac: Dictionary = app.factions[int(cfg["f%d" % si])]
-			if fac.setups.size() > 2: fac.setups[2] = cfg["rows%d" % si]
-			else: fac.setups.append(cfg["rows%d" % si])
+			ArmyBuilder.inject(
+				app.factions[int(cfg["f%d" % si])], cfg["rows%d" % si])
 	app.chk_midline.button_pressed = bool(cfg.mid)
 	# stall: activar el check + volcar el valor, si no el cliente
 	# jugaría con su propio límite y divergiría del host

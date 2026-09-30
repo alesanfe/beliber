@@ -91,6 +91,8 @@ var _ladder_label: Label = null   # etiqueta del tab Ladder (pantalla online)
 var ws_auth := false               # servidor autoritativo (hello)
 
 var editor_ui: Control
+var _ws_pending := ""
+var _ws_cfg := {}          # última cfg aplicada (para resync sin cfg)
 
 func _ready() -> void:
 	var cf := ConfigFile.new()
@@ -195,21 +197,9 @@ func _game_cfg() -> Dictionary:
 ## El cliente arranca con la config recibida del host.
 @rpc("authority", "reliable")
 func _rpc_config(cfg: Dictionary) -> void:
-	# inyectar filas custom (ejército "Personalizado" del host) —
-	# igual que _apply_cfg: sin ellas cada lado usa su archivo local
-	for si in [0, 1]:
-		if cfg.has("rows%d" % si):
-			var fac: Dictionary = factions[int(cfg["f%d" % si])]
-			if fac.setups.size() > 2: fac.setups[2] = cfg["rows%d" % si]
-			else: fac.setups.append(cfg["rows%d" % si])
-	opt_p0.select(int(cfg.f0)); opt_eq0.select(int(cfg.eq0))
-	opt_p1.select(int(cfg.f1)); opt_eq1.select(int(cfg.eq1))
-	chk_midline.button_pressed = bool(cfg.mid)
-	var stall2: int = int(cfg.get("stall", 0))
-	chk_stall.button_pressed = stall2 > 0
-	if stall2 > 0: stall_spin.value = stall2
-	opt_clock.select(int(cfg.clock))
-	ai_player = -1
+	# misma aplicación de cfg que el relay WS: sin las filas custom
+	# cada lado usa su archivo local y los tableros divergen
+	NetClient.apply_cfg(self, cfg)
 	_start_game()
 
 ## Movimiento remoto recibido (determinista en ambos lados).
@@ -244,15 +234,10 @@ func hud_alert(t: String) -> void:
 
 
 
-## ===== Relay WebSocket (salas por código + reconexión) =====
-
 ## ===== Relay WebSocket (delegado a NetClient) =====
 
 func _ws_connect(create: bool) -> void:
 	NetClient.open(self, create)
-
-var _ws_pending := ""
-var _ws_cfg := {}          # última cfg aplicada (para resync sin cfg)
 
 func _ws_send(msg: Dictionary) -> void:
 	NetClient.send(self, msg)
@@ -260,8 +245,6 @@ func _ws_send(msg: Dictionary) -> void:
 func _ws_poll() -> void:
 	NetClient.poll(self)
 
-func _apply_cfg(cfg: Dictionary) -> void:
-	NetClient.apply_cfg(self, cfg)
 
 ## Conecta las señales del TurnManager con sonido/HUD/juice.
 ## Separada porque _ws_resync puede sustituir el tm en caliente.
@@ -446,7 +429,7 @@ func _run_boon() -> void:
 			box.queue_free()
 			_run_next())
 		box.add_child(b)
-	game_ui.get_node("SideVBox").add_child(box)
+	side_panel.add_child(box)
 
 func _run_next() -> void:
 	run_level += 1
@@ -710,9 +693,6 @@ func _do_resign(me: int) -> void:
 		_rpc_move.rpc({"from": Vector2i(-1, -1),
 			"to": Vector2i(-1, -1), "resign": true})
 
-## Nombre de apertura (delegado a PostGame).
-func _opening_name() -> String:
-	return PostGame.opening_name(tm)
 
 func _fmt_time(s: float) -> String:
 	return "%d:%02d" % [int(s) / 60, int(s) % 60]
@@ -764,9 +744,6 @@ func _suggest() -> void:
 func _update_hud() -> void:
 	GameHUD.update(self)
 
-## Clasificación !/?/?? delegada a PostGame.
-func _classify_move(i: int) -> String:
-	return PostGame.classify_move(tm, i)
 
 func _on_game_over(w: int) -> void:
 	# la señal puede dispararse dos veces (jugada con resign + msg
@@ -780,29 +757,7 @@ func _on_game_over(w: int) -> void:
 	else:
 		hud_turn.text = "¡Ganan %s!" % tm.state.factions[w].name
 		sfx.fanfare()
-	# resumen post-partida + análisis de errores
-	var cap0 := " ".join(tm.captured_by[0])
-	var cap1 := " ".join(tm.captured_by[1])
-	# piezas restantes sobre el ejército inicial (tm.started lo
-	# registraba pero nadie lo leía)
-	var n0 := 0
-	var n1 := 0
-	for p in tm.state.grid:
-		if p != null and p.owner == 0: n0 += 1
-		elif p != null: n1 += 1
-	# ritmo medio por jugada (tm.move_times se recogía pero nadie lo
-	# leía — movidas rápidas/lentas son un buen sello de la partida)
-	var mt := ""
-	if not tm.move_times.is_empty():
-		var acc := 0.0
-		for t in tm.move_times: acc += float(t)
-		mt = "Ritmo medio: %.1f s/jugada\n" % [acc / tm.move_times.size()]
-	var resumen := "Movimientos: %d\n%sCapturado J1: %s\nCapturado J2: %s\nPiezas: %d/%d vs %d/%d\nMaterial: %d vs %d\n%s" % [
-		tm.log.size(), mt, cap0 if cap0 != "" else "—",
-		cap1 if cap1 != "" else "—",
-		n0, tm.started[0].size(), n1, tm.started[1].size(),
-		tm.material_value(0), tm.material_value(1),
-		_postgame_analysis()]
+	var resumen := PostGame.summary(tm)
 	# modo run: victoria → bendición y siguiente combate
 	if run_active:
 		if w == 0:
@@ -816,13 +771,6 @@ func _on_game_over(w: int) -> void:
 				% [run_level - 1, stats.run_best]
 			run_active = false
 	PostGame.modal(self, w, resumen)
-
-## Fin de partida y análisis delegados a PostGame.
-func _end_modal(w: int, resumen: String) -> void:
-	PostGame.modal(self, w, resumen)
-
-func _postgame_analysis() -> String:
-	return PostGame.analysis(tm)
 
 ## Captura el tablero a PNG (zona del BoardView).
 func _export_png() -> void:
