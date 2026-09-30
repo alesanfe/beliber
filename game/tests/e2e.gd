@@ -1,6 +1,6 @@
 extends SceneTree
 ## E2E local: instancia la escena completa, arranca una partida
-## hotseat y juega una partida ENTERA haciendo clic con el ratÃ³n
+## hotseat y juega una partida ENTERA haciendo clic con el ratón
 ## (drag & drop real: press en origen, release en destino).
 ## Verifica HUD, lista de jugadas, bandejas y fin de partida.
 
@@ -13,7 +13,7 @@ func ok(cond: bool, name: String) -> void:
 	print(("  PASS " if cond else "  FAIL ") + name)
 	if not cond: fails += 1
 
-## Simula un clic-drag de una casilla lÃ³gica a otra a travÃ©s del
+## Simula un clic-drag de una casilla lógica a otra a través del
 ## controlador real de entrada del tablero.
 func _drag(board: Control, frm: Vector2i, to: Vector2i) -> void:
 	for cell in [frm, to]:
@@ -31,7 +31,7 @@ func _initialize() -> void:
 	app = scene.instantiate()
 	self.root.add_child(app)
 	await process_frame
-	ok(app.menu_root != null, "menÃº construido")
+	ok(app.menu_root != null, "menú construido")
 
 	# hotseat Humenex vs Elfos (asimetría real), sin IA ni reloj
 	app.opt_p0.select(0)
@@ -73,12 +73,12 @@ func _initialize() -> void:
 	ok(tm.log.size() == app._move_marks.size(),
 		"clasificaciones calculadas para cada jugada")
 	if not tm.over:
-		# algunos enfrentamientos no convergen â€” la rendiciÃ³n tambiÃ©n
-		# es un final vÃ¡lido de partida
+		# algunos enfrentamientos no convergen — la rendición también
+		# es un final válido de partida
 		tm.resign(tm.current)
 		await process_frame
-	ok(tm.over, "la partida terminÃ³")
-	ok(tm.winner in [-1, 0, 1], "resultado vÃ¡lido (%d)" % tm.winner)
+	ok(tm.over, "la partida terminó")
+	ok(tm.winner in [-1, 0, 1], "resultado válido (%d)" % tm.winner)
 	print("  plies=%d winner=%d caps=%d" % [
 		tm.log.size(), tm.winner, caps])
 	print("== %s ==" % ("OK" if fails == 0 else "%d FALLOS" % fails))
