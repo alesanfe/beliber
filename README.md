@@ -9,14 +9,22 @@ reprogramables, IA con niveles y estilos, y juego en red con ladder ELO.
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 ![Godot 4.7](https://img.shields.io/badge/Godot-4.7-478cbf)
 ![Version](https://img.shields.io/badge/version-0.1.1-green)
+[![CI](https://github.com/alesanfe/beliber/actions/workflows/ci.yml/badge.svg)](https://github.com/alesanfe/beliber/actions/workflows/ci.yml)
+
+![Tablero de Beliber en partida: Humenex (azul) vs Elfos (verde), con HUD de capturas, movimientos y evaluación](docs/assets/game.png)
+
+<details>
+<summary>Menú principal (modos, editores y estadísticas)</summary>
 
 ![Menú principal de Beliber](docs/assets/menu.png)
+</details>
 
 [Reglas](COMO_FUNCIONA.md) ·
 [Arquitectura](docs/ARCHITECTURE.md) ·
 [Contribuir](CONTRIBUTING.md) ·
 [Seguridad](SECURITY.md) ·
-[Changelog](CHANGELOG.md)
+[Changelog](CHANGELOG.md) ·
+[Soporte](SUPPORT.md)
 
 ## Contenido
 
