@@ -45,7 +45,7 @@ except ImportError:
     print("Falta 'websockets':  pip install websockets")
     sys.exit(1)
 
-HOST = sys.argv[1] if len(sys.argv) > 1 else "0.0.0.0"
+HOST = sys.argv[1] if len(sys.argv) > 1 else "0.0.0.0"  # nosec B104 — relay público a propósito; override por argv
 PORT = int(sys.argv[2]) if len(sys.argv) > 2 else 7778
 ROOM_TTL = 3600 * 4          # una sala vive 4 h tras quedar vacía
 MOVE_LIMIT = 5000            # protección básica

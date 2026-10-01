@@ -18,7 +18,7 @@ extends RefCounted
 ##                   double_step,second,fx,cond,piece_letter,captured_def}
 
 ## Atoms derivados de las celdas de una pieza (cache por pieza instancia).
-static func cells_of(state: BoardState, piece: Dictionary) -> Dictionary:
+static func cells_of(_state: BoardState, piece: Dictionary) -> Dictionary:
 	return piece.cells_override if piece.cells_override.size() > 0 \
 		else piece.def.cells
 
@@ -82,7 +82,7 @@ static func _offsets(local: Vector2i, sym: String, owner: int) -> Array:
 	return res
 
 static func _gen_one(state: BoardState, piece: Dictionary, pos: Vector2i,
-		off: Vector2i, fx: int, cond: int, code: String,
+		off: Vector2i, fx: int, cond: int, _code: String,
 		out: Array, attack_only: bool) -> void:
 	# offset (0,0) = "mover a la propia casilla": sin sentido para
 	# mover/capturar, y con EMPUJAR generaba un empuje degenerado de la
@@ -167,7 +167,7 @@ static func _try_push(state: BoardState, pos: Vector2i, target: Vector2i,
 	m["push"] = {"from": target, "to": landing}
 	out.append(m)
 
-static func _try_attract(state: BoardState, pos: Vector2i, mv: Dictionary,
+static func _try_attract(_state: BoardState, pos: Vector2i, mv: Dictionary,
 		out: Array) -> void:
 	var m := mv.duplicate(true)
 	m["attract"] = {"from": mv.to, "to": pos}

@@ -74,6 +74,16 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
   `docs/operations/RUNBOOK.md`, `server/.env.example`.
 - `config/version` en `project.godot`; `.gitattributes` (EOL=LF) y
   `.editorconfig` (tabs GDScript / espacios resto).
+- Lint en CI: job `lint` con `py_compile`, bandit (seguridad) y
+  `gdlint` (política propia en `gdlintrc`, 0 hallazgos); también
+  integrado en `tools/test_all` cuando está disponible.
+- `dependabot.yml` (pip + github-actions, semanal) y
+  `scorecard.yml` (OpenSSF, activo al publicar el repo).
+- Log de seguridad en el host (`sec:<evento>`: flood cerrado,
+  paquete oversize, cap de salas, id_err) — grep-able, sin datos
+  sensibles.
+- `docs/DATA_MODEL.md`, `docs/PRIVACY.md`, `docs/operations/SLO.md`
+  (SLI/SLO, RPO/RTO, alertas, capacidad verificada).
 
 ### Documentación
 

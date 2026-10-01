@@ -77,11 +77,11 @@ async def main():
     c2 = await websockets.connect(URL)
     await recv(c2)  # hello
     await c2.send(json.dumps({"op": "rejoin", "code": code,
-                              "side": 1, "token": "wrong"}))
+                              "side": 1, "token": "wrong"}))  # nosec B105
     m = await recv(c2)
     ok(m["op"] == "err", "rejoin con token incorrecto rechazado")
     await c2.send(json.dumps({"op": "rejoin", "code": code,
-                              "side": 1, "token": ""}))
+                              "side": 1, "token": ""}))  # nosec B105
     m = await recv(c2)
     ok(m["op"] == "err", "rejoin con token vacío rechazado")
     await c2.send(json.dumps({"op": "rejoin", "code": code,

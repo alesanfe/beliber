@@ -66,14 +66,14 @@ async def main():
     # token incorrecto -> error
     bad = await websockets.connect(URL)
     await bad.send(json.dumps({"op": "rejoin", "code": code,
-                               "side": 1, "token": "wrong"}))
+                               "side": 1, "token": "wrong"}))  # nosec B105 — token de test
     m = await recv(bad)
     ok(m["op"] == "err", "token inválido rechazado")
 
     # token VACÍO en sala con hueco: secuestraba el lado libre sin
     # haber hecho join (tokens[1]=="" pasaba la comparación)
     await bad.send(json.dumps({"op": "rejoin", "code": code,
-                               "side": 0, "token": ""}))
+                               "side": 0, "token": ""}))  # nosec B105 — token de test
     m = await recv(bad)
     ok(m["op"] == "err", "token vacío rechazado")
 

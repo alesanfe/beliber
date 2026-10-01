@@ -1,0 +1,17 @@
+# gdlint — política del proyecto (CI y tools/test_all la aplican)
+max-line-length: 140
+max-file-lines: 1500
+max-public-methods: 80
+function-arguments-number: 10
+
+# Reglas desactivadas: convención intencional del repo —
+# constantes/vars agrupadas por tema (no por tipo de statement),
+# early-returns defensivos en validación, nombres cortos de dominio
+# (mv, tm, s) coherentes con la notación del propio juego.
+disable:
+  - class-definitions-order
+  - duplicated-load
+  - max-returns
+  - function-variable-name
+  - class-variable-name
+  - no-else-return

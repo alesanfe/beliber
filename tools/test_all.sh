@@ -8,6 +8,11 @@ export BELIBER_RATINGS="${TMPDIR:-/tmp}/beliber_test_ratings.json"
 export BELIBER_TOKENS="${TMPDIR:-/tmp}/beliber_test_idtokens.json"
 fail=0
 
+if command -v gdlint >/dev/null 2>&1; then
+    echo "=== gdlint ==="
+    gdlint game/src game/server game/tests || fail=$((fail+1))
+fi
+
 for s in run_tests playthrough _smoke e2e; do
     echo "=== game/tests/$s.gd ==="
     "$GODOT" --headless --path game -s "res://tests/$s.gd" || fail=$((fail+1))

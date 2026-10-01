@@ -18,8 +18,8 @@ static func classify_move(tm: TurnManager, i: int) -> String:
 	var e1 := BeliberBot.evaluate(st, mover)
 	var d := e1 - e0
 	if d >= 4: return " !"
-	elif d <= -7: return " ??"
-	elif d <= -3: return " ?"
+	if d <= -7: return " ??"
+	if d <= -3: return " ?"
 	return ""
 
 ## Nombre de apertura tipo lichess: la primera jugada de cada bando

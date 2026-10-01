@@ -1,0 +1,27 @@
+# Actualización automática de dependencias (checklist: "herramienta
+# de actualización automatizada"). Cadencia semanal; las updates de
+# seguridad llegan igualmente al instante.
+#
+# - Python: solo server/requirements.txt (websockets) — pineado, los
+#   bumps son revisables y pip-audit en CI sigue bloqueando.
+# - GitHub Actions: mantiene actions/checkout, setup-python, etc.
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/server"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels: ["dependencies", "python"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 3
+    labels: ["dependencies", "ci"]
+    groups:
+      github-actions:
+        patterns: ["*"]

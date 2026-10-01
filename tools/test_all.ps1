@@ -7,6 +7,12 @@ $env:BELIBER_RATINGS = "$env:TEMP\beliber_test_ratings.json"
 $env:BELIBER_TOKENS  = "$env:TEMP\beliber_test_idtokens.json"
 $fail = 0
 
+if (Get-Command gdlint -ErrorAction SilentlyContinue) {
+    Write-Output "=== gdlint ==="
+    gdlint game/src game/server game/tests
+    if ($LASTEXITCODE -ne 0) { $fail++ }
+}
+
 foreach ($s in @("run_tests", "playthrough", "_smoke", "e2e")) {
     Write-Output "=== game/tests/$s.gd ==="
     & $godot --headless --path game -s "res://tests/$s.gd"
