@@ -33,6 +33,7 @@ var castle_chk: CheckBox
 var status_lbl: Label
 var canvas: EditorCanvas
 var dep_canvas: DeployCanvas
+var canvas_lbl: Label          # título "PIEZA (literal)" / "2º TRAMO"
 var move_box: Control          # UI de edición de movimiento
 var dep_sec: VBoxContainer     # sección de despliegue (modo Posición)
 var dep_pal: GridContainer     # paleta de letras para despliegue
@@ -80,7 +81,9 @@ class EditorCanvas extends Control:
 			if ed.editing_leg2 else "PIEZA (%s)" % (
 				"literal" if ed.piece_def.get("sym") == "lit"
 				else "simétrico")
-		_text(font, lbl, Rect2(0, -24, 400, 22), Color(0.4, 0.4, 0.4))
+		# Label real en move_box — antes se dibujaba a y=-24 (fuera del
+		# control) y quedaba cortado por el borde superior
+		ed.canvas_lbl.text = lbl
 
 	func _text(font: Font, t: String, r: Rect2, col: Color, big := false) -> void:
 		var fs := int(EDIT_CELL * (0.6 if big else 0.4))
@@ -187,7 +190,12 @@ func _ready() -> void:
 			"E","d","k","q","Q"]:
 		var b := Button.new()
 		b.text = "%s  %s" % [code, PiecesData.CODE_NAMES[code]]
-		b.custom_minimum_size = Vector2(0, 26)
+		# clip + min-width: el texto largo ("w Mover/Capturar
+		# atravesando") desbordaba la columna; sin min-width el
+		# GridContainer colapsa el botón a 0px de ancho
+		b.clip_text = true
+		b.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		b.custom_minimum_size = Vector2(132, 26)
 		var sb := StyleBoxFlat.new()
 		sb.bg_color = PiecesData.code_color(code)
 		b.add_theme_stylebox_override("normal", sb)
@@ -216,6 +224,11 @@ func _ready() -> void:
 	center.add_child(cv)
 	move_box = VBoxContainer.new()
 	cv.add_child(move_box)
+	canvas_lbl = Label.new()
+	canvas_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	canvas_lbl.add_theme_color_override("font_color",
+		Color(0.4, 0.4, 0.4))
+	move_box.add_child(canvas_lbl)
 	canvas = EditorCanvas.new(self)
 	move_box.add_child(canvas)
 	dep_canvas = DeployCanvas.new(self)

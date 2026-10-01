@@ -159,6 +159,10 @@ func _reload() -> void:
 		var p: Dictionary = faction.pieces[letter]
 		var b := Button.new()
 		b.text = "%s %s (%d)" % [letter, p.name, p.get("value", 0)]
+		# nombres de piezas custom pueden desbordar la columna de 280px
+		b.clip_text = true
+		b.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		b.custom_minimum_size.x = 132
 		b.pressed.connect(func(): paint = letter)
 		pal.add_child(b)
 	# presupuesto por defecto = valor del ejército oficial
