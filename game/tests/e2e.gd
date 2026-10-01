@@ -27,6 +27,12 @@ func _drag(board: Control, frm: Vector2i, to: Vector2i) -> void:
 
 func _initialize() -> void:
 	print("== E2E: partida completa por clicks ==")
+	# la escena real registra la partida en stats y lee beliber.cfg —
+	# aislar del perfil real del jugador (stats + config + save)
+	StatsStore.disabled = true
+	OS.set_environment("BELIBER_CFG", "user://test_beliber.cfg")
+	OS.set_environment("BELIBER_SAVE", "user://test_beliber_save.json")
+	OS.set_environment("BELIBER_EXPORT", "user://test_beliber_match.txt")
 	var scene: PackedScene = load("res://scenes/main.tscn")
 	app = scene.instantiate()
 	self.root.add_child(app)

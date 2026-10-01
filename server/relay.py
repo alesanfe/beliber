@@ -34,7 +34,6 @@ reconecta recibe la partida completa y la reconstruye localmente.
 
 import asyncio
 import json
-import random
 import secrets
 import string
 import sys
@@ -60,6 +59,7 @@ class Room:
         self.sides = [None, None]       # websockets por lado
         self.tokens = ["", ""]          # tokens de reconexión
         self.empty_since = time.time()
+        self.over = False               # resign/tablas archivados
 
     def ws_of(self, side: int):
         return self.sides[side]
@@ -73,9 +73,11 @@ queue: list = []            # [(ws, prefs)] esperando emparejamiento
 
 
 def new_code() -> str:
+    # secrets también en el código: es la única credencial para
+    # entrar a una sala y con random era predecible
     while True:
-        c = "".join(random.choices(string.ascii_uppercase + string.digits,
-                                   k=4))
+        c = "".join(secrets.choice(
+            string.ascii_uppercase + string.digits) for _ in range(4))
         if c not in rooms:
             return c
 
@@ -110,17 +112,34 @@ async def join(ws, msg):
     code = str(msg.get("code", "")).upper()
     r = rooms.get(code)
     if r is None:
-        return await send(ws, {"op": "err", "msg": "Sala inexistente"})
+        # 'return await send(...)' devolvía None → el desempaquetado
+        # "code, room = await join()" lanzaba TypeError y mataba el socket
+        await send(ws, {"op": "err", "msg": "Sala inexistente"})
+        return None, None
     if r.sides[1] is not None:
         await send(ws, {"op": "err", "msg": "Sala llena"})
         return None, None
+    if r.sides[0] is None:
+        # sala con el host caído: notificar a None.send() mataba el
+        # handler del recién llegado (AttributeError sin capturar)
+        await send(ws, {"op": "err", "msg": "Sala cerrada"})
+        return None, None
+    # los overrides de piezas del invitado viajan en el join — unión
+    # por facción con los del creador (misma fusión que el árbitro)
+    jo = msg.get("ovr")
+    if isinstance(jo, dict):
+        ovr = r.cfg.setdefault("ovr", {})
+        for fid in jo:
+            ovr[fid] = jo[fid]
     r.sides[1] = ws
     r.tokens[1] = new_token()
     await send(ws, {"op": "room", "code": code, "side": 1,
                     "token": r.tokens[1], "cfg": r.cfg})
     await send(r.sides[0], {"op": "peer", "side": 1})
-    await send(ws, {"op": "start"})
-    await send(r.sides[0], {"op": "start"})
+    # el 'start' lleva la cfg FINAL (ovr del invitado ya fusionado):
+    # el lado 0 la recibe aquí por primera vez y la aplica al arrancar
+    await send(ws, {"op": "start", "cfg": r.cfg})
+    await send(r.sides[0], {"op": "start", "cfg": r.cfg})
     # si el host ya jugó, resincronizar al que entra tarde
     if r.moves:
         await send(ws, {"op": "resync", "moves": r.moves, "side": 1})
@@ -129,12 +148,23 @@ async def join(ws, msg):
 
 async def rejoin(ws, msg):
     code = str(msg.get("code", "")).upper()
-    side = int(msg.get("side", -1))
+    try:
+        side = int(msg.get("side", -1))
+    except (TypeError, ValueError):
+        side = -1
     token = str(msg.get("token", ""))
     r = rooms.get(code)
-    if r is None or side not in (0, 1) or r.tokens[side] != token:
+    # token vacío: sin esto un extraño ocupaba el hueco libre de la
+    # sala (tokens[side]=="" aún no emitido) sin haber hecho join
+    if r is None or side not in (0, 1) or not token \
+            or r.tokens[side] != token:
         await send(ws, {"op": "err", "msg": "Reconexión inválida"})
         return None, None
+    # si el hueco sigue ocupado por otro socket vivo, el viejo pierde
+    # la sesión (antes quedaba escuchando una sala que ya no era suya)
+    old = r.sides[side]
+    if old is not None and old is not ws:
+        await send(old, {"op": "err", "msg": "Sesión reemplazada"})
     r.sides[side] = ws
     await send(ws, {"op": "room", "code": code, "side": side,
                     "token": token, "cfg": r.cfg})
@@ -143,6 +173,16 @@ async def rejoin(ws, msg):
     if r.sides[other] is not None:
         await send(r.sides[other], {"op": "offline", "on": False})
     return code, r
+
+
+def _alive(ws) -> bool:
+    """¿El socket sigue utilizable? Compat: websockets legacy expone
+    .open, la API asyncio nueva .state (OPEN == 1)."""
+    o = getattr(ws, "open", None)
+    if o is not None:
+        return bool(o)
+    s = getattr(ws, "state", None)
+    return s is None or int(s) == 1
 
 
 async def queue_up(ws, msg):
@@ -156,6 +196,14 @@ async def queue_up(ws, msg):
     if len(queue) < 2:
         return None, None
     (a, pa), (b, pb) = queue.pop(0), queue.pop(0)
+    # sockets que murieron encolados (TCP half-open): el vivo se
+    # reencola — sin esto quedaba en sala con side0 muerto hasta TTL
+    if not (_alive(a) and _alive(b)):
+        for w, p in ((a, pa), (b, pb)):
+            if _alive(w):
+                queue.append((w, p))
+                await send(w, {"op": "queued", "n": len(queue)})
+        return None, None
     r = Room(new_code())
     r.cfg = {"f0": pa.get("f", 0), "eq0": pa.get("eq", 0),
              "f1": pb.get("f", 0), "eq1": pb.get("eq", 0),
@@ -166,6 +214,15 @@ async def queue_up(ws, msg):
     # lado desplegaría su propio archivo local → posiciones distintas
     if "rows" in pa: r.cfg["rows0"] = pa["rows"]
     if "rows" in pb: r.cfg["rows1"] = pb["rows"]
+    # overrides de piezas de ambos lados (unión por facción, igual
+    # que el árbitro Godot — sin ellos cada lado generaba legales
+    # con defs distintas)
+    ovr = {}
+    for pr in (pa, pb):
+        o = pr.get("ovr")
+        if isinstance(o, dict):
+            ovr.update(o)
+    if ovr: r.cfg["ovr"] = ovr
     rooms[r.code] = r
     for w, s in ((a, 0), (b, 1)):
         r.sides[s] = w
@@ -185,10 +242,22 @@ async def queue_leave(ws):
 
 
 async def relay_move(ws, msg, r: Room, side: int):
-    if len(r.moves) >= MOVE_LIMIT:
+    if len(r.moves) >= MOVE_LIMIT or r.over:
         return await send(ws, {"op": "err", "msg": "Partida cerrada"})
     mv = msg.get("mv", {})
+    if not isinstance(mv, dict):
+        # un mv arbitrario se archivaba tal cual y corrompía el
+        # resync de ambos clientes (y hasta 320MB de historial)
+        return await send(ws, {"op": "err", "msg": "mv inválido"})
+    # estampar el lado emisor: el cliente declaraba 'side' en resigns
+    # y un side falsificado rendía al rival en los resync
+    if mv.get("resign") or "draw" in mv:
+        mv["side"] = side
     r.moves.append(mv)
+    if mv.get("resign") or mv.get("draw") in ("accept", True):
+        # la partida terminó: jugadas posteriores no se archivan
+        # (un resync las intentaba sobre tm.over → "Resync corrupto")
+        r.over = True
     other = r.other(side)
     if r.sides[other] is not None:
         await send(r.sides[other],
@@ -205,23 +274,49 @@ async def leave(ws, r: Room, side: int):
 async def handle(ws):
     room: Room | None = None
     side = -1
+    # límites de entrada: flood (>30 msg/s) = conexión cerrada;
+    # el tamaño lo corta max_size en websockets.serve
+    win_t, win_n = time.monotonic(), 0
     try:
         async for raw in ws:
+            win_n += 1
+            if time.monotonic() - win_t >= 1.0:
+                win_t, win_n = time.monotonic(), 0
+            elif win_n > 30:
+                await ws.close()
+                break
             try:
                 msg = json.loads(raw)
             except json.JSONDecodeError:
                 continue
+            if not isinstance(msg, dict):
+                continue   # "[1,2]" o "5": .get("op") mataba el handler
             op = msg.get("op")
+            # Un ws ya asignado a una sala no puede abrir otra: dejaba
+            # sides[] huérfanos (sala zombie sin expirar ni avisar).
+            if op in ("create", "join", "rejoin", "queue") \
+                    and room is not None:
+                await send(ws, {"op": "err",
+                                "msg": "Ya estás en una sala"})
+                continue
             if op == "create":
+                queue[:] = [(w, p) for w, p in queue if w is not ws]
                 code, room = await create(ws, msg)
                 side = 0
             elif op == "join":
+                queue[:] = [(w, p) for w, p in queue if w is not ws]
                 code, room = await join(ws, msg)
                 side = 1 if room is not None else -1
             elif op == "rejoin":
+                queue[:] = [(w, p) for w, p in queue if w is not ws]
                 code, room = await rejoin(ws, msg)
-                side = int(msg.get("side", -1)) \
-                    if room is not None else -1
+                # int() sobre string no numérico lanzaba ValueError
+                # y cerraba la conexión silenciosamente
+                try:
+                    side = int(msg.get("side", -1)) \
+                        if room is not None else -1
+                except (TypeError, ValueError):
+                    side = -1
             elif op == "queue":
                 code, room = await queue_up(ws, msg)
                 side = 0 if room is not None and room.sides[0] is ws \
@@ -238,16 +333,21 @@ async def handle(ws):
             elif op == "chat":
                 other = room.other(side)
                 if room.sides[other] is not None:
+                    # msg.get: un chat sin "text" mataba el handler
+                    # entero (KeyError → cierre silencioso)
                     await send(room.sides[other],
                                {"op": "chat",
-                                "text": str(msg["text"])[:200]})
+                                "text": str(msg.get("text", ""))[:200]})
     except websockets.ConnectionClosed:
         pass
     finally:
         queue[:] = [(w, p) for w, p in queue if w is not ws]
         # marcar al rival como offline; la sala sigue viva para rejoin
         if room is not None and side in (0, 1) \
-                and room.code in rooms:
+                and room.code in rooms \
+                and room.sides[side] is ws:
+            # 'is ws': tras un rejoin el socket viejo cerraba y liberaba
+            # el asiento del nuevo → un join externo lo ocupaba sin token
             room.sides[side] = None
             other = room.other(side)
             if room.sides[other] is not None:
@@ -268,7 +368,8 @@ async def janitor():
 
 
 async def main():
-    async with websockets.serve(handle, HOST, PORT):
+    async with websockets.serve(handle, HOST, PORT,
+                                max_size=64 * 1024):
         asyncio.create_task(janitor())
         print(f"Beliber relay en ws://{HOST}:{PORT}")
         await asyncio.Future()

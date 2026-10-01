@@ -2,6 +2,8 @@ extends SceneTree
 ## Smoke test: instancia la escena principal y fuerza _build_game con
 ## tutorial activo para cubrir los nuevos paneles (bandejas, checklist).
 func _initialize() -> void:
+	StatsStore.disabled = true   # no contaminar el perfil real
+	OS.set_environment("BELIBER_CFG", "user://test_beliber.cfg")
 	var scene: PackedScene = load("res://scenes/main.tscn")
 	var root := scene.instantiate()
 	self.root.add_child(root)

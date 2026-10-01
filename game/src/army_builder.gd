@@ -295,17 +295,18 @@ func _save() -> void:
 		return
 	var data := _load_all()
 	data[faction.id] = {"rows": _to_rows(), "budget": int(budget_spin.value)}
-	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	f.store_string(JSON.stringify(data, "\t"))
-	f.close()
+	StatsStore.atomic_write(SAVE_PATH, JSON.stringify(data, "\t"))
 	cost_lbl.text = "Guardado. Disponible como 'Personalizado' al elegir equipo."
 
 func _load() -> void:
 	var data := _load_all()
-	if not data.has(faction.id): return
+	# JSON semi-válido: {"humenex": 3} o sin 'rows' crasheaba al abrir
+	if not (data.get(faction.id) is Dictionary): return
+	if not (data[faction.id].get("rows") is Array): return
 	grid.clear()
 	var rows: Array = data[faction.id].rows
 	for y in mini(rows.size(), ROWS):
+		if not (rows[y] is String): continue
 		for x in mini(rows[y].length(), 8):
 			var ch: String = rows[y].substr(x, 1)
 			if ch != "." and ch != " ":
@@ -319,19 +320,28 @@ static func _load_all() -> Dictionary:
 	f.close()
 	return parsed if parsed is Dictionary else {}
 
+## Inserta las filas como un setup cualquiera (idx). Escribir en el
+## índice del equipo elegido es lo que permite que los despliegues
+## editados (Eq1/Eq2) también viajen por la red, no solo el custom.
+static func inject_at(fac: Dictionary, rows: Array, idx: int) -> void:
+	while fac.setups.size() <= idx: fac.setups.append([])
+	fac.setups[idx] = rows
+
 ## Inserta (o sustituye) las filas custom como setups[2] (Eq3).
 ## Compartido por la carga local, el host autoritativo y el cliente WS.
 static func inject(fac: Dictionary, rows: Array) -> void:
-	if fac.setups.size() > 2:
-		fac.setups[2] = rows
-	else:
-		fac.setups.append(rows)
+	inject_at(fac, rows, 2)
 
 ## Aplica ejércitos personalizados: se insertan como setups[2] (Eq3).
 static func apply(facs: Array) -> void:
 	var data := _load_all()
 	for fac in facs:
-		if data.has(fac.id):
-			var rows: Array = []
-			for r in data[fac.id].rows: rows.append(r)
+		# mismo patrón: raíz validada, interior no — un JSON
+		# {"humenex": 3} rompía el arranque (llamada en _ready)
+		if not (data.get(fac.id) is Dictionary): continue
+		if not (data[fac.id].get("rows") is Array): continue
+		var rows: Array = []
+		for r in data[fac.id].rows:
+			if r is String: rows.append(r)
+		if not rows.is_empty():
 			inject(fac, rows)

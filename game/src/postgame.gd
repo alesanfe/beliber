@@ -99,6 +99,9 @@ static func modal(app, w: int, resumen: String) -> void:
 	var b_re := Button.new()
 	b_re.text = "Revancha"
 	b_re.pressed.connect(app._rematch)
+	# online no hay rematch real: _rematch reiniciaba en hotseat y
+	# cortaba la conexión dejando al rival "offline" eterno
+	b_re.visible = not app.online
 	row.add_child(b_re)
 	var b_close := Button.new()
 	b_close.text = "Ver tablero"
@@ -106,6 +109,14 @@ static func modal(app, w: int, resumen: String) -> void:
 		Juice.fade_out(overlay, 0.2))
 	row.add_child(b_close)
 	Juice.pop_in(panel)
+	if w >= 0:
+		# celebración: confeti del color ganador sobre el dim del
+		# overlay; las partículas son hijas suyas y mueren con él
+		var parts := Control.new()
+		parts.set_anchors_preset(Control.PRESET_FULL_RECT)
+		parts.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		overlay.add_child(parts)
+		Juice.confetti(parts, app.tm.state.factions[w].color)
 
 ## Análisis post-partida: evalúa cada posición del replay y reporta
 ## los errores más grandes de cada jugador, precisión y momento

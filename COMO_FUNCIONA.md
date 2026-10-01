@@ -66,6 +66,22 @@ Cada color es un *efecto de movimiento*:
 
 - **Inmovilizada**: la pieza no puede realizar ningún movimiento durante el
   próximo turno de su dueño (la sufren piezas enemigas atravesadas o atraídas).
+  Como no puede capturar durante ese turno, tampoco "amenaza" casillas para
+  el enroque ni para el indicador de piezas atacadas.
+
+### Interpretaciones confirmadas sobre la leyenda
+
+- **Salto de Aquonte**: la regla dice "si hay una casilla **ocupada**" sin
+  distinguir bando → una pieza **enemiga también sirve de pivote**.
+- **Empujar/Atraer no cuentan como "realizar un movimiento"**: la pieza
+  desplazada conserva su estado de no-movida (sigue pudiendo desplegar o
+  enrocar). La condición 'd'/'k' habla de que la pieza *realizara* un
+  movimiento, no de que hubiera sido movida por otro.
+- **Enroque de un paso**: imposible por construcción — el destino del rey
+  sería la casilla inicial de la torre (ocupada), y la regla exige que las
+  casillas iniciales/finales y las intermedias estén libres.
+- **Anti-stall** (opción de la app, no del manual): el límite cuenta
+  **turnos** sin captura; la doble apertura de Humenex consume 1, no 2.
 
 ---
 

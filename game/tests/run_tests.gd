@@ -23,6 +23,18 @@ func _init() -> void:
 	_test_piece_patterns()
 	_test_puzzle_gen()
 	_test_belfen()
+	_test_belfen_bad()
+	_test_load_fields()
+	_test_undo_after_over()
+	_test_castle_partner()
+	_test_chain_apply()
+	_test_castle_adjacent()
+	_test_save_roundtrip()
+	_test_undo_clock()
+	_test_leg2_caps()
+	_test_match_legal()
+	_test_zero_and_leg2_deploy()
+	_test_load_regression()
 	print("== %s ==" % ("OK" if failures == 0 else "%d FALLOS" % failures))
 	quit(0 if failures == 0 else 1)
 
@@ -429,3 +441,338 @@ func _test_belfen() -> void:
 	_ok(t2.state.leaders_alive(0) > 0 and t2.state.leaders_alive(1) > 0,
 		"BEL-FEN: lideres presentes tras importar")
 	_ok(t2.current == 1, "BEL-FEN: turno restaurado")
+
+## Entradas corruptas deben devolver {"err":…}, nunca indexar fuera
+## de rango ni colar piezas fuera del tablero.
+func _test_belfen_bad() -> void:
+	_ok(BoardState.from_bel("basura").has("err"), "BEL malo: prefijo")
+	_ok(BoardState.from_bel("BEL1 0 8/8/8/8/8/8/8/8 0").has("err"),
+		"BEL malo: facción sin punto")
+	_ok(BoardState.from_bel("BEL1 a.b 0.0 8/8/8/8/8/8/8/8 0").has("err"),
+		"BEL malo: facción no numérica")
+	_ok(BoardState.from_bel("BEL1 0.0 0.0 8/8/8 0").has("err"),
+		"BEL malo: pocas filas")
+	_ok(BoardState.from_bel("BEL1 0.0 0.0 9/8/8/8/8/8/8/8 0").has("err"),
+		"BEL malo: fila desbordada")
+	_ok(BoardState.from_bel("BEL1 0.0 0.0 8/8/8/8/8/8/8/8 9").has("err"),
+		"BEL malo: turno inválido")
+
+## save/load conserva clock_inc y pos_counts (antes se perdían).
+func _test_load_fields() -> void:
+	var tm := _tm()
+	var bot := BeliberBot.new(1)
+	for i in 4:
+		var mv := bot.best_move(tm, tm.current)
+		if mv.is_empty(): break
+		tm.play(mv)
+	tm.clock_inc = 2.5
+	var data := tm.save_game()
+	var back := TurnManager.load_game(data,
+		[tm.state.factions[0], tm.state.factions[1]])
+	_ok(back != null, "load: reconstruye")
+	_ok(is_equal_approx(back.clock_inc, 2.5),
+		"load: clock_inc conservado")
+	# pos_counts: todas las claves guardadas sobreviven al round-trip
+	# (la recarga recuenta la posición actual, que puede ser una clave
+	# nueva si el turno decayó inmovilizaciones tras la última jugada)
+	var shared := 0
+	for k in tm.pos_counts:
+		if back.pos_counts.has(k): shared += 1
+	_ok(shared == tm.pos_counts.size(),
+		"load: pos_counts conservados")
+
+## Undo tras el fin no resucita la partida.
+func _test_undo_after_over() -> void:
+	var tm := _tm()
+	tm.resign(0)
+	_ok(not tm.undo(), "undo tras rendición: bloqueado")
+	var tm2 := _tm()
+	tm2.agree_draw()
+	_ok(not tm2.undo(), "undo tras tablas: bloqueado")
+
+## castle_partner (flag en el def) sustituye la lista hardcodeada.
+func _test_castle_partner() -> void:
+	var hum: Dictionary = _tm().state.factions[0].pieces
+	_ok(hum["T"].get("castle_partner", false),
+		"torre: castle_partner flag")
+	var st := _empty_state()
+	var ypos := Vector2i(3, 6)
+	st.set_at(ypos, st.new_piece(hum["Y"], 0))
+	# una pieza normal en la fila NO habilita el enroque
+	st.set_at(Vector2i(7, 6), st.new_piece(hum["P"], 0))
+	var k := 0
+	for mv in MoveGen.moves_for(st, ypos):
+		if mv.get("castle") != null: k += 1
+	_ok(k == 0, "sin castle_partner no hay enroque")
+	# def custom con el flag sí enroca
+	var custom := {"letter": "R", "name": "Torre2", "value": 5,
+		"cells": {}, "castle_partner": true}
+	st.set_at(Vector2i(0, 6), st.new_piece(custom, 0))
+	k = 0
+	for mv in MoveGen.moves_for(st, ypos):
+		if mv.get("castle") != null: k += 1
+	_ok(k > 0, "castle_partner custom permite enrocar")
+
+## La cadena del Tritón se aplica de verdad: el segundo tramo ejecuta
+## su propio movimiento tras el primero.
+func _test_chain_apply() -> void:
+	var st := _empty_state("aquontes", "humenex")
+	# ojo: el orden en st.factions es el de PiecesData.all(), no el
+	# de los argumentos — buscar por id
+	var aqu: Dictionary = {}
+	var hum: Dictionary = {}
+	for f in st.factions:
+		if f.id == "aquontes": aqu = f.pieces
+		if f.id == "humenex": hum = f.pieces
+	# Tritón en (4,4): 1er tramo (1,-1) lit → (5,3); 2º tramo Aquonte
+	# (-2,-2): pivote enemigo en (4,2) → aterriza en (3,1)
+	st.set_at(Vector2i(4, 4), st.new_piece(aqu["T"], 0))
+	st.set_at(Vector2i(4, 2), st.new_piece(hum["P"], 1))
+	var chained: Dictionary = {}
+	for mv in MoveGen.moves_for(st, Vector2i(4, 4)):
+		if mv.get("second") != null:
+			chained = mv
+	_ok(not chained.is_empty(), "cadena: variante con 2º tramo generada")
+	if not chained.is_empty():
+		st.apply(chained)
+		_ok(st.at(chained.second.to) != null,
+			"cadena: pieza aterriza en el 2º destino")
+		_ok(st.at(chained.to) == null or \
+			st.at(chained.to).def.letter != "T" \
+			or chained.second.to == chained.to,
+			"cadena: el 1er tramo no deja la pieza atrás")
+
+## Enroque con torre adyacente: la celda 'k/K' caía sobre la propia
+## torre — el intercambio la borraba (bug del despliegue Humenex).
+func _test_castle_adjacent() -> void:
+	var st := _empty_state()
+	var hum: Dictionary = _tm().state.factions[0].pieces
+	st.set_at(Vector2i(1, 6), st.new_piece(hum["Y"], 0))
+	st.set_at(Vector2i(2, 6), st.new_piece(hum["T"], 0))
+	var bad := false
+	for mv in MoveGen.moves_for(st, Vector2i(1, 6)):
+		if mv.get("castle") != null and st.at(mv.to) != null:
+			bad = true
+	_ok(not bad, "enroque: ningún destino sobre pieza")
+	# el enroque válido (torre lejana) se sigue generando
+	var found := false
+	for mv in MoveGen.moves_for(st, Vector2i(1, 6)):
+		if mv.get("castle") != null: found = true
+	_ok(found, "enroque válido se sigue generando")
+	# y aplicado no borra piezas (apply real, no _sim que omite castle)
+	for mv in MoveGen.moves_for(st, Vector2i(1, 6)):
+		if mv.get("castle") == null: continue
+		var st2 := BoardState.new()
+		st2.factions = st.factions
+		st2.restore(st.snapshot())
+		st2.apply(mv)
+		var n := 0
+		for p in st2.grid: if p != null: n += 1
+		_ok(n == 2, "enroque aplicado conserva las 2 piezas")
+
+## Round-trip save→JSON→load: first_turn_done con claves int y
+## last_move apuntando a la pieza en tablero (al paso persistido).
+func _test_save_roundtrip() -> void:
+	var tm := _tm()
+	var bot := BeliberBot.new(1)
+	for i in 4:
+		var mv := bot.best_move(tm, tm.current)
+		if mv.is_empty(): break
+		tm.play(mv)
+	# JSON real: las claves int se serializan como "0"/"1"
+	var data: Dictionary = JSON.parse_string(
+		JSON.stringify(tm.save_game()))
+	var back := TurnManager.load_game(data,
+		[tm.state.factions[0], tm.state.factions[1]])
+	_ok(back != null, "round-trip: reconstruye")
+	_ok(back.first_turn_done[0] == tm.first_turn_done[0] \
+		and back.first_turn_done[1] == tm.first_turn_done[1],
+		"round-trip: doble apertura conservada (claves int)")
+	if not tm.state.last_move.is_empty():
+		_ok(back.state.last_move.get("piece") == \
+			back.state.at(back.state.last_move.to),
+			"round-trip: last_move apunta a la pieza en tablero")
+	else:
+		_ok(true, "round-trip: last_move (vacío)")
+
+## Undo también revierte el incremento Fischer (antes regalaba
+## clock_inc segundos por cada jugar+deshacer).
+func _test_undo_clock() -> void:
+	var tm := _tm()
+	tm.clock = [60, 60]
+	tm.clock_inc = 5.0
+	var bot := BeliberBot.new(1)
+	var mv := bot.best_move(tm, tm.current)
+	_ok(tm.play(mv), "clock: jugada")
+	_ok(tm.undo(), "clock: undo")
+	_ok(tm.clock[0] == 60 and tm.clock[1] == 60,
+		"undo revierte incremento Fischer")
+
+## Capturas del 2º tramo (cadena): contabilizan bandeja, anti-stall
+## y undo igual que las del 1er tramo.
+func _test_leg2_caps() -> void:
+	var facs := _tm().state.factions
+	var pos := [
+		{"x": 4, "y": 7, "l": "Y", "o": 0},
+		{"x": 4, "y": 3, "l": "P", "o": 0},
+		{"x": 6, "y": 4, "l": "P", "o": 1},
+		{"x": 0, "y": 4, "l": "Y", "o": 1},
+	]
+	var t := TurnManager.new(facs[0], 0, facs[1], 0,
+		{"pos": pos, "first": 0})
+	t.stall_count = 4   # contador en curso: la captura debe resetearlo
+	var mv := {"from": Vector2i(4, 3), "to": Vector2i(4, 4),
+		"captures": [], "piece_letter": "P",
+		"second": {"from": Vector2i(4, 4), "to": Vector2i(5, 4),
+			"captures": [Vector2i(6, 4)]}}
+	_ok(t.play(mv), "leg2: jugada con captura en 2º tramo")
+	_ok(t.captured_by[0].size() == 1, "leg2: captura en bandeja")
+	_ok(t.stall_count == 0, "leg2: captura resetea anti-stall")
+	_ok(t.undo(), "leg2: undo")
+	_ok(t.state.at(Vector2i(6, 4)) != null,
+		"leg2: undo restaura la capturada")
+	_ok(t.captured_by[0].is_empty(), "leg2: undo vacía bandeja")
+
+## match_legal: en transportes sin árbitro (ENet/relay) el dict remoto
+## no se aplica jamás — solo se casa from/to contra las legales.
+func _test_match_legal() -> void:
+	var tm := _tm()
+	# payload falsificado: una jugada legal real (sin 2º tramo) pero
+	# con captures inventadas — el dict remoto jamás se aplica
+	var real: Variant = null
+	for m in tm.all_moves(tm.current):
+		if not m.has("second"): real = m; break
+	_ok(real != null, "match: hay jugada base para la prueba")
+	if real != null:
+		var fake := {"from": {"x": real.from.x, "y": real.from.y},
+			"to": {"x": real.to.x, "y": real.to.y},
+			"captures": [{"x": 4, "y": 4}], "piece_letter": "P"}
+		var matched: Variant = TurnManager.match_legal(tm, fake)
+		_ok(matched != null and matched.captures == real.captures,
+			"match: variante local sin captures falsificadas")
+	# jugada legal para el rival pero fuera de turno => null
+	var foe: Array = tm.all_moves(1 - tm.current)
+	if not foe.is_empty():
+		var fm: Dictionary = foe[0]
+		_ok(TurnManager.match_legal(tm,
+				{"from": fm.from, "to": fm.to}) == null,
+			"match: jugada del rival rechazada (turno)")
+
+## Celda "0,0" (la propia casilla): sin sentido en el motor — con
+## EMPUJAR generaba un empuje degenerado de la pieza sobre sí misma.
+## Y leg2 con celda condicional 'd' (deploy): tras el 1er tramo la
+## pieza ya se movió → el 2º tramo no puede abrir doble paso.
+func _test_zero_and_leg2_deploy() -> void:
+	var mkfac := func() -> Dictionary:
+		return {"id": "t", "name": "T", "color": Color.WHITE,
+			"rules": {},
+			"pieces": {
+				"Z": {"letter": "Z", "name": "Zed", "value": 1,
+					"cells": {"0,0": "3", "1,0": "o"}, "sym": "lit",
+					"leg2": {"0,-1": "d"}},
+				"L": {"letter": "L", "name": "Lea", "value": 9,
+					"cells": {}, "sym": "lit", "leader": true}},
+			"setups": [[]]}
+	var tm := TurnManager.new(mkfac.call(), 0, mkfac.call(), 0,
+		{"pos": [{"x": 3, "y": 3, "l": "Z", "o": 0},
+			{"x": 0, "y": 0, "l": "L", "o": 0},
+			{"x": 7, "y": 0, "l": "L", "o": 1}]})
+	var pos := Vector2i(3, 3)
+	var to_normal := false
+	for mv in MoveGen.moves_for(tm.state, pos):
+		# '0,0' filtrada: jamás una jugada a la propia casilla ni un
+		# empuje de la propia pieza
+		_ok(mv.to != pos, "0,0: no auto-jugada")
+		if mv.has("push"):
+			_ok(mv.push.from != pos, "0,0: no auto-empuje")
+		if mv.to == Vector2i(4, 3): to_normal = true
+		if mv.has("second"):
+			_ok(not mv.second.get("double_step", false),
+				"leg2 'd': sin doble paso tras mover")
+	_ok(to_normal, "celda normal sigue generando (1,0)")
+	# celdas ilegibles / fuera de rango
+	_ok(TurnManager.match_legal(tm, {"from": 3, "to": "x"}) == null,
+		"match: payload no-dict rechazado")
+	_ok(TurnManager.match_legal(tm, {"from": {"x": -5, "y": 0},
+		"to": {"x": 0, "y": 0}}) == null,
+		"match: origen fuera rechazado")
+
+
+## Regresiones del audit: pos_counts al cargar, last_move en cadenas
+## y al paso sobre casilla ocupada.
+func _test_load_regression() -> void:
+	# E1: cargar un save NO debe recontar la posición actual — el save
+	# ya la incluye (la contó play() al guardar). Antes sumaba +1 y
+	# una posición vista 2 veces saltaba a "triple repetición".
+	var tm := _tm()
+	var bot := BeliberBot.new(1)
+	for i in 4:
+		var mv := bot.best_move(tm, tm.current)
+		if mv.is_empty(): break
+		tm.play(mv)
+	var key: String = tm._pos_key()
+	tm.pos_counts[key] = 2   # posición actual vista dos veces
+	var data: Dictionary = JSON.parse_string(
+		JSON.stringify(tm.save_game()))
+	var back := TurnManager.load_game(data,
+		[tm.state.factions[0], tm.state.factions[1]])
+	_ok(back != null and not back.over,
+		"load: no dispara repetición espuria")
+	_ok(int(back.pos_counts.get(key, 0)) == 2,
+		"load: pos_counts conserva el conteo exacto")
+	# P3: save manipulado con current fuera de rango ? clamp a {0,1}
+	data["current"] = 5
+	var back2 := TurnManager.load_game(data,
+		[tm.state.factions[0], tm.state.factions[1]])
+	_ok(back2 != null and back2.current in [0, 1],
+		"load: current inválido se clampea")
+
+	# E2: una jugada encadenada debe marcar has_moved y apuntar
+	# last_move.piece a la casilla del 2º tramo (antes quedaba null
+	# y el al paso borraba piezas inocentes)
+	var st := _empty_state("aquontes", "humenex")
+	var aqu: Dictionary = {}
+	var hum: Dictionary = {}
+	for f in st.factions:
+		if f.id == "aquontes": aqu = f.pieces
+		if f.id == "humenex": hum = f.pieces
+	st.set_at(Vector2i(4, 4), st.new_piece(aqu["T"], 0))
+	st.set_at(Vector2i(4, 2), st.new_piece(hum["P"], 1))
+	var chained: Dictionary = {}
+	for mv in MoveGen.moves_for(st, Vector2i(4, 4)):
+		if mv.get("second") != null: chained = mv
+	if not chained.is_empty():
+		st.apply(chained)
+		_ok(st.last_move.get("piece") == st.at(chained.second.to),
+			"cadena: last_move apunta al destino del 2º tramo")
+		_ok(st.at(chained.second.to).has_moved,
+			"cadena: has_moved marcado tras el 2º tramo")
+
+	# E3: al paso con la casilla destino ocupada no se genera (antes
+	# borraba al ocupante sin registrar la captura)
+	var mkfac := func() -> Dictionary:
+		return {"id": "t", "name": "T", "color": Color.WHITE,
+			"rules": {},
+			"pieces": {
+				"P": {"letter": "P", "name": "P", "value": 1,
+					"cells": {"0,-1": "o", "0,-2": "d"}, "sym": "lit"},
+				"E": {"letter": "E", "name": "E", "value": 1,
+					"cells": {"1,-1": "E"}, "sym": "lit"},
+				"L": {"letter": "L", "name": "L", "value": 9,
+					"cells": {}, "sym": "lit", "leader": true}},
+			"setups": [[]]}
+	var tm2 := TurnManager.new(mkfac.call(), 0, mkfac.call(), 0,
+		{"pos": [{"x": 3, "y": 3, "l": "E", "o": 0},
+			{"x": 4, "y": 2, "l": "P", "o": 0},
+			{"x": 0, "y": 0, "l": "L", "o": 0},
+			{"x": 7, "y": 0, "l": "L", "o": 1}]})
+	# victim simula el doble paso que acaba de jugar el rival
+	tm2.state.set_at(Vector2i(4, 1),
+		tm2.state.new_piece(mkfac.call().pieces["P"], 1))
+	tm2.state.apply({"from": Vector2i(4, 1), "to": Vector2i(4, 3),
+		"captures": [], "piece_letter": "P", "double_step": true})
+	var ep_found := false
+	for mv in MoveGen.moves_for(tm2.state, Vector2i(3, 3)):
+		if mv.to == Vector2i(4, 2):
+			ep_found = true
+	_ok(not ep_found, "al paso: casilla ocupada no genera captura")

@@ -1,9 +1,12 @@
 .godot/
 .import/
 export.cfg
-export_presets.cfg
 *.translation
 *.tmp
+*.log
+dbg_*.txt
+.export/
+builds/
 user://
 __pycache__/
 *.pyc

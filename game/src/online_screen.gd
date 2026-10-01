@@ -51,14 +51,10 @@ static func build(app) -> void:
 	b_queue.pressed.connect(func():
 		if app.ws != null and app.ws.get_ready_state() \
 				== WebSocketPeer.STATE_OPEN:
-			app._ws_pending = "queue"
 			app._ws_send({"op": "queue",
 				"name": app.ws_name.text.strip_edges(),
-				"prefs": {
-					"f": app.opt_p0.selected,
-					"eq": app.opt_eq0.selected,
-					"clock": app.opt_clock.selected,
-					"mid": app.chk_midline.button_pressed}})
+				"pid": app._pid(),
+				"prefs": NetClient.queue_prefs(app)})
 		else:
 			app.ws = WebSocketPeer.new()
 			if app.ws.connect_to_url(

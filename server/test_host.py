@@ -79,6 +79,10 @@ async def main():
     await c2.send(json.dumps({"op": "rejoin", "code": code,
                               "side": 1, "token": "wrong"}))
     m = await recv(c2)
+    ok(m["op"] == "err", "rejoin con token incorrecto rechazado")
+    await c2.send(json.dumps({"op": "rejoin", "code": code,
+                              "side": 1, "token": ""}))
+    m = await recv(c2)
     ok(m["op"] == "err", "rejoin con token vacío rechazado")
     await c2.send(json.dumps({"op": "rejoin", "code": code,
                               "side": 1, "token": tok1}))
@@ -87,6 +91,42 @@ async def main():
     m = await recv(c2)
     ok(m["op"] == "resync" and len(m["moves"]) == 1,
        "resync devuelve la jugada resuelta")
+
+    # peer en sala no puede encolar (corrompía salas ajenas)
+    await h.send(json.dumps({"op": "queue", "prefs": {"f": 0}}))
+    m = await recv(h)
+    ok(m["op"] == "err", "queue estando en sala rechazado")
+
+    # play malformado: from/to no-dict no debe tumbar el árbitro
+    # (recv_until: h puede tener 'offline' pendiente del rejoin)
+    await h.send(json.dumps({"op": "play", "from": 5, "to": "x"}))
+    m = await recv_until(h, "err")
+    ok(m.get("op") == "err", "play con from/to no-dict rechazado")
+
+    # health check: ping devuelve pong con carga actual (sin sala)
+    await h.send(json.dumps({"op": "ping"}))
+    m = await recv_until(h, "pong")
+    ok(m.get("op") == "pong" and isinstance(m.get("rooms"), int),
+       "ping -> pong con métricas")
+
+    # resign archivado: un rejoin posterior reconstruye fin limpio
+    await c2.send(json.dumps({"op": "play", "resign": True}))
+    m = await recv(c2)
+    m2 = await recv(c2)
+    ops = {m.get("op"), m2.get("op")}
+    ok(ops == {"move", "over"}, "resign archivado + over")
+    c3 = await websockets.connect(URL)
+    await recv(c3)  # hello
+    await c3.send(json.dumps({"op": "rejoin", "code": code,
+                              "side": 1, "token": tok1}))
+    m = await recv(c3)   # room
+    m = await recv(c3)   # resync
+    ok(m["op"] == "resync" and any(
+        isinstance(x, dict) and x.get("resign") for x in m["moves"]),
+       "resync incluye la rendición archivada")
+    m = await recv(c3)   # over (partida ya cerrada)
+    ok(m.get("op") == "over", "over tras rejoin de partida acabada")
+    await c3.close()
 
     # --- matchmaking: dos en cola -> sala auto-creada con cfg fusionada
     q1 = await websockets.connect(URL)
@@ -98,16 +138,28 @@ async def main():
     q2 = await websockets.connect(URL)
     await recv(q2)  # hello
     await q2.send(json.dumps({"op": "queue", "name": "B",
-        "prefs": {"f": 4, "eq": 0, "clock": 0, "mid": True}}))
+        "prefs": {"f": 4, "eq": 2, "clock": 0, "mid": True,
+                  "stall": 60,
+                  "rows": ["........", "..SS....", "RRRRRRRR",
+                           "........", "........"]}}))
     m = await recv(q2)
     ok(m["op"] == "queued", "queue: segundo confirmado")
     m = await recv(q2)
     ok(m["op"] == "room" and m["side"] == 1
        and m["cfg"]["f1"] == 4 and m["cfg"]["mid"],
        "queue: segundo emparejado con cfg fusionada")
+    ok(m["cfg"].get("stall") == 60,
+       "queue: stall fusionado en cfg")
+    ok("rows1" in m["cfg"],
+       "queue: filas custom viajan al emparejar")
     m = await recv(q1)
     ok(m["op"] == "room" and m["side"] == 0,
        "queue: primero emparejado side=0")
+    # el PRIMERO encolado también recibe la cfg fusionada — antes el
+    # mensaje 'room' de _on_create no la llevaba y desplegaba con
+    # sus preferencias locales de J2 (desync con el árbitro)
+    ok(m["cfg"]["f1"] == 4 and m["cfg"].get("stall") == 60,
+       "queue: primero recibe cfg fusionada")
     await recv_until(q1, "start")
     await recv_until(q2, "start")
     await q1.close(); await q2.close()

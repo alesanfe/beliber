@@ -5,6 +5,10 @@ extends Control
 ## aleatorio donde existe una jugada que captura un líder. El jugador
 ## debe encontrarla; fallar deshace la jugada.
 
+## Emitida al terminar el Rush con la racha final — el menú la
+## escucha para persistir el récord en las stats del perfil.
+signal rush_done(score: int)
+
 var factions: Array
 var tm: TurnManager
 var board: BoardView
@@ -51,6 +55,8 @@ func _lbl(t: String, size := 0) -> Label:
 
 ## Simula partidas aleatorias hasta encontrar una posición donde el
 ## jugador al turno puede capturar un líder.
+## Cede el frame periódicamente: la búsqueda entera en el mismo tick
+## congelaba la UI varios segundos (el "Generando…" ni se pintaba).
 func _gen() -> void:
 	status.text = "Generando…"
 	for _attempt in 200:
@@ -67,6 +73,9 @@ func _gen() -> void:
 			var all := _all_moves(t)
 			if all.is_empty(): break
 			t.play(all[randi() % all.size()])
+		# ceder cada intento: sin esto nunca se llega a pintar
+		await get_tree().process_frame
+		if not is_inside_tree(): return   # pantalla cerrada a mitad
 	status.text = "Sin puzzle generado — pulsa «Otro puzzle»."
 
 func _all_moves(t: TurnManager) -> Array:
@@ -113,7 +122,9 @@ func _process(dt: float) -> void:
 	rush_secs -= dt
 	if rush_secs <= 0.0:
 		rush_on = false
+		rush = false
 		status.text = "¡Tiempo! Racha final: %d puzzles." % solved
+		rush_done.emit(solved)   # persiste el récord vía _open_puzzles
 		if board != null: board.net_me = 9
 		return
 	if tm != null and status != null and rush:

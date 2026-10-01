@@ -141,12 +141,16 @@ func _export_bel() -> String:
 func _import_bel(s: String) -> String:
 	var r: Dictionary = BoardState.from_bel(s)
 	if r.has("err"): return r.err
-	grid.clear()
+	# validar ANTES de tocar el grid: un BEL con una letra ajena dejaba
+	# la posición importada a medias junto al mensaje de error
+	var tmp := {}
 	for e in r.pos:
 		var f: Dictionary = f0 if e.o == 0 else f1
 		if not f.pieces.has(e.l):
 			return "la facción %s no tiene la pieza '%s'" % [f.name, e.l]
-		grid[Vector2i(int(e.x), int(e.y))] = {"l": e.l, "o": e.o}
+		tmp[Vector2i(int(e.x), int(e.y))] = {"l": e.l, "o": e.o,
+			"has_moved": bool(e.get("has_moved", false))}
+	grid = tmp   # propagar '*' de BEL-FEN (has_moved)
 	if r.has("turn"): first = int(r.turn)
 	return ""
 
@@ -162,7 +166,8 @@ func _to_array() -> Array:
 	var out := []
 	for cell in grid:
 		var e: Dictionary = grid[cell]
-		out.append({"x": cell.x, "y": cell.y, "l": e.l, "o": e.o})
+		out.append({"x": cell.x, "y": cell.y, "l": e.l, "o": e.o,
+			"has_moved": bool(e.get("has_moved", false))})
 	return out
 
 func _lbl(t: String, fs := 0) -> Label:

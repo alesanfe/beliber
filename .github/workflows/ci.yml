@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  engine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Descargar Godot 4.7.2 headless
+        run: |
+          curl -L -o godot.zip \
+            https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          unzip -q godot.zip
+          mv Godot_v4.7.2-stable_linux.x86_64 godot
+          chmod +x godot
+      - name: Syntax check (todos los .gd)
+        run: |
+          for f in game/src/*.gd game/server/*.gd game/tests/*.gd; do
+            echo "== $f"
+            ./godot --headless --check-only --path game \
+              --script "res://${f#game/}" || exit 1
+          done
+      - name: Tests del motor
+        run: ./godot --headless --path game -s res://tests/run_tests.gd
+      - name: Playthrough bot-vs-bot
+        run: ./godot --headless --path game -s res://tests/playthrough.gd
+      - name: Smoke de UI
+        run: ./godot --headless --path game -s res://tests/_smoke.gd
+      - name: E2E local
+        run: ./godot --headless --path game -s res://tests/e2e.gd
+
+  net:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r server/requirements.txt
+      - name: Auditoría de dependencias Python
+        run: |
+          pip install pip-audit
+          pip-audit -r server/requirements.txt --strict || echo "avisos de pip-audit (no bloqueante)"
+      - name: Descargar Godot 4.7.2 headless
+        run: |
+          curl -L -o godot.zip \
+            https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          unzip -q godot.zip
+          mv Godot_v4.7.2-stable_linux.x86_64 godot
+          chmod +x godot
+      - name: Tests del relay
+        run: |
+          python server/relay.py &
+          sleep 2
+          python server/test_relay.py
+      - name: Tests del host autoritativo y ladder
+        env:
+          BELIBER_RATINGS: /tmp/beliber_test_ratings.json
+          BELIBER_TOKENS: /tmp/beliber_test_idtokens.json
+        run: |
+          ./godot --headless --path game -s res://server/host.gd -- 7779 &
+          sleep 3
+          python server/test_host.py
+          python server/test_ladder.py
+      - name: Test de carga (capacidad)
+        run: python server/test_load.py
+      - name: E2E online (2 clientes x relay)
+        run: ./godot --headless --path game -s res://tests/e2e_net.gd
+      - name: SBOM de dependencias Python
+        run: |
+          pip install cyclonedx-bom
+          cyclonedx-py requirements server/requirements.txt -o sbom.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.json
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Escaneo de secretos (gitleaks)
+        run: |
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:8.18.4 \
+            detect --source=/repo --no-git -v

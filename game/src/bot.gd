@@ -22,15 +22,18 @@ func _init(p_depth := 2, p_style := "normal", p_blunder := 0.0) -> void:
 ## Bonus de estilo tras aplicar el movimiento sobre el estado clonado.
 func _style_bonus(state: BoardState, mv: Dictionary, player: int) -> float:
 	var b := 0.0
-	var moved: Variant = state.at(mv.to)
+	# en una cadena la pieza aterriza en second.to — mv.to es el
+	# tramo intermedio y premiaba el avance equivocado
+	var land: Vector2i = mv.get("second", {}).get("to", mv.to)
+	var moved: Variant = state.at(land)
 	if style == "aggro":
 		# avanzar hacia la fila rival y capturar
-		var prog: float = mv.to.y if player == 1 else float(BoardState.SIZE - 1 - mv.to.y)
+		var prog: float = land.y if player == 1 else float(BoardState.SIZE - 1 - land.y)
 		b += prog * 0.4 + mv.get("captures", []).size() * 4.0
 	elif style == "defense":
 		# penaliza dejar la pieza en prise y premiar mantener cobertura
 		if moved != null \
-				and MoveGen.is_attacked(state, mv.to, player):
+				and MoveGen.is_attacked(state, land, player):
 			b -= float(moved.def.get("value", 3))
 		b += mv.get("captures", []).size() * 1.5
 	return b
@@ -87,7 +90,10 @@ func _minimax(state: BoardState, player: int, me: int, d: int,
 		return evaluate(state, me)
 	var moves := _all_moves(state, player)
 	if moves.is_empty():
-		return evaluate(state, me)  # sin movimientos: posición estática
+		# el motor real PASA el turno (no evalúa estático); si el rival
+		# tampoco puede mover, la partida es tablas
+		if _all_moves(state, 1 - player).is_empty(): return 0
+		return _minimax(state, 1 - player, me, d, alpha, beta)
 	if player == me:
 		var best := -INF
 		for mv in moves:

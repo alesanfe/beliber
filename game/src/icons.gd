@@ -211,4 +211,6 @@ static func apply_icons(btns: Dictionary, host: Node,
 		col := Color(0.9, 0.9, 0.9)) -> void:
 	for b in btns:
 		var tex: Texture2D = await ui_tex(str(btns[b]), col, host)
-		if b != null: b.icon = tex
+		# el botón puede haberse liberado durante el await (menú
+		# reconstruido): 'b != null' no protege objetos freed
+		if is_instance_valid(b): b.icon = tex

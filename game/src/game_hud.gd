@@ -38,10 +38,14 @@ static func build(app) -> void:
 		if not app.online: return
 		if app.ws != null:
 			if app.ws_auth:
-				# servidor autoritativo: solo intención from→to
-				app._ws_send({"op": "play",
+				# servidor autoritativo: solo intención from→to;
+				# second_to desambigua las cadenas (Tritón)
+				var pm := {"op": "play",
 					"from": NetCodec.enc(mv.from),
-					"to": NetCodec.enc(mv.to)})
+					"to": NetCodec.enc(mv.to)}
+				if mv.has("second"):
+					pm["second_to"] = NetCodec.enc(mv.second.to)
+				app._ws_send(pm)
 			else:
 				app._ws_send({"op": "move", "mv": NetCodec.enc(mv)})
 		else:
@@ -146,7 +150,8 @@ static func build(app) -> void:
 	app.hud_log.autowrap_mode = TextServer.AUTOWRAP_WORD
 	tab_chat.add_child(app.hud_log)
 	app.btn_cov = CheckButton.new()
-	app.btn_cov.text = "Mapa de cobertura"
+	# también marca destinos MOVER — es influencia, no solo amenaza
+	app.btn_cov.text = "Mapa de influencia"
 	app.btn_cov.toggled.connect(func(on):
 		app.board.show_coverage = on; app.board.queue_redraw())
 	opts.add_child(app.btn_cov)
@@ -155,13 +160,25 @@ static func build(app) -> void:
 	var b_undo := Button.new()
 	b_undo.text = "Deshacer"
 	b_undo.pressed.connect(func():
-		if app.online: return  # deshacer desincronizaría ambos clientes
+		# online desincronizaría; tras el fin, undo resucitaría la
+		# partida (las terminaciones no están en history)
+		if app.online or app.tm.over or app.ai_both: return
 		if app.tm.undo():
+			# vs IA: deshacer solo tu jugada devolvía el turno al bot
+			# (re-roll gratis de sus blunders) — hay que deshacer el par
+			if app.ai_player >= 0 and not app.coop \
+					and app.tm.current == app.ai_player:
+				app.tm.undo()
+			# premove obsoleto: la posición cambió, se ejecutaría mal
+			app.board.premove = {}
+			app.board.pre_sel = Vector2i(-1, -1)
 			app.board.queue_redraw(); app._update_hud())
 	btn_row.add_child(b_undo)
 	var b_resign := Widgets.danger("Rendirse")
 	b_resign.pressed.connect(func():
-		if app.tm.over: return
+		# IA-vs-IA: el espectador no puede rendir a los bots; ni hay
+		# partida que abandonar si tm no existe (diálogo huérfano)
+		if app.tm == null or app.tm.over or app.ai_both: return
 		# diálogo de confirmación (estilo ProperUI Modal)
 		var dlg := ConfirmationDialog.new()
 		dlg.title = "Rendirse"
@@ -170,6 +187,8 @@ static func build(app) -> void:
 		dlg.cancel_button_text = "Seguir jugando"
 		app.add_child(dlg)
 		dlg.confirmed.connect(func():
+			# la partida pudo terminar con el diálogo abierto
+			if app.tm == null or app.tm.over: return
 			var me: int = app.tm.current if not app.online else app.my_net
 			app._do_resign(me))
 		dlg.canceled.connect(dlg.queue_free)
@@ -179,8 +198,8 @@ static func build(app) -> void:
 	b_export.text = "Exportar"
 	b_export.pressed.connect(func():
 		var p: String = app.tm.export_log(app.EXPORT_PATH)
-		app.hud_info.text += ("\nPartida exportada:\n" + p) if p != "" \
-			else "\nError exportando")
+		app.hud_alert("Partida exportada: " + p if p != "" \
+			else "Error exportando"))
 	btn_row.add_child(b_export)
 	var btn_row2 := HBoxContainer.new()
 	opts.add_child(btn_row2)
@@ -195,28 +214,22 @@ static func build(app) -> void:
 	b_hint.pressed.connect(app._suggest)
 	btn_row2.add_child(b_hint)
 	var b_draw := Button.new()
-	b_draw.text = "Tablas"
-	b_draw.pressed.connect(func():
-		if app.tm.over: return
-		app.tm.agree_draw()
-		# declarar tablas también al rival — si no solo se cierra
-		# la mitad local y la otra queda desincronizada
-		if app.online:
-			var dv := {"draw": true}
-			if app.ws != null and not app.ws_auth:
-				app._ws_send({"op": "move", "mv": dv})
-			elif app.ws != null:
-				app._ws_send({"op": "play", "draw": true})
-			else:
-				app._rpc_move.rpc(dv))
+	b_draw.text = "Ofrecer tablas" if app.online else "Tablas"
+	# online ahora es oferta→aceptar/rechazar real, no tablas
+	# unilaterales: el rival decide con un diálogo
+	b_draw.pressed.connect(app._offer_draw)
 	btn_row2.add_child(b_draw)
 	var b_save := Button.new()
 	b_save.text = "Guardar"
 	b_save.pressed.connect(func():
-		var f := FileAccess.open(app.SAVE_PATH, FileAccess.WRITE)
-		f.store_string(JSON.stringify(app.tm.save_game()))
-		f.close()
-		app.hud_info.text += "\nPartida guardada.")
+		# una partida online/run se recarga como hotseat local — fork
+		# silencioso (y un reloj a 0 flaggeaba al instante)
+		if app.online or app.run_active:
+			app.hud_alert("Solo se puede guardar en partidas locales.")
+			return
+		StatsStore.atomic_write(app.SAVE_PATH,
+			JSON.stringify(app.tm.save_game()))
+		app.hud_alert("Partida guardada."))
 	btn_row2.add_child(b_save)
 	var btn_row3 := HBoxContainer.new()
 	opts.add_child(btn_row3)
@@ -261,18 +274,30 @@ static func build(app) -> void:
 	btn_row4.add_child(Widgets.lbl("Zoom"))
 	var zoom := HSlider.new()
 	zoom.min_value = 0.7; zoom.max_value = 1.4
-	zoom.step = 0.05; zoom.value = 1.0
+	zoom.step = 0.05
+	# reflejar el zoom cargado (antes arrancaba en 1.0 aunque el
+	# ajuste guardado fuese otro — el slider mentía). zoom_v es la
+	# intención del usuario; la escala real puede ser menor si la
+	# ventana no da para el tablero (auto-encaje en _process)
+	zoom.set_value_no_signal(app.zoom_v)
 	zoom.custom_minimum_size = Vector2(90, 0)
 	zoom.value_changed.connect(func(v):
-		app.board.scale = Vector2(v, v)
-		app.board.custom_minimum_size = Vector2(512 * v, 512 * v)
+		app.zoom_v = v
+		app._apply_zoom()
 		app._save_settings())
 	btn_row4.add_child(zoom)
 	var opt_anim := OptionButton.new()
 	for t in ["Animación lenta", "Animación normal", "Animación rápida",
 			"Sin animación"]:
 		opt_anim.add_item(t)
-	opt_anim.select(1)
+	# seleccionar el valor cargado, no siempre "normal"
+	var adurs := [0.35, 0.18, 0.08, 0.001]
+	var best := 1
+	for i in adurs.size():
+		if absf(adurs[i] - app.board.anim_dur) \
+				< absf(adurs[best] - app.board.anim_dur):
+			best = i
+	opt_anim.select(best)
 	opt_anim.item_selected.connect(func(i):
 		app.board.anim_dur = [0.35, 0.18, 0.08, 0.001][i]
 		app._save_settings())
@@ -298,7 +323,17 @@ static func build(app) -> void:
 		if not BoardState.inside(frm) or not BoardState.inside(to): return
 		for mv in app.tm.legal_moves(frm):
 			if mv.to == to:
-				app.tm.play(mv); return
+				# commit() respeta defer_play/emite move_played → la
+				# jugada se sincroniza online igual que con el ratón
+				app.board.commit(mv); return
+		# sin legal y fuera de turno → premove (paridad con el ratón:
+		# solo vs IA, que es cuando premove_enabled está activo)
+		if app.board.premove_enabled \
+				and app.tm.current != app.board.human_idx:
+			var ph: Variant = app.tm.state.at(frm)
+			if ph != null and ph.owner == app.board.human_idx:
+				app.board.premove = {"from": frm, "to": to}
+				app.board.queue_redraw()
 	b_go.pressed.connect(do_key_move)
 	inp.text_submitted.connect(func(_t): do_key_move.call())
 	key_row.add_child(b_go)
@@ -350,7 +385,7 @@ static func build(app) -> void:
 			app._last_sel[1], int(app._saved_opts.get("eq1", 0)),
 			app.tm.current)
 		DisplayServer.clipboard_set(s)
-		app.hud_info.text += "\nPosición copiada: " + s.left(48) + "…")
+		app.hud_alert("Posición copiada: " + s.left(48) + "…"))
 	btn_row6.add_child(b_bel)
 	var b_bel2 := Button.new()
 	b_bel2.text = "Zen"

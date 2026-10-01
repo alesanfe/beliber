@@ -231,7 +231,8 @@ static func _humenex() -> Dictionary:
 		_ray(Vector2i(1, 1), ["o","o","o","o","o","o","o"]))
 	var caballero := _pc("C", "Caballero", 3, _leap(Vector2i(1, 2), "J"))
 	var torre := _pc("T", "Torre", 5,
-		_ray(Vector2i(1, 0), ["o","o","o","o","o","o","o"]))
+		_ray(Vector2i(1, 0), ["o","o","o","o","o","o","o"]),
+		{"castle_partner": true})
 	return _faction("humenex", "Humenex", Color(0.3, 0.6, 1.0),
 		[peon, emperatriz, emperador, espia, caballero, torre],
 		[[
@@ -269,7 +270,8 @@ static func _elfos() -> Dictionary:
 			_leaps([Vector2i(1, 2), Vector2i(2, 1)], "j")]))
 	var forestal := _pc("F", "Forestal", 5,
 		_mrg([_ray(Vector2i(1, 0), ["w","w","w","t"]),
-			_ray(Vector2i(1, 1), ["t","t"])]))
+			_ray(Vector2i(1, 1), ["t","t"])]),
+		{"castle_partner": true})
 	return _faction("elfos", "Elfos", Color(0.3, 0.8, 0.3),
 		[centinela, dama, monarca, hostigador, explorador, forestal],
 		[[
@@ -310,7 +312,8 @@ static func _mortifers() -> Dictionary:
 			_ray(Vector2i(1, 0), ["m","m","c","c"])]))
 	var incubo := _pc("I", "Incubo", 5,
 		_mrg([_ray(Vector2i(1, 0), ["o","J","c","c","c"]),
-			_ray(Vector2i(1, 1), ["c","c","c"])]))
+			_ray(Vector2i(1, 1), ["c","c","c"])]),
+		{"castle_partner": true})
 	return _faction("mortifers", "Mortifers", Color(0.75, 0.15, 0.15),
 		[carronero, consorte, tirano, corruptor, merodeador, incubo],
 		[[

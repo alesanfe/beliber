@@ -12,9 +12,11 @@ var factions: Array = []
 var faction: Dictionary
 var piece_def: Dictionary
 var cells: Dictionary = {}          # "dx,dy" -> código
+var leg2_cells: Dictionary = {}     # 2º tramo encadenado (leg2)
 var anchor := Vector2i(3, 4)        # casilla donde se dibuja la pieza
 var paint := "o"                    # código seleccionado
 var placing_piece := false
+var editing_leg2 := false           # pintando el segundo tramo
 var preview := false
 var preview_moves: Array = []
 
@@ -27,6 +29,7 @@ var value_spin: SpinBox
 var sym_opt: OptionButton
 var leader_chk: CheckBox
 var swap_chk: CheckBox
+var castle_chk: CheckBox
 var status_lbl: Label
 var canvas: EditorCanvas
 var dep_canvas: DeployCanvas
@@ -56,8 +59,9 @@ class EditorCanvas extends Control:
 				var cell := Vector2i(x, y)
 				var off := cell - ed.anchor
 				var key := "%d,%d" % [off.x, off.y]
-				if cell != ed.anchor and ed.cells.has(key):
-					var code: String = ed.cells[key]
+				var act: Dictionary = ed._active_cells()
+				if cell != ed.anchor and act.has(key):
+					var code: String = act[key]
 					draw_rect(r.grow(1), PiecesData.code_color(code))
 					_text(font, code, r, Color.BLACK)
 		if ed.preview:
@@ -72,7 +76,10 @@ class EditorCanvas extends Control:
 			EDIT_CELL, EDIT_CELL)
 		draw_rect(ra.grow(1), Color(0.1, 0.1, 0.1))
 		_text(font, ed.piece_def.letter, ra, Color.WHITE, true)
-		var lbl := "PIEZA (%s)" % ("literal" if ed.piece_def.get("sym") == "lit" else "simétrico")
+		var lbl := "2º TRAMO (%d celdas)" % ed.leg2_cells.size() \
+			if ed.editing_leg2 else "PIEZA (%s)" % (
+				"literal" if ed.piece_def.get("sym") == "lit"
+				else "simétrico")
 		_text(font, lbl, Rect2(0, -24, 400, 22), Color(0.4, 0.4, 0.4))
 
 	func _text(font: Font, t: String, r: Rect2, col: Color, big := false) -> void:
@@ -218,6 +225,14 @@ func _ready() -> void:
 	btn_place.text = "Reubicar pieza (clic en el tablero)"
 	btn_place.pressed.connect(func(): placing_piece = true)
 	move_box.add_child(btn_place)
+	# segundo tramo encadenado (Tritón): mismo lienzo, otro mapa
+	var btn_leg2 := CheckButton.new()
+	btn_leg2.text = "Editar 2º tramo (cadena)"
+	btn_leg2.toggled.connect(func(on: bool):
+		editing_leg2 = on
+		preview = false; preview_moves = []
+		canvas.queue_redraw())
+	move_box.add_child(btn_leg2)
 
 	# ---------- derecha: propiedades ----------
 	var right := VBoxContainer.new()
@@ -241,6 +256,9 @@ func _ready() -> void:
 	swap_chk = CheckBox.new()
 	swap_chk.text = "Roba movimientos al capturar"
 	right.add_child(swap_chk)
+	castle_chk = CheckBox.new()
+	castle_chk.text = "Pareja de enroque (estilo torre)"
+	right.add_child(castle_chk)
 
 	# ---- sección despliegue (visible en modo Posición inicial) ----
 	right.add_child(HSeparator.new())
@@ -363,7 +381,12 @@ func _reset_deploy() -> void:
 	var fresh := PiecesData.all()
 	for i in factions.size():
 		if fresh[i].id == faction.id:
+			# conservar el ejército del Constructor (setups[2]): antes
+			# la restauración lo borraba de memoria hasta el reinicio
+			var custom: Variant = factions[i].setups[2] \
+				if factions[i].setups.size() > 2 else null
 			factions[i].setups = fresh[i].setups.duplicate()
+			if custom != null: factions[i].setups.append(custom)
 	_load_deploy()
 	status_lbl.text = "Despliegue restaurado."
 
@@ -372,11 +395,13 @@ func _load_piece() -> void:
 	if opt_p.selected < 0 or opt_p.selected >= letters.size(): return
 	piece_def = faction.pieces[letters[opt_p.selected]]
 	cells = piece_def.cells.duplicate()
+	leg2_cells = piece_def.get("leg2", {}).duplicate()
 	name_edit.text = piece_def.name
 	value_spin.value = int(piece_def.get("value", 0))
 	sym_opt.select(1 if piece_def.get("sym", "all") == "lit" else 0)
 	leader_chk.button_pressed = piece_def.get("leader", false)
 	swap_chk.button_pressed = piece_def.get("swap_on_capture", false)
+	castle_chk.button_pressed = piece_def.get("castle_partner", false)
 	preview = false
 	preview_moves = []
 	canvas.queue_redraw()
@@ -435,12 +460,14 @@ func on_cell(cell: Vector2i, button: int) -> void:
 		anchor = cell
 		placing_piece = false
 	elif button == MOUSE_BUTTON_LEFT:
+		# "0,0" (la propia casilla) no existe en ningún tramo:
+		# generaba un empuje degenerado de la pieza sobre sí misma
 		if cell == anchor: return
 		var off := cell - anchor
-		cells["%d,%d" % [off.x, off.y]] = paint
+		_active_cells()["%d,%d" % [off.x, off.y]] = paint
 	elif button == MOUSE_BUTTON_RIGHT:
 		var off := cell - anchor
-		cells.erase("%d,%d" % [off.x, off.y])
+		_active_cells().erase("%d,%d" % [off.x, off.y])
 	_refresh_preview()
 	canvas.queue_redraw()
 
@@ -475,13 +502,19 @@ func _build_preview() -> void:
 	preview_moves = MoveGen.moves_for(st, anchor)
 
 func _def_from_editor() -> Dictionary:
-	return {"letter": piece_def.letter,
+	var d := {"letter": piece_def.letter,
 		"name": name_edit.text,
 		"value": int(value_spin.value),
 		"cells": cells.duplicate(),
 		"sym": "lit" if sym_opt.selected == 1 else "all",
 		"leader": leader_chk.button_pressed,
-		"swap_on_capture": swap_chk.button_pressed}
+		"swap_on_capture": swap_chk.button_pressed,
+		"castle_partner": castle_chk.button_pressed}
+	# leg2 SIEMPRE se serializa (incluso {}): sin la clave, borrar el
+	# 2º tramo se perdía al reiniciar — apply_overrides no copiaba
+	# 'leg2' y el valor por defecto resucitaba
+	d["leg2"] = leg2_cells.duplicate()
+	return d
 
 func _save() -> void:
 	var data := _saved_overrides()
@@ -513,48 +546,69 @@ func _reload_defaults() -> void:
 	faction = factions[opt_f.selected]
 	_load_piece()
 
+func _active_cells() -> Dictionary:
+	return leg2_cells if editing_leg2 else cells
+
 func _apply_to_memory() -> void:
 	var d := _def_from_editor()
 	for k in d:
 		piece_def[k] = d[k]
+	# leg2={} se aplica tal cual: un 2º tramo vacío = sin cadena
+	# (erase() haría que el override no pudiera borrar el defecto)
 
-func _saved_overrides() -> Dictionary:
+## Lee el archivo de sobrescrituras tal cual (estático: lo usa la
+## cfg online — los overrides viajan al rival, no solo aplican local).
+static func load_overrides() -> Dictionary:
 	if not FileAccess.file_exists(SAVE_PATH): return {}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.READ)
 	var parsed = JSON.parse_string(f.get_as_text())
 	f.close()
 	return parsed if parsed is Dictionary else {}
 
+func _saved_overrides() -> Dictionary:
+	return load_overrides()
+
 func _write(data: Dictionary) -> void:
-	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	f.store_string(JSON.stringify(data, "\t"))
-	f.close()
+	StatsStore.atomic_write(SAVE_PATH, JSON.stringify(data, "\t"))
 
 
 ## Carga sobrescrituras y las aplica a una lista de facciones recién creada.
 static func apply_overrides(facs: Array) -> void:
-	if not FileAccess.file_exists(SAVE_PATH): return
-	var f := FileAccess.open(SAVE_PATH, FileAccess.READ)
-	var parsed = JSON.parse_string(f.get_as_text())
-	f.close()
-	if typeof(parsed) != TYPE_DICTIONARY: return
+	var parsed := load_overrides()
+	if parsed.is_empty(): return
+	apply_dict(facs, parsed)
+
+## Aplica un dict de sobrescrituras explícito (archivo local o el
+## 'ovr' que viaja en la cfg online — misma semántica).
+static func apply_dict(facs: Array, parsed: Dictionary) -> void:
 	for fac in facs:
-		if not parsed.has(fac.id): continue
+		# el nivel raíz ya está validado; el interior también: un JSON
+		# {"humenex": 3} o {"humenex": {"T": "x"}} crasheaba el arranque
+		if not (parsed.get(fac.id) is Dictionary): continue
 		for letter in parsed[fac.id]:
 			if letter == "_setups":
 				# sobrescrituras de posiciones iniciales {eq_idx: rows}
-				for eq in parsed[fac.id]["_setups"]:
+				var su: Variant = parsed[fac.id]["_setups"]
+				if not (su is Dictionary): continue
+				for eq in su:
 					var i := int(eq)
-					if i < fac.setups.size():
-						fac.setups[i] = parsed[fac.id]["_setups"][eq]
+					if i < fac.setups.size() and su[eq] is Array:
+						fac.setups[i] = su[eq]
 				continue
 			if not fac.pieces.has(letter): continue
+			if not (parsed[fac.id][letter] is Dictionary): continue
 			var o: Dictionary = parsed[fac.id][letter]
 			var p: Dictionary = fac.pieces[letter]
 			for k in o:
-				if k == "cells":
+				if k == "cells" and o.cells is Dictionary:
 					var cd := {}
 					for ck in o.cells: cd[ck] = o.cells[ck]
+					cd.erase("0,0")   # ver on_cell: celda degenerada
 					p.cells = cd
-				else:
+				elif k == "leg2" and o.leg2 is Dictionary:
+					var l2 := {}
+					for ck in o.leg2: l2[ck] = o.leg2[ck]
+					l2.erase("0,0")
+					p["leg2"] = l2
+				elif k != "cells" and k != "leg2":
 					p[k] = o[k]

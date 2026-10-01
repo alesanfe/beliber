@@ -6,6 +6,11 @@ extends RefCounted
 
 const STATS_PATH := "user://beliber_stats.json"
 
+## Desactiva la persistencia: los tests E2E instancian la escena real
+## y cada run contaminaba beliber_stats.json del jugador (games, XP y
+## logros fantasmas).
+static var disabled := false
+
 const ACH := {
 	"primera": "Primera victoria",
 	"caza5": "Cazador: 5+ capturas en una partida",
@@ -28,12 +33,50 @@ static func load_stats() -> Dictionary:
 	stats.merge({"games": 0, "wins": {}, "ach": [], "xp": {},
 		"w": 0, "l": 0, "d": 0, "fstat": {}, "history": [],
 		"rec_fast": 0, "rec_long": 0}, false)
+	# coerción por tipo: un JSON raíz válido con interior corrupto
+	# ({"xp": [], "ach": {}, "w": "x"}) crasheaba record_result
+	for k in ["wins", "fstat", "xp"]:
+		if not (stats[k] is Dictionary): stats[k] = {}
+	for k in ["ach", "history"]:
+		if not (stats[k] is Array): stats[k] = []
+	for k in ["games", "w", "l", "d", "rec_fast", "rec_long"]:
+		if not (stats[k] is int or stats[k] is float): stats[k] = 0
 	return stats
 
 static func save(stats: Dictionary) -> void:
-	var f := FileAccess.open(STATS_PATH, FileAccess.WRITE)
-	f.store_string(JSON.stringify(stats))
+	if disabled: return
+	atomic_write(STATS_PATH, JSON.stringify(stats))
+
+## Escritura atómica: un corte a mitad del write dejaba el JSON
+## truncado (el load tolera el parseo nulo, pero los datos se
+## pierden igualmente).
+static func atomic_write(path: String, text: String) -> void:
+	# .bak = última versión buena conocida (restauración manual si el
+	# fichero se corrompe pese a la escritura atómica)
+	if FileAccess.file_exists(path):
+		DirAccess.copy_absolute(ProjectSettings.globalize_path(path),
+			ProjectSettings.globalize_path(path + ".bak"))
+	var tmp := path + ".tmp"
+	var f := FileAccess.open(tmp, FileAccess.WRITE)
+	if f == null: return
+	f.store_string(text)
 	f.close()
+	var err := DirAccess.rename_absolute(
+		ProjectSettings.globalize_path(tmp),
+		ProjectSettings.globalize_path(path))
+	if err != OK:
+		# rename con reemplazo puede fallar en Windows según el runtime:
+		# sin esto el .tmp quedaba y los stats no se actualizaban más
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+		err = DirAccess.rename_absolute(
+			ProjectSettings.globalize_path(tmp),
+			ProjectSettings.globalize_path(path))
+		if err != OK:
+			# último recurso: escritura directa (peor que nada)
+			var d := FileAccess.open(path, FileAccess.WRITE)
+			if d != null:
+				d.store_string(text)
+				d.close()
 
 ## Nivel de dominio de una facción (progresión estilo perfil lichess).
 static func faction_level(stats: Dictionary, fid: String) -> int:
@@ -57,10 +100,9 @@ static func record_result(app) -> void:
 		var gain := XP_GAME + (XP_WIN if tm.winner == human_side else 0)
 		stats.xp[played_fid] = before + gain
 		if before / 100 != stats.xp[played_fid] / 100:
-			if app.hud_info:
-				app.hud_info.text += "\n⭐ ¡%s sube a nivel %d!" % [
-					played_fid.capitalize(),
-					faction_level(stats, played_fid)]
+			app.hud_alert("⭐ ¡%s sube a nivel %d!" % [
+				played_fid.capitalize(),
+				faction_level(stats, played_fid)])
 		# resultado V/E/D + stats por facción + historial
 		var res := "E"
 		if tm.winner == human_side: res = "V"; stats.w += 1
@@ -87,17 +129,22 @@ static func record_result(app) -> void:
 	if tm.winner >= 0:
 		var fid: String = tm.state.factions[tm.winner].id
 		stats.wins[fid] = int(stats.wins.get(fid, 0)) + 1
-		grant(app, "primera")
-		if app.ai_player >= 0 and tm.winner == 0 \
-				and int(app._saved_opts.get("ai_lvl", 0)) == 3:
-			grant(app, "ia3")
-		if tm.log.size() < 15: grant(app, "veloz")
+		# logros de mérito: solo si el HUMANO ganó — en IA vs IA
+		# (human_side == -1) se concedían igualmente
+		if human_side >= 0 and tm.winner == human_side:
+			grant(app, "primera")
+			if app.ai_player >= 0 and tm.winner == 0 \
+					and int(app._saved_opts.get("ai_lvl", 0)) == 3:
+				grant(app, "ia3")
+			if tm.log.size() < 15: grant(app, "veloz")
 	if stats.games >= 5: grant(app, "cinco")
-	if tm.captured_by[0].size() >= 5 or tm.captured_by[1].size() >= 5:
+	# caza5: solo mérito del humano (antes contaban las capturas
+	# de cualquiera de los dos bandos, incluida la IA)
+	if human_side >= 0 and tm.captured_by[human_side].size() >= 5:
 		grant(app, "caza5")
 	save(stats)
 
 static func grant(app, id: String) -> void:
 	if app.stats.ach.has(id): return
 	app.stats.ach.append(id)
-	if app.hud_info: app.hud_info.text += "\n🏆 " + ACH[id]
+	app.hud_alert("🏆 " + ACH[id])

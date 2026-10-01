@@ -1,0 +1,48 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Godot + export templates 4.7.2
+        run: |
+          curl -L -o godot.zip \
+            https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          unzip -q godot.zip
+          mv Godot_v4.7.2-stable_linux.x86_64 godot && chmod +x godot
+          curl -L -o templates.tpz \
+            https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_export_templates.tpz
+          mkdir -p ~/.local/share/godot/export_templates/4.7.2.stable
+          cd ~/.local/share/godot/export_templates/4.7.2.stable
+          unzip -q $OLDPWD/templates.tpz
+          mv templates/* . && rmdir templates
+      - name: Export Windows + Web
+        run: |
+          cd game
+          ../godot --headless --export-release "Windows Desktop" ../builds/windows/beliber.exe
+          ../godot --headless --export-release "Web" ../builds/web/index.html
+          cd ../builds
+          zip -r ../beliber-windows.zip windows
+          zip -r ../beliber-web.zip web
+      - name: Checksums SHA256
+        run: sha256sum beliber-windows.zip beliber-web.zip > SHA256SUMS.txt
+      - name: SBOM (dependencias Python)
+        run: |
+          pip install cyclonedx-bom
+          cyclonedx-py requirements server/requirements.txt -o sbom.json
+      - name: Publicar release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            beliber-windows.zip
+            beliber-web.zip
+            SHA256SUMS.txt
+            sbom.json

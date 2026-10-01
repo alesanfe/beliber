@@ -91,10 +91,11 @@ func _play_game(f0id: String, f1id: String) -> bool:
 				f0id, f1id, plies])
 			break
 		prev_mat = mat
-	# el log de movimientos coincide con los plies jugados
-	_ok(tm.state.move_log.size() == plies,
-		"%s vs %s: log=%d plies=%d" % [f0id, f1id,
-			tm.state.move_log.size(), plies])
+	# el historial de deshacer coincide con los plies jugados
+	# (tm.log añade además mensajes de fin — no sirve para contar)
+	_ok(tm.history.size() == plies,
+		"%s vs %s: hist=%d plies=%d" % [f0id, f1id,
+			tm.history.size(), plies])
 	_ok(tm.replay_len() == plies + 1,
 		"%s vs %s: replay tiene %d snapshots" % [
 			f0id, f1id, tm.replay_len()])
@@ -126,10 +127,14 @@ func _test_midgame_save_undo() -> void:
 	var bel_loaded := BoardState.to_bel(restored.state, 0, 0, 1, 0,
 		restored.current)
 	_ok(bel_now == bel_loaded, "midgame: posición idéntica tras cargar")
-	# deshacer hasta el ply 0 recupera el despliegue exacto
-	while tm.undo(): pass
-	var bel_back := BoardState.to_bel(tm.state, 0, 0, 1, 0, tm.current)
-	_ok(bel_back == initial, "midgame: undo total = despliegue inicial")
+	# deshacer hasta el ply 0 recupera el despliegue exacto (solo si la
+	# partida no terminó: tras el fin el undo está bloqueado a propósito)
+	if not tm.over:
+		while tm.undo(): pass
+		var bel_back := BoardState.to_bel(tm.state, 0, 0, 1, 0, tm.current)
+		_ok(bel_back == initial, "midgame: undo total = despliegue inicial")
+	else:
+		_ok(not tm.undo(), "midgame: undo bloqueado tras el fin")
 
 ## El bot nunca propone una jugada ilegal, en varias posiciones.
 func _test_bot_always_legal() -> void:

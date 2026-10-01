@@ -1,0 +1,5 @@
+# Owner del proyecto. Review obligatoria en estos paths sensibles:
+/game/src/      @alex0
+/game/server/   @alex0
+/server/        @alex0
+/.github/       @alex0

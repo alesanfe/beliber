@@ -20,6 +20,7 @@ var premove_enabled := false       # activado si hay rival IA
 var human_idx := 0                 # lado humano en modo vs IA
 var pre_sel := Vector2i(-1, -1)    # origen del premove en selección
 var net_me := -1                   # online: lado que controla este cliente
+var sync_pending := false          # eco del árbitro pendiente (ws_auth)
 var defer_play := false            # autoritativo: solo emite, no aplica
 var inspect := false               # guía: inspecciona, no mueve
 var quiz := false                  # guía-quiz: clic emite cell_picked
@@ -34,6 +35,7 @@ var blindfold := false             # modo ciego: oculta todas las piezas
 var show_coords := true            # coordenadas visibles
 var confirm_moves := false         # requiere 2º clic en el destino
 var pending := {}                  # jugada pendiente de confirmar
+var chain_cands: Array = []        # variantes encadenadas a elegir
 var arrows: Array = []             # {from,to} flechas de análisis
 var marks := {}                    # cell → color (click derecho)
 var arrow_from := Vector2i(-1, -1) # origen de flecha en curso
@@ -119,10 +121,25 @@ func _draw() -> void:
 			var col: Color = tm.state.factions[who].color
 			col.a = 0.22
 			for cell in tm.coverage(who):
-				draw_rect(_cell_rect(cell).grow(-CELL * 0.28), col)
-	# marcas de análisis (clic derecho sobre una casilla)
+				var cr := _cell_rect(cell).grow(-CELL * 0.28)
+				# distinguir por FORMA además de color (accesibilidad):
+				# J0 = sólido, J1 = anillo — sin depender del tinte
+				if who == 0: draw_rect(cr, col)
+				else: draw_rect(cr, col, false, 2.5)
+	# marcas de análisis (clic derecho sobre una casilla). Además del
+	# color, cada marca usa una FORMA distinta (accesibilidad):
+	# relleno / círculo / cruz
 	for cell in marks:
-		draw_rect(_cell_rect(cell).grow(-CELL * 0.15), marks[cell])
+		var mc: Color = marks[cell]
+		var mr := _cell_rect(cell).grow(-CELL * 0.15)
+		match mark_cols.find(mc):
+			1: draw_circle(mr.get_center(), mr.size.x * 0.5, mc)
+			2:
+				draw_line(mr.position, mr.position + mr.size,
+					mc, 4.0, true)
+				draw_line(mr.position + Vector2(mr.size.x, 0),
+					mr.position + Vector2(0, mr.size.y), mc, 4.0, true)
+			_: draw_rect(mr, mc)
 	# amenazas sobre piezas propias (punto rojo + "!" no cromático)
 	if show_threats and view_i < 0:
 		for y in 8:
@@ -255,6 +272,25 @@ func _draw() -> void:
 		var pr := _cell_rect(pending.to)
 		draw_rect(pr, Color(0.4, 1, 0.5, 0.35))
 		draw_rect(pr.grow(-4), Color(0.4, 1, 0.5), false, 2.0)
+	# cadena opcional: destinos del 2º tramo en cian pulsante; clic en
+	# el destino del 1er tramo juega solo ese tramo
+	if not chain_cands.is_empty():
+		var ca: float = 0.3 + 0.15 * sin(
+			Time.get_ticks_msec() * 0.006)
+		for c in chain_cands:
+			var s: Variant = c.get("second")
+			if s != null:
+				var sr := _cell_rect(s.to)
+				draw_rect(sr, Color(0.2, 0.9, 1.0, ca))
+				draw_rect(sr, Color(0.2, 0.9, 1.0, 0.95), false, 2.5)
+			else:
+				# variante de un solo tramo: se queda en el 1er destino
+				draw_rect(_cell_rect(c.to), Color(1.0, 0.85, 0.2, ca))
+		# sin el texto el jugador no sabía que la cadena esperaba un
+		# segundo clic (o que clic fuera cancela)
+		draw_string(_chess_font(), Vector2(8, BoardState.SIZE * CELL - 8),
+			"Cadena: cian = 2º tramo · amarillo = solo 1º · fuera = cancelar",
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0.95, 0.95, 1.0))
 	# casilla bajo el cursor: highlight tenue
 	if BoardState.inside(hover):
 		var hr := _cell_rect(hover)
@@ -338,6 +374,9 @@ func _chess_font() -> Font:
 
 func _gui_input(event: InputEvent) -> void:
 	if tm.over or view_i >= 0: return
+	# con árbitro, el input se ignora hasta recibir el eco: un segundo
+	# movimiento durante el eco llegaba al servidor fuera de turno
+	if defer_play and sync_pending: return
 	# modo guía: clic en cualquier pieza muestra su patrón completo
 	if inspect:
 		if event is InputEventMouseButton and event.pressed \
@@ -419,12 +458,21 @@ func _gui_input(event: InputEvent) -> void:
 					queue_redraw()
 					return
 			else:
-				# soltar: ejecutar si es destino legal
+				# soltar: ejecutar si es destino legal — respetando
+				# confirm_moves como el flujo clic-clic (un drop
+				# accidental no era cancelable)
 				if dragging.x >= 0:
-					var mv: Variant = _find_move(dragging, cell)
+					var cands := _find_moves(dragging, cell)
 					dragging = Vector2i(-1, -1)
-					if mv != null:
-						_play(mv)
+					if cands.size() > 1:
+						# cadena opcional: elegir el 2º tramo
+						chain_cands = cands
+					elif cands.size() == 1:
+						if confirm_moves and pending.get("to") != cell:
+							pending = cands[0]
+						else:
+							pending = {}
+							commit(cands[0])
 					queue_redraw()
 					return
 	if event is InputEventMouseMotion:
@@ -438,6 +486,25 @@ func _gui_input(event: InputEvent) -> void:
 			int(event.position.y / CELL))
 		var cell := _log(scr)
 		if not BoardState.inside(cell): return
+		# resolución de cadena pendiente: 2º tramo o solo el 1er tramo
+		if not chain_cands.is_empty():
+			var chained: Dictionary = {}
+			var base: Dictionary = {}
+			for c in chain_cands:
+				var s: Variant = c.get("second")
+				if s != null and s.to == cell: chained = c
+				elif s == null and c.to == cell: base = c
+			if not chained.is_empty():
+				chain_cands = []
+				commit(chained)
+				queue_redraw()
+				return
+			if not base.is_empty():
+				chain_cands = []
+				commit(base)
+				queue_redraw()
+				return
+			chain_cands = []   # clic fuera: cancelar y seguir normal
 		# premove contra la IA: programar jugada fuera de turno
 		if premove_enabled and tm.current != human_idx:
 			var ph: Variant = tm.state.at(cell)
@@ -450,14 +517,19 @@ func _gui_input(event: InputEvent) -> void:
 			return
 		# ¿clic en destino legal?
 		if selected.x >= 0:
-			var mv: Variant = _find_move(selected, cell)
-			if mv != null:
+			var cands := _find_moves(selected, cell)
+			if not cands.is_empty():
 				if confirm_moves and pending.get("to") != cell:
-					pending = mv   # primer clic: previsualizar
+					pending = cands[0]   # primer clic: previsualizar
 					queue_redraw()
 					return
 				pending = {}
-				_play(mv)
+				if cands.size() > 1:
+					# cadena opcional (Tritón): elegir 2º tramo
+					chain_cands = cands
+					queue_redraw()
+					return
+				commit(cands[0])
 				queue_redraw()
 				return
 		# seleccionar pieza propia (en online solo tu lado)
@@ -480,14 +552,22 @@ func try_premove() -> void:
 	var mv: Variant = _find_move(premove.from, premove.to)
 	premove = {}
 	if mv != null:
-		_play(mv)
+		commit(mv)
 	queue_redraw()
 
 ## Aplica la jugada local y emite la señal (main la reenvía por red).
 ## Con defer_play (servidor autoritativo) solo se emite la intención;
 ## el estado cambia al recibir el eco del servidor.
-func _play(mv: Dictionary) -> void:
+## Punto único de entrada para ratón, teclado y premove — así online
+## ninguna ruta se salta la sincronización.
+func commit(mv: Dictionary) -> void:
+	# una jugada ejecutada invalida cualquier cadena pendiente: sin
+	# esto un drag de otra pieza dejaba chain_cands obsoleto y el
+	# siguiente clic aplicaba una jugada calculada sobre estado viejo
+	chain_cands = []
 	if defer_play:
+		if sync_pending: return   # bloquear input hasta el eco
+		sync_pending = true
 		move_played.emit(mv)
 	elif tm.play(mv):
 		move_played.emit(mv)
@@ -497,3 +577,13 @@ func _find_move(frm: Vector2i, to: Vector2i) -> Variant:
 	for mv in tm.legal_moves(frm):
 		if mv.to == to: return mv
 	return null
+
+## TODAS las variantes legales from→to. Cuando hay más de una, la
+## pieza tiene cadena opcional (Tritón): el primer clic elige el
+## destino del 1er tramo y el siguiente elige la continuación (o la
+## misma casilla para jugar solo el 1er tramo).
+func _find_moves(frm: Vector2i, to: Vector2i) -> Array:
+	var out := []
+	for mv in tm.legal_moves(frm):
+		if mv.to == to: out.append(mv)
+	return out

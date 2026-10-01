@@ -292,10 +292,10 @@ juegos de ejercitos y tactica por turnos. Matriz actualizada.
 | 500+ piezas coleccionables | 8 facciones x ~6 piezas, editor de piezas |
 | Ejercito: max 8 minions/4 champions, presupuesto 80→100 | ✓ Army builder con presupuesto |
 | Army Profile: huecos defensivos, stats ataque/magia | Parcial: cobertura de ejercito |
-| Test Area: probar ejercito contra IA o IA-vs-IA | Falta: AI-vs-IA del constructor |
-| Ranked ELO por rating, rangos (Novato→GM) | Falta: ladder (hay stats locales) |
-| Desafios diarios PvE, escenarios | Falta |
-| Draft mode | Falta |
+| Test Area: probar ejercito contra IA o IA-vs-IA | ✓ IA e IA-vs-IA funcionan con ejércitos custom |
+| Ranked ELO por rating, rangos (Novato→GM) | ✓ Ladder ELO en host autoritativo (pid local) |
+| Desafios diarios PvE, escenarios | ✓ Desafío diario determinista + Puzzle Rush |
+| Draft mode | ✓ Draft con presupuesto (draft.gd) |
 | Unlocks por rating (progresion) | Logros locales basicos |
 | Cero RNG en PvP | ✓ determinista puro |
 
@@ -307,10 +307,10 @@ rangos) y el "Army Profile" con test contra IA.
 | Feature Root | Beliber |
 |---|---|
 | Cada faccion con victoria propia | ✓ todas = eliminar lider (variante: linea media) |
-| IAs "Clockwork" por faccion (comportamientos distintos) | Falta: la IA no imita el estilo de cada faccion |
-| Campana/tutorial interactivo por faccion | Falta: no hay aprendizaje guiado |
+| IAs "Clockwork" por faccion (comportamientos distintos) | ✓ arquetipo "auto" por facción (FACTION_STYLE) |
+| Campana/tutorial interactivo por faccion | ✓ tutorial guiado + guía interactiva (guide.gd) |
 | 58 logros Steam | 5 logros locales |
-| Modo cooperativo vs IA | Falta |
+| Modo cooperativo vs IA | ✓ modo co-op (2 humanos alternan el bando J1) |
 | Mapas variados | Tablero fijo 8x8 |
 
 ## Duelyst II (tactica por facciones)
@@ -318,18 +318,18 @@ rangos) y el "Army Profile" con test contra IA.
 | Feature | Beliber |
 |---|---|
 | 6 facciones con estilo claro (aggro, control, combo…) | ✓ 8 con estilos marcados |
-| Nombre/identidad de estrategia por faccion | Falta: describir arquetipo de cada raza |
-| Coleccion/progresion | Falta |
+| Nombre/identidad de estrategia por faccion | ✓ arquetipos en FACTION_STYLE + guía |
+| Coleccion/progresion | ✓ XP por facción + niveles + logros |
 | Animaciones de combate llamativas | Basico: squash, sonidos, confetti no hay |
-| Ranked ladder | Falta |
+| Ranked ladder | ✓ ladder ELO en host (grupo privado) |
 
 ## Prismata (modelo de producto)
 
 | Feature | Beliber |
 |---|---|
 | Bots con ELO propio | 3 niveles sin rating medido |
-| Puzzles generados | Falta |
-| Emotes/chat | Chat existe en protocolo, sin UI |
+| Puzzles generados | ✓ puzzles + rush + diario (puzzles.gd) |
+| Emotes/chat | ✓ chat en UI online (ENet y WS) |
 | Eventos/torneos | Falta |
 | Blitz + "tiempo por turno" | Reloj de partida, no por-turno aparte |
 | Zero pay-to-win | ✓ |
@@ -341,8 +341,9 @@ Cubierto en ronda 1. Lo que ya esta: reloj+incremento, analisis
 IA multinivel, tablas por repeticion/material/anti-stall, online
 ENet+relay+arbitro, logros, estadisticas.
 
-Falta relevante: tablebase, aperturas con nombre, puzzle mode,
+Falta relevante: tablebase, aperturas con nombre,
 analisis post-partida por jugada (errores), correspondencia.
+(Puzzle mode ya existe — puzzles.gd con rush y desafío diario.)
 
 ## Shotgun King / Pawnbarian / 5D Chess (variantes roguelike)
 

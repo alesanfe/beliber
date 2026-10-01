@@ -188,6 +188,14 @@ static func build(app) -> void:
 	app.chk_coop.text = "Co-op: 2 humanos vs IA"
 	app.chk_coop.tooltip_text = \
 		"Dos jugadores alternan los movimientos de J1"
+	# solo tiene sentido contra una IA: con 'Humano' o 'IA vs IA' no hay
+	# ai_player y el toggle era una promesa vacía que confundía
+	var _coop_gate := func(_i: int = -1):
+		app.chk_coop.disabled = app.opt_ai.selected == 0 \
+			or app.opt_ai.selected == 4
+		if app.chk_coop.disabled: app.chk_coop.button_pressed = false
+	app.opt_ai.item_selected.connect(_coop_gate)
+	_coop_gate.call()
 	opt_row2.add_child(app.chk_coop)
 	var opt_row3 := HBoxContainer.new()
 	adv.add_child(opt_row3)

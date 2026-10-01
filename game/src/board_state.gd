@@ -11,7 +11,8 @@ const SIZE := 8
 var grid: Array = []
 var factions: Array = []      # FactionDef (Dictionary) por jugador 0/1
 var last_move: Dictionary = {}  # {piece, from, to, double_step}
-var move_log: Array = []
+# (move_log eliminado: write-only, se duplicaba en CADA snapshot —
+#  O(n²) de memoria en partidas largas sin ningún lector)
 
 static func idx(c: Vector2i) -> int:
 	return c.y * SIZE + c.x
@@ -52,6 +53,9 @@ func deploy(faction: Dictionary, owner: int, eq: int) -> void:
 		var row: String = rows[j]
 		# la fila h-1 del diagrama es la base propia (y=7 para J0)
 		var dy: int = SIZE - h + j
+		# setup JSON custom con más de SIZE filas → dy negativo y
+		# set_at indexaba fuera del grid
+		if dy < 0 or dy >= SIZE: continue
 		for x in mini(row.length(), SIZE):
 			var letter := row.substr(x, 1)
 			if letter == "." or letter == " ": continue
@@ -70,13 +74,16 @@ func snapshot() -> Dictionary:
 	g.resize(grid.size())
 	for i in grid.size():
 		g[i] = grid[i].duplicate(true) if grid[i] != null else null
-	return {"grid": g, "last_move": last_move.duplicate(),
-		"move_log": move_log.duplicate()}
+	return {"grid": g, "last_move": last_move.duplicate()}
 
 func restore(s: Dictionary) -> void:
 	grid = s.grid
 	last_move = s.last_move
-	move_log = s.move_log
+	# last_move.piece del snapshot apunta a una instancia antigua —
+	# reanclar a la pieza restaurada realmente en 'to' (al paso)
+	if not last_move.is_empty() and last_move.get("to") != null:
+		var pc: Variant = at(last_move.to)
+		if pc != null: last_move["piece"] = pc
 
 func leaders_alive(owner: int) -> int:
 	var n := 0
@@ -88,15 +95,19 @@ func leaders_alive(owner: int) -> int:
 ## Aplica un movimiento completo (incluye efectos y sub-movimientos).
 func apply(mv: Dictionary) -> void:
 	_apply_leg(mv)
+	# en una cadena (leg2/Tritón) la pieza termina en second.to: marcar
+	# has_moved y last_move sobre mv.to dejaba la pieza "virgen" y un
+	# last_move.piece nulo (al paso falso, enroque/doble paso infinitos)
+	var last_to: Vector2i = mv.to
 	var second: Variant = mv.get("second")
 	if second != null:
 		_apply_leg(second)
-	var piece: Variant = at(mv.to)
+		last_to = second.to
+	var piece: Variant = at(last_to)
 	if piece != null:
 		piece.has_moved = true
-	last_move = {"piece": piece, "from": mv.from, "to": mv.to,
+	last_move = {"piece": piece, "from": mv.from, "to": last_to,
 		"double_step": mv.get("double_step", false)}
-	move_log.append(mv)
 
 func _apply_leg(mv: Dictionary) -> void:
 	# capturas directas (incluye al paso y arrolladas por empuje)
@@ -142,7 +153,10 @@ func describe(mv: Dictionary) -> String:
 	var s := "%s%s→%s" % [mv.piece_letter, _sq(mv.from), _sq(mv.to)]
 	if mv.get("captures", []).size() > 0: s += " x"
 	if mv.has("castle"): s += " (enroque)"
-	if mv.has("second"): s += " +" + _sq(mv.second.to)
+	if mv.has("second"):
+		s += " +" + _sq(mv.second.to)
+		# las capturas del 2º tramo también son capturas en notación
+		if mv.second.get("captures", []).size() > 0: s += " x"
 	return s
 
 static func _sq(c: Vector2i) -> String:
@@ -182,6 +196,13 @@ static func from_bel(s: String) -> Dictionary:
 	if parts.size() < 5 or parts[0] != "BEL1":
 		return {"err": "formato: BEL1 <f0>.<eq0> <f1>.<eq1> <filas> <turno>"}
 	var f0 := parts[1].split("."); var f1 := parts[2].split(".")
+	# campos de facción/equipo obligatorios ("0.0"): antes un campo
+	# sin punto indexaba fuera de rango y tumbaba el editor
+	if f0.size() != 2 or f1.size() != 2:
+		return {"err": "facciones malformadas: se esperaba <f>.<eq>"}
+	for f in f0 + f1:
+		if not f.is_valid_int():
+			return {"err": "facción/equipo no numérico: '%s'" % f}
 	var pos := []
 	var y := 0
 	for row in parts[3].split("/"):
@@ -198,8 +219,13 @@ static func from_bel(s: String) -> Dictionary:
 				prev = {"x": x, "y": y, "l": l, "o": o}
 				pos.append(prev)
 				x += 1
+		if x > SIZE:
+			return {"err": "fila %d desborda el tablero (%d celdas)" % [
+				y + 1, x]}
 		y += 1
 	if y != SIZE:
 		return {"err": "se esperaban 8 filas, hay %d" % y}
+	if not parts[4].is_valid_int() or int(parts[4]) not in [0, 1]:
+		return {"err": "turno inválido: '%s'" % parts[4]}
 	return {"fac": [int(f0[0]), int(f0[1]), int(f1[0]), int(f1[1])],
 		"pos": pos, "turn": int(parts[4])}

@@ -17,8 +17,6 @@ extends RefCounted
 ## Move: Dictionary {from,to,captures,immobilize,push,attract,castle,
 ##                   double_step,second,fx,cond,piece_letter,captured_def}
 
-const MAX_RANGE := 7
-
 ## Atoms derivados de las celdas de una pieza (cache por pieza instancia).
 static func cells_of(state: BoardState, piece: Dictionary) -> Dictionary:
 	return piece.cells_override if piece.cells_override.size() > 0 \
@@ -86,6 +84,11 @@ static func _offsets(local: Vector2i, sym: String, owner: int) -> Array:
 static func _gen_one(state: BoardState, piece: Dictionary, pos: Vector2i,
 		off: Vector2i, fx: int, cond: int, code: String,
 		out: Array, attack_only: bool) -> void:
+	# offset (0,0) = "mover a la propia casilla": sin sentido para
+	# mover/capturar, y con EMPUJAR generaba un empuje degenerado de la
+	# propia pieza (dir ZERO → fwd). El editor ya no lo pinta; aquí se
+	# filtra por robustez ante JSONs custom previos.
+	if off == Vector2i.ZERO: return
 	var target := pos + off
 	if not BoardState.inside(target): return
 	if cond == FX.C_AQUONTE:
@@ -179,8 +182,11 @@ static func _en_passant(state: BoardState, piece: Dictionary, pos: Vector2i,
 	var victim_cell: Vector2i = lm.to
 	if victim_cell.y != pos.y: return
 	if cell != victim_cell - Vector2i(0, BoardState.fwd(victim.owner)): return
-	# la captura al paso exige que la casilla destino esté libre y la
-	# víctima sea el peón que acaba de desplegar
+	# la captura al paso exige que la casilla destino esté libre (si una
+	# pieza fue empujada/atraída ahí, mover encima la borraba sin
+	# registrar la captura) y la víctima sea el peón que acaba de
+	# desplegar
+	if state.at(cell) != null: return
 	var mv := {
 		"from": pos, "to": cell, "captures": [victim_cell],
 		"immobilize": [], "fx": fx, "cond": FX.C_EN_PASSANT,
@@ -200,11 +206,15 @@ static func _castle(state: BoardState, piece: Dictionary, pos: Vector2i,
 		var p: Variant = state.at(Vector2i(x, pos.y))
 		if p != null:
 			if p.owner == piece.owner and not p.has_moved \
-					and p.def.letter in ["T", "F", "I"]:
+					and p.def.get("castle_partner", false):
 				rook_pos = Vector2i(x, pos.y)
 			break
 		x += dir_x
 	if rook_pos.x < 0: return
+	# la celda destino debe estar LIBRE: un 'k/K' sobre la propia
+	# torre adyacente (o sobre cualquier pieza) la pisaba en apply()
+	# y el intercambio del enroque la borraba del tablero
+	if state.at(cell) != null: return
 	var a: int = mini(pos.x, rook_pos.x) + 1
 	var b: int = maxi(pos.x, rook_pos.x)
 	for cx in range(a, b):
@@ -256,26 +266,27 @@ static func is_attacked(state: BoardState, cell: Vector2i, owner: int) -> bool:
 			var pos := Vector2i(x, y)
 			var p: Variant = state.at(pos)
 			if p == null or p.owner == owner: continue
+			# una pieza inmovilizada no puede mover en el turno
+			# relevante — no puede capturar, luego no "amenaza" la
+			# casilla (enroque / jaque / mapa de amenazas)
+			if p.immobilized > 0: continue
 			for mv in moves_for(state, pos, true):
 				if mv.to == cell: return true
 	return false
 
 ## Estado simulado tras un movimiento (para cadenas).
+## Estado tras el 1er tramo para generar el 2º (Tritón).
+## Reutiliza apply() real en lugar de re-implementar efectos — la versión
+## manual no marcaba has_moved ni aplicaba castle/swap/immobilize, así que
+## un leg2 con celda C_DEPLOY o en-passant divergía del motor.
+## Las piezas se clonan a fondo: apply() muta has_moved/immobilized/
+## cells_override y una copia superficial corrompería el estado real.
 static func _sim(state: BoardState, mv: Dictionary) -> BoardState:
 	var s := BoardState.new()
-	s.grid = state.grid.duplicate()
+	for i in state.grid.size():
+		var p: Variant = state.grid[i]
+		s.grid[i] = p.duplicate(true) if p != null else null
 	s.factions = state.factions
 	s.last_move = state.last_move
-	var piece: Variant = s.at(mv.from)
-	for c in mv.get("captures", []): s.set_at(c, null)
-	if mv.has("attract"):
-		var a: Dictionary = mv.attract
-		var pulled: Variant = s.at(a.from)
-		s.set_at(a.from, null); s.set_at(a.to, pulled)
-	if mv.has("push"):
-		var pu: Dictionary = mv.push
-		var pushed: Variant = s.at(pu.from)
-		s.set_at(pu.from, null); s.set_at(pu.to, pushed)
-	s.set_at(mv.from, null)
-	s.set_at(mv.to, piece)
+	s.apply(mv)
 	return s

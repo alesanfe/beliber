@@ -70,12 +70,31 @@ async def main():
     m = await recv(bad)
     ok(m["op"] == "err", "token inválido rechazado")
 
+    # token VACÍO en sala con hueco: secuestraba el lado libre sin
+    # haber hecho join (tokens[1]=="" pasaba la comparación)
+    await bad.send(json.dumps({"op": "rejoin", "code": code,
+                               "side": 0, "token": ""}))
+    m = await recv(bad)
+    ok(m["op"] == "err", "token vacío rechazado")
+
     # sala inexistente
     j2 = await websockets.connect(URL)
     await j2.send(json.dumps({"op": "join", "code": "ZZZZ"}))
     m = await recv(j2)
     ok(m["op"] == "err", "sala inexistente rechazada")
     await j2.close()
+
+    # peer ya en sala no puede crear otra (dejaba sides[] huérfanos)
+    await h.send(json.dumps({"op": "create", "cfg": {"f0": 2}}))
+    m = await recv(h)
+    ok(m["op"] == "err", "create estando en sala rechazado")
+    # chat malformado no tira el handler (KeyError en "text")
+    await h.send(json.dumps({"op": "chat"}))
+    await h.send(json.dumps({"op": "chat", "text": "hola"}))
+    m = await recv(c2)               # "" del malformado
+    m = await recv(c2)
+    ok(m["op"] == "chat" and m["text"] == "hola",
+       "chat sin 'text' no cierra la conexión")
 
     # --- matchmaking: dos en cola se emparejan en sala automática ---
     q1 = await websockets.connect(URL)
@@ -95,6 +114,7 @@ async def main():
     m = await recv(q1)
     ok(m["op"] == "room" and m["side"] == 0,
        "queue: primero recibe sala side=0")
+    ok(m["cfg"]["f1"] == 5, "queue: primero recibe cfg fusionada")
     m = await recv(q1)
     ok(m["op"] == "peer", "queue: aviso de rival")
     m = await recv(q1)
@@ -112,6 +132,20 @@ async def main():
     m = await recv(q3)
     ok(m["op"] == "dequeued", "dequeue confirma")
     await q1.close(); await q2.close(); await q3.close()
+
+    # join a sala con el host caído: antes .send(None) mataba el
+    # handler del recién llegado tras haberle dado "room"
+    h3 = await websockets.connect(URL)
+    await h3.send(json.dumps({"op": "create", "cfg": {"f0": 0}}))
+    m = await recv(h3)
+    code3 = m["code"]
+    await h3.close()
+    await asyncio.sleep(0.2)   # dejar al handler marcar offline
+    j3 = await websockets.connect(URL)
+    await j3.send(json.dumps({"op": "join", "code": code3}))
+    m = await recv(j3)
+    ok(m["op"] == "err", "join a sala con host caído rechazado")
+    await j3.close()
 
     await h.close(); await c2.close(); await bad.close()
     print("== %s ==" % ("OK" if fails == 0 else f"{fails} FALLOS"))
