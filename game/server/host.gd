@@ -127,6 +127,7 @@ func _auth_pid(p: WebSocketPeer, pid: String, tok: String) -> String:
 	if pid == "": return ""
 	if idtokens.has(pid):
 		if str(idtokens[pid]) == tok: return pid
+		_sec_log("id_err pid=" + pid.left(12))
 		_send(p, {"op": "id_err"})
 		return ""
 	var nt := _token()
@@ -209,10 +210,12 @@ func _process(_d: float) -> bool:
 		while p.get_available_packet_count() > 0:
 			n += 1
 			if n > 32:
+				_sec_log("peer_flood_closed")
 				p.close()
 				break
 			var raw: String = p.get_packet().get_string_from_utf8()
 			if raw.length() > 65536:
+				_sec_log("oversized_packet_closed")
 				p.close()
 				break
 			var msg = JSON.parse_string(raw)
@@ -266,6 +269,11 @@ func _code() -> String:
 	for b in Crypto.new().generate_random_bytes(4):
 		c += chars[int(b) % chars.length()]
 	return c if not rooms.has(c) else _code()
+
+## Eventos de seguridad: una línea 'sec:<evento>' por incidente
+## relevante — grep-able en logs, sin datos sensibles.
+func _sec_log(ev: String) -> void:
+	print("sec:%s t=%d" % [ev, Time.get_ticks_msec()])
 
 func _token() -> String:
 	# Crypto: el token guarda el rejoin — con randi() un rival podría
@@ -332,6 +340,7 @@ func _on_create(p: WebSocketPeer, m: Dictionary) -> void:
 	# cap de salas: sin límite un flood de "create" crecía RAM
 	# y los dicts rooms/peers indefinidamente (DoS de capacidad)
 	if rooms.size() >= MAX_ROOMS:
+		_sec_log("room_cap_reached")
 		return _send(p, {"op": "err",
 			"msg": "Servidor lleno — prueba más tarde"})
 	var cfg: Dictionary = m.get("cfg", {})

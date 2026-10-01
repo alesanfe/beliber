@@ -10,7 +10,8 @@
 
 ## Ejecutar tests
 
-Todo cambio debe dejar la batería en verde:
+Todo de golpe: `tools/test_all.ps1` / `tools/test_all.sh`
+(env `GODOT=…` para indicar el binario). O por suite:
 
 ```
 godot --headless --path game -s res://tests/run_tests.gd

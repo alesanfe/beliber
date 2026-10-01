@@ -4,6 +4,8 @@
 ![Godot 4.7](https://img.shields.io/badge/Godot-4.7-478cbf)
 ![Version](https://img.shields.io/badge/version-0.1.1-green)
 
+📖 [Arquitectura](docs/ARCHITECTURE.md) · [Requisitos](docs/REQUIREMENTS.md) · [Protocolo](server/PROTOCOL.md) · [Datos](docs/DATA_MODEL.md) · [Amenazas](docs/THREAT_MODEL.md) · [Runbook](docs/operations/RUNBOOK.md) · [SLOs](docs/operations/SLO.md) · [Privacidad](docs/PRIVACY.md) · [ADRs](docs/decisions/) · [Contribuir](CONTRIBUTING.md) · [Seguridad](SECURITY.md) · [Changelog](CHANGELOG.md)
+
 Juego de estrategia por turnos **asimétrico** tipo ajedrez, implementado en
 **Godot 4**: 7 facciones con piezas, efectos y reglas de victoria propias
 (empujar, atraer, atravesar, inmovilizar, salto de Aquonte, doble apertura
@@ -38,7 +40,14 @@ godot --path game            # jugar
 
 ## Tests
 
+Un comando lo verifica todo:
+
 ```
+powershell tools/test_all.ps1    # o tools/test_all.sh en POSIX
+                                 # (env GODOT=<binario> si no está en PATH)
+```
+
+Por suite:
 godot --headless --path game -s res://tests/run_tests.gd     # motor + regresiones
 godot --headless --path game -s res://tests/playthrough.gd   # partidas bot-vs-bot
 godot --headless --path game -s res://tests/_smoke.gd        # smoke de UI
