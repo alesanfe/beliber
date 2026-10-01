@@ -157,12 +157,12 @@ func _host_game() -> void:
 	var port := int(net_port.text) if net_port.text != "" else 7777
 	net_peer = ENetMultiplayerPeer.new()
 	if net_peer.create_server(port, 1) != OK:
-		hud_alert("No se pudo abrir el puerto %d" % port)
+		hud_alert(tr("NET_PORT_FAIL") % port)
 		return
 	multiplayer.multiplayer_peer = net_peer
 	online = true
 	my_net = 0
-	hud_alert("Esperando rival en :%d …" % port)
+	hud_alert(tr("NET_WAITING") % port)
 	multiplayer.peer_connected.connect(func(_id: int):
 		# cliente conectado → enviar configuración y arrancar
 		_rpc_config.rpc(_game_cfg())
@@ -178,12 +178,12 @@ func _join_game() -> void:
 	var port := int(net_port.text) if net_port.text != "" else 7777
 	net_peer = ENetMultiplayerPeer.new()
 	if net_peer.create_client(ip, port) != OK:
-		hud_alert("No se pudo conectar a %s:%d" % [ip, port])
+		hud_alert(tr("NET_CONN_FAIL") % [ip, port])
 		return
 	multiplayer.multiplayer_peer = net_peer
 	online = true
 	my_net = 1
-	hud_alert("Conectando a %s:%d …" % [ip, port])
+	hud_alert(tr("NET_CONNECTING") % [ip, port])
 	multiplayer.server_disconnected.connect(func():
 		if tm != null and not tm.over:
 			tm.over = true; tm.winner = my_net
@@ -232,7 +232,7 @@ func _rpc_move(mv: Dictionary) -> void:
 			"offer": _on_draw_offered()
 			"decline":
 				draw_offered = false   # puede volver a ofrecer
-				hud_alert("El rival rechazó las tablas.")
+				hud_alert(tr("DRAW_DECLINED"))
 			_:
 				# un "accept" sin oferta previa empataba la partida
 				# sin que hubiéramos ofrecido nada (trampa remota)
@@ -245,7 +245,7 @@ func _rpc_move(mv: Dictionary) -> void:
 	# — un 'captures'/'push' falsificado por el rival no tendría efecto
 	var legal: Variant = TurnManager.match_legal(tm, mv)
 	if legal == null:
-		hud_alert("Jugada remota ilegal ignorada.")
+		hud_alert(tr("NET_ILLEGAL_MOVE"))
 		return
 	tm.play(legal)
 
@@ -258,15 +258,15 @@ func _offer_draw() -> void:
 		# partida cuando el bot iba ganando
 		if ai_player >= 0 and not coop and bot != null \
 				and BeliberBot.evaluate(tm.state, ai_player) > 1.0:
-			hud_alert("La IA rechaza las tablas.")
+			hud_alert(tr("DRAW_AI_DECLINES"))
 			return
 		tm.agree_draw()
 		return
 	if draw_offered:
-		hud_alert("Ya ofreciste tablas.")
+		hud_alert(tr("DRAW_ALREADY"))
 		return
 	draw_offered = true
-	hud_alert("Oferta de tablas enviada.")
+	hud_alert(tr("DRAW_SENT"))
 	_send_draw_resp("offer")
 
 ## El rival ofreció tablas: aceptar cierra la partida en tablas y se
@@ -274,9 +274,9 @@ func _offer_draw() -> void:
 func _on_draw_offered() -> void:
 	if tm == null or tm.over: return
 	var d := ConfirmationDialog.new()
-	d.dialog_text = "El rival ofrece tablas. ¿Aceptar?"
-	d.ok_button_text = "Aceptar"
-	d.cancel_button_text = "Rechazar"
+	d.dialog_text = tr("DRAW_OFFERED")
+	d.ok_button_text = tr("DLG_ACCEPT")
+	d.cancel_button_text = tr("DLG_DECLINE")
 	d.confirmed.connect(func():
 		d.queue_free()
 		# la partida pudo terminar con el diálogo abierto (reloj,
@@ -407,10 +407,10 @@ func _refresh_values() -> void:
 	if val_lbl0 == null: return
 	var f0: Dictionary = factions[opt_p0.selected]
 	var f1: Dictionary = factions[opt_p1.selected]
-	val_lbl0.text = "Valor: %d\n%s" % [
+	val_lbl0.text = tr("MENU_VALUE") % [
 		PiecesData.army_value(f0, opt_eq0.selected),
 		PiecesData.STYLES.get(f0.id, "")]
-	val_lbl1.text = "Valor: %d\n%s" % [
+	val_lbl1.text = tr("MENU_VALUE") % [
 		PiecesData.army_value(f1, opt_eq1.selected),
 		PiecesData.STYLES.get(f1.id, "")]
 	val_lbl0.add_theme_color_override("font_color", f0.color)
@@ -531,7 +531,7 @@ func _daily_challenge() -> void:
 	opt_ai.select(2 + int(rng.randf() < 0.4)) # IA nivel 2-3
 	stats["daily"] = seed_val
 	_save_stats()
-	hud_alert("Desafío del día: %s vs %s" % [
+	hud_alert(tr("DAILY_ALERT") % [
 		factions[f0].name, factions[f1].name])
 	_start_game()
 
@@ -547,22 +547,22 @@ func _start_run() -> void:
 	opt_ai.select(1)
 	opt_p1.select(randi() % factions.size())
 	opt_clock.select(3)   # 5+0 blitz
-	hud_alert("Run — combate 1. ¡Que empiece la racha!")
+	hud_alert(tr("RUN_START"))
 	_start_game()
 
 ## Bendición tras ganar un combate de la run.
 func _run_boon() -> void:
 	var opts := [
-		{"t": "Rival distraído (+15% fallos)",
+		{"t": tr("BOON_BLUNDER"),
 			"f": func(): run_blunder += 0.15},
-		{"t": "+60 s a tu reloj",
+		{"t": tr("BOON_CLOCK"),
 			"f": func(): run_clock_bonus += 60.0},
-		{"t": "Iniciativa (sales primero)",
+		{"t": tr("BOON_FIRST"),
 			"f": func(): run_first = true},
 	]
 	var box := VBoxContainer.new()
 	box.add_child(Widgets.lbl(
-		"Victoria — combate %d. Elige bendición:" % run_level))
+		tr("RUN_BOON_TITLE") % run_level))
 	for o in opts:
 		var b := Button.new()
 		b.text = o.t
@@ -622,41 +622,41 @@ func _start_tutorial() -> void:
 	var f0: Dictionary = factions[opt_p0.selected]
 	# objetivos base (todo jugador)
 	tut_steps = [
-		{"t": "Mueve tu primera pieza",
+		{"t": tr("TUT_MOVE"),
 			"chk": func(_mv): return true},
-		{"t": "Captura una pieza enemiga",
+		{"t": tr("TUT_CAPTURE"),
 			"chk": func(mv): return mv.get("captures", []).size() > 0},
 	]
 	# objetivo distintivo por facción (su regla de la hoja)
 	match f0.id:
 		"humenex":
-			tut_steps.append({"t": "Enroca o mueve dos veces en la apertura",
+			tut_steps.append({"t": tr("TUT_HUMENEX"),
 				"chk": func(mv): return mv.has("castle") or \
 					tm.current == 0})
 		"elfos":
-			tut_steps.append({"t": "Atraviesa a un enemigo (inmovilízalo)",
+			tut_steps.append({"t": tr("TUT_ELFOS"),
 				"chk": func(mv): return mv.get("immobilize", []).size() > 0})
 		"mortifers":
-			tut_steps.append({"t": "Captura con el Consorte (copia su patrón)",
+			tut_steps.append({"t": tr("TUT_MORTIFERS"),
 				"chk": func(mv): return mv.get("captures", []).size() > 0 \
 					and mv.get("piece_letter") == "X"})
 		"bestiarios":
-			tut_steps.append({"t": "Presiona: salta con un saltador (J/j)",
+			tut_steps.append({"t": tr("TUT_BESTIARIOS"),
 				"chk": func(mv): return mv.get("fx", 0) & FX.JUMP != 0})
 		"enanos", "kronturs":
-			tut_steps.append({"t": "Empuja a un enemigo",
+			tut_steps.append({"t": tr("TUT_PUSH"),
 				"chk": func(mv): return mv.has("push")})
 		"chlontos":
-			tut_steps.append({"t": "Ataca a distancia: captura a 3+ casillas",
+			tut_steps.append({"t": tr("TUT_CHLONTOS"),
 				"chk": func(mv): return mv.get("captures", []).size() > 0 \
 					and (mv.to - mv.from).length() >= 3.0})
 		"aquontes":
-			tut_steps.append({"t": "Salto de Aquonte o cadena del Tritón",
+			tut_steps.append({"t": tr("TUT_AQUONTES"),
 				"chk": func(mv): return mv.has("second") or \
 					mv.get("fx", 0) & FX.JUMP != 0})
-	tut_steps.append({"t": "Elimina al líder enemigo (o invade su línea)",
+	tut_steps.append({"t": tr("TUT_WIN"),
 		"chk": func(_mv): return tm.over and tm.winner == 0})
-	hud_alert("Tutorial: completa los objetivos del panel")
+	hud_alert(tr("TUT_ALERT"))
 	_start_game()
 
 ## Marca objetivos del tutorial tras cada jugada del jugador.
@@ -670,7 +670,7 @@ func _tut_check(mv: Dictionary) -> void:
 			l.text = "✔ " + s.t
 			l.add_theme_color_override("font_color", Color(0.5, 0.95, 0.6))
 	if tut_steps.all(func(s): return s.done):
-		hud_alert("¡Tutorial completado!")
+		hud_alert(tr("TUT_DONE"))
 
 ## Draft estilo CEO: picks alternos y la partida arranca con la
 ## posición resultante (sin tocar los despliegues oficiales).
@@ -721,7 +721,7 @@ func _open_editor() -> void:
 	# debe colgar de editor_ui — antes era hijo de app y quedaba
 	# huérfano encima del menú tras cada visita
 	var back := Button.new()
-	back.text = "← Volver"
+	back.text = tr("UI_BACK")
 	back.position = Vector2(8, 8)
 	back.z_index = 10
 	back.pressed.connect(func():
@@ -751,7 +751,7 @@ func _open_puzzles() -> void:
 		if s > int(stats.get("rush_best", 0)):
 			stats["rush_best"] = s
 			_save_stats()
-			hud_alert("🏁 ¡Nuevo récord de Rush: %d puzzles!" % s))
+			hud_alert(tr("RUSH_RECORD") % s))
 	add_child(editor_ui)
 	_add_back()
 
@@ -777,7 +777,7 @@ func _close_editor() -> void:
 
 ## Botón volver compartido por guía, editor, constructor y puzzles.
 func _add_back() -> void:
-	var back := Widgets.secondary("← Volver", 36)
+	var back := Widgets.secondary(tr("UI_BACK"), 36)
 	back.position = Vector2(8, 8)
 	back.z_index = 10
 	back.pressed.connect(_close_editor)
@@ -793,7 +793,7 @@ func _open_builder() -> void:
 	editor_ui = ArmyBuilder.new(factions)
 	add_child(editor_ui)
 	var back := Button.new()
-	back.text = "← Volver"
+	back.text = tr("UI_BACK")
 	back.position = Vector2(8, 8)
 	back.z_index = 10
 	back.pressed.connect(_close_editor)
@@ -817,8 +817,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif game_ui != null:
 			if tm != null and not tm.over:
 				var dlg := ConfirmationDialog.new()
-				dlg.title = "Salir"
-				dlg.dialog_text = "¿Abandonar la partida y volver al menú?"
+				dlg.title = tr("DLG_QUIT")
+				dlg.dialog_text = tr("DLG_QUIT_CONFIRM")
 				add_child(dlg)
 				dlg.confirmed.connect(_restart)
 				dlg.canceled.connect(dlg.queue_free)
@@ -911,7 +911,8 @@ func _toggle_zen() -> void:
 	for c in side_panel.get_children():
 		if c.name != "ZenToggle":
 			c.visible = not c.visible
-	hud_alert("Modo Zen %s" % ("activado" if _zen_on() else "desactivado"))
+	hud_alert(tr("HUD_ZEN_STATE") % (tr("HUD_ZEN_ON") if _zen_on()
+		else tr("HUD_ZEN_OFF")))
 
 func _zen_on() -> bool:
 	for c in side_panel.get_children():
@@ -929,7 +930,7 @@ func _suggest() -> void:
 	board.selected = mv.from
 	board.legal = [mv]
 	board.queue_redraw()
-	hud_info.text = "Sugerencia: %s" % tm.state.describe(mv)
+	hud_info.text = tr("HUD_HINT_OUT") % tm.state.describe(mv)
 
 ## Refresco del HUD (delegado a GameHUD).
 func _update_hud() -> void:
@@ -944,9 +945,9 @@ func _on_game_over(w: int) -> void:
 	_over_handled = true
 	_record_result()
 	if w < 0:
-		hud_turn.text = "¡Tablas!"
+		hud_turn.text = tr("GAME_DRAW")
 	else:
-		hud_turn.text = "¡Ganan %s!" % tm.state.factions[w].name
+		hud_turn.text = tr("GAME_WIN") % tm.state.factions[w].name
 		sfx.fanfare()
 	var resumen := PostGame.summary(tm)
 	# modo run: victoria → bendición y siguiente combate
@@ -958,8 +959,8 @@ func _on_game_over(w: int) -> void:
 			stats["run_best"] = maxi(int(stats.get("run_best", 0)),
 				run_level - 1)
 			_save_stats()
-			resumen += "\nRun terminada — racha: %d (mejor: %d)" \
-				% [run_level - 1, stats.run_best]
+			resumen += tr("RUN_OVER") % [run_level - 1,
+				stats.run_best]
 			run_active = false
 	PostGame.modal(self, w, resumen)
 
@@ -972,7 +973,7 @@ func _export_png() -> void:
 	img = img.get_region(rect)
 	var path := "user://beliber_board.png"
 	img.save_png(path)
-	hud_alert("Tablero exportado: " + path)
+	hud_alert(tr("HUD_PNG_SAVED") + path)
 
 ## Persiste ajustes visuales en CFG_PATH.
 func _save_settings() -> void:
@@ -1174,6 +1175,6 @@ func _load_game() -> void:
 	# y no volver a registrar stats
 	if tm.over:
 		_over_handled = true
-		hud_turn.text = "¡Tablas!" if tm.winner < 0 else \
-			"¡Ganan %s!" % tm.state.factions[tm.winner].name
+		hud_turn.text = tr("GAME_DRAW") if tm.winner < 0 else \
+			tr("GAME_WIN") % tm.state.factions[tm.winner].name
 

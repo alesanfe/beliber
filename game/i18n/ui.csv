@@ -1,0 +1,163 @@
+keys,es,en
+MENU_SUBTITLE,Ajedrez asimétrico por facciones,Asymmetric faction chess
+MENU_PLAY,Jugar,Play
+MENU_PLAY_TIP,Partida local con la configuración elegida,Local game with the chosen settings
+MENU_ONLINE_TIP,"Matchmaking, salas, LAN y clasificación","Matchmaking, rooms, LAN and ladder"
+MENU_TUTORIAL_TIP,Partida guiada con objetivos paso a paso,Guided game with step-by-step goals
+MENU_PROFILE,Perfil,Profile
+MENU_PROFILE_TIP,"Estadísticas, logros y récords","Stats, achievements and records"
+MENU_P1,Jugador 1 (abajo),Player 1 (bottom)
+MENU_P2,Jugador 2 (arriba),Player 2 (top)
+MENU_TEAM,Equipo,Army
+MENU_CUSTOM,Personalizado,Custom
+MENU_ADVANCED,⚙ Configuración avanzada,⚙ Advanced settings
+MENU_ADVANCED_TIP,"Reglas, rival IA, reloj, co-op y tema","Rules, AI rival, clock, co-op and theme"
+RULE_MIDLINE,Invasión de línea (líder llega a la última fila rival),Midline invasion (leader reaches the last enemy rank)
+RULE_STALL,Anti-estancamiento,Anti-stalling
+RULE_STALL_TURNS,turnos sin captura:,turns without capture:
+MENU_P2_LABEL,Jugador 2:,Player 2:
+AI_HUMAN,Humano,Human
+AI_LVL1,IA nivel 1,AI level 1
+AI_LVL2,IA nivel 2,AI level 2
+AI_LVL3,IA nivel 3,AI level 3
+AI_VS_AI,IA vs IA,AI vs AI
+MENU_STYLE_LABEL,  Estilo:,  Style:
+STYLE_AUTO,Auto (facción),Auto (faction)
+STYLE_BALANCED,Equilibrada,Balanced
+STYLE_AGGRESSIVE,Agresiva,Aggressive
+STYLE_DEFENSIVE,Defensiva,Defensive
+MENU_CLOCK_LABEL,Reloj:,Clock:
+CLOCK_NONE,Sin reloj,No clock
+CLOCK_CLASSIC,30 min Clásico,30 min Classical
+MENU_HANDICAP,La IA juega con la mitad de tiempo,AI plays with half the time
+MENU_COOP,Co-op: 2 humanos vs IA,Co-op: 2 humans vs AI
+MENU_COOP_TIP,Dos jugadores alternan los movimientos de J1,Two players alternate P1's moves
+MENU_THEME_LABEL,Tema:,Theme:
+THEME_DARK,Oscuro,Dark
+THEME_LIGHT,Claro,Light
+THEME_CONTRAST,Alto contraste,High contrast
+MENU_FLIP,Girar el tablero cada turno (modo local),Flip the board each turn (local mode)
+MENU_MODES,Modos,Modes
+MENU_DAILY,Desafío diario,Daily challenge
+MENU_DAILY_TIP,Enfrentamiento determinista por fecha,Deterministic matchup by date
+MENU_DAILY_DONE, (ya jugado hoy), (already played today)
+MENU_RUN,Modo Run,Run mode
+MENU_RUN_TIP,Racha: cada victoria sube el nivel del rival,Streak: each win levels up the rival
+MENU_DRAFT_TIP,Pick alterno de piezas con presupuesto (CEO),Alternating piece picks on a budget (CEO)
+MENU_PUZZLES_TIP,Encuentra la captura del líder,Find the leader capture
+MENU_TOOLS,Herramientas,Tools
+MENU_PIECE_EDITOR,Editor de piezas,Piece editor
+MENU_BUILDER,Constructor,Builder
+MENU_BUILDER_TIP,Constructor de ejército personalizado,Custom army builder
+MENU_POS_EDITOR,Editor de posición,Position editor
+MENU_GUIDE,Guía,Guide
+MENU_GUIDE_TIP,"Aprende cada facción: ejército, reglas y patrones","Learn each faction: army, rules and patterns"
+MENU_LOAD,Cargar,Load
+MENU_LOAD_TIP,Cargar partida guardada,Load a saved game
+MENU_VALUE,"Valor: %d
+%s","Value: %d
+%s"
+STATS_GAMES,Partidas: %d,Games: %d
+STATS_WINS,%s: %dV,%s: %dW
+STATS_LV,%s nv%d,%s lv%d
+STATS_MASTERY,Dominio: ,Mastery:
+STATS_ACH,Logros: ,Achievements:
+ACH_PRIMERA,Primera victoria,First victory
+ACH_CAZA5,Cazador: 5+ capturas en una partida,Hunter: 5+ captures in a game
+ACH_IA3,Vencer a la IA nivel 3,Beat AI level 3
+ACH_CINCO,Cinco partidas disputadas,Five games played
+ACH_VELOZ,Ganar en menos de 15 movimientos,Win in under 15 moves
+TUT_GOALS,Objetivos del tutorial,Tutorial goals
+TAB_GAME,Partida,Game
+TAB_OPTIONS,Opciones,Options
+HUD_CAPTURES,Capturas,Captures
+HUD_MOVES,Movimientos (clic para revisar),Moves (click to review)
+HUD_INFLUENCE,Mapa de influencia,Influence map
+HUD_UNDO,Deshacer,Undo
+HUD_RESIGN,Rendirse,Resign
+DLG_RESIGN_CONFIRM,¿Seguro que quieres abandonar la partida?,Are you sure you want to resign the game?
+DLG_KEEP_PLAYING,Seguir jugando,Keep playing
+HUD_EXPORT,Exportar,Export
+HUD_EXPORTED,Partida exportada: ,Game exported:
+HUD_EXPORT_ERR,Error exportando,Export failed
+HUD_FLIP,Girar,Flip
+HUD_HINT,Sugerir,Hint
+HUD_DRAW_OFFER,Ofrecer tablas,Offer draw
+HUD_DRAW,Tablas,Draw
+HUD_SAVE,Guardar,Save
+HUD_SAVE_LOCAL,Solo se puede guardar en partidas locales.,Saving is only available in local games.
+HUD_SAVED,Partida guardada.,Game saved.
+HUD_THEME,Tema,Theme
+HUD_LIVE,Vivo,Live
+HUD_THREATS,Amenazas,Threats
+ANIM_SLOW,Animación lenta,Slow animation
+ANIM_NORMAL,Animación normal,Normal animation
+ANIM_FAST,Animación rápida,Fast animation
+ANIM_OFF,Sin animación,No animation
+HUD_MOVE,Mover,Move
+HUD_BLIND,Ciego,Blind
+HUD_BLIND_TIP,Oculta las piezas (memoria),Hides the pieces (memory)
+HUD_CONFIRM,Confirmar,Confirm
+HUD_CONFIRM_TIP,Requiere un 2º clic en el destino,Requires a 2nd click on the destination
+HUD_MUTE,Silencio,Mute
+HUD_PNG_TIP,Exportar el tablero como imagen,Export the board as an image
+HUD_BEL_TIP,Copiar la posición como texto compartible,Copy the position as shareable text
+HUD_BEL_COPIED,Posición copiada: ,Position copied:
+HUD_ZEN_TIP,Ocultar el panel (modo concentración),Hide the panel (focus mode)
+HUD_NEW_GAME,Nueva partida,New game
+HUD_CHAT_PH,Chat… (Enter para enviar),Chat… (Enter to send)
+HUD_MOVES_LEFT,  (quedan %d movimientos),  (%d moves left)
+HUD_YOU_ARE,  (eres J%d — %s),  (you are P%d — %s)
+HUD_YOUR_TURN,tu turno,your turn
+HUD_THEIR_TURN,turno rival,opponent's turn
+HUD_COOP_TURN,  (%s mueve),  (%s moves)
+HUD_HUMAN_A,Humano A,Human A
+HUD_HUMAN_B,Humano B,Human B
+HUD_TURN,Turno: %s,Turn: %s
+HUD_INFO,"Líderes — %s: %d  |  %s: %d%s
+Material — %d vs %d","Leaders — %s: %d  |  %s: %d%s
+Material — %d vs %d"
+NET_PORT_FAIL,No se pudo abrir el puerto %d,Could not open port %d
+NET_WAITING,Esperando rival en :%d …,Waiting for rival on :%d …
+NET_CONN_FAIL,No se pudo conectar a %s:%d,Could not connect to %s:%d
+NET_CONNECTING,Conectando a %s:%d …,Connecting to %s:%d …
+DRAW_DECLINED,El rival rechazó las tablas.,Opponent declined the draw.
+NET_ILLEGAL_MOVE,Jugada remota ilegal ignorada.,Illegal remote move ignored.
+DRAW_AI_DECLINES,La IA rechaza las tablas.,The AI declines the draw.
+DRAW_ALREADY,Ya ofreciste tablas.,You already offered a draw.
+DRAW_SENT,Oferta de tablas enviada.,Draw offer sent.
+DRAW_OFFERED,El rival ofrece tablas. ¿Aceptar?,Opponent offers a draw. Accept?
+DLG_ACCEPT,Aceptar,Accept
+DLG_DECLINE,Rechazar,Decline
+DAILY_ALERT,Desafío del día: %s vs %s,Daily challenge: %s vs %s
+RUN_START,Run — combate 1. ¡Que empiece la racha!,Run — battle 1. Let the streak begin!
+BOON_BLUNDER,Rival distraído (+15% fallos),Distracted rival (+15% blunders)
+BOON_CLOCK,+60 s a tu reloj,+60 s on your clock
+BOON_FIRST,Iniciativa (sales primero),Initiative (you move first)
+RUN_BOON_TITLE,Victoria — combate %d. Elige bendición:,Victory — battle %d. Choose a blessing:
+TUT_MOVE,Mueve tu primera pieza,Move your first piece
+TUT_CAPTURE,Captura una pieza enemiga,Capture an enemy piece
+TUT_HUMENEX,Enroca o mueve dos veces en la apertura,Castle or move twice in the opening
+TUT_ELFOS,Atraviesa a un enemigo (inmovilízalo),Pass through an enemy (immobilize it)
+TUT_MORTIFERS,Captura con el Consorte (copia su patrón),Capture with the Consort (copy its pattern)
+TUT_BESTIARIOS,Presiona: salta con un saltador (J/j),Leap: jump with a jumper (J/j)
+TUT_PUSH,Empuja a un enemigo,Push an enemy
+TUT_CHLONTOS,Ataca a distancia: captura a 3+ casillas,Ranged attack: capture 3+ squares away
+TUT_AQUONTES,Salto de Aquonte o cadena del Tritón,Aquonte leap or Triton chain
+TUT_WIN,Elimina al líder enemigo (o invade su línea),Eliminate the enemy leader (or invade their rank)
+TUT_ALERT,Tutorial: completa los objetivos del panel,Tutorial: complete the panel goals
+TUT_DONE,¡Tutorial completado!,Tutorial complete!
+UI_BACK,← Volver,← Back
+RUSH_RECORD,🏁 ¡Nuevo récord de Rush: %d puzzles!,🏁 New Rush record: %d puzzles!
+DLG_QUIT,Salir,Quit
+DLG_QUIT_CONFIRM,¿Abandonar la partida y volver al menú?,Leave the game and return to the menu?
+HUD_ZEN_STATE,Modo Zen %s,Zen mode %s
+HUD_ZEN_ON,activado,on
+HUD_ZEN_OFF,desactivado,off
+HUD_HINT_OUT,Sugerencia: %s,Hint: %s
+GAME_DRAW,¡Tablas!,Draw!
+GAME_WIN,¡Ganan %s!,%s win!
+RUN_OVER,"
+Run terminada — racha: %d (mejor: %d)","
+Run over — streak: %d (best: %d)"
+HUD_PNG_SAVED,Tablero exportado: ,Board exported:

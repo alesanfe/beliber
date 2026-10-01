@@ -68,7 +68,7 @@ static func build(app) -> void:
 	# checklist del tutorial (walkthrough estilo Root)
 	if app.tutorial:
 		app.tut_box = VBoxContainer.new()
-		app.tut_box.add_child(Widgets.lbl("Objetivos del tutorial"))
+		app.tut_box.add_child(Widgets.lbl(Lang.t("TUT_GOALS")))
 		for s in app.tut_steps:
 			var l := Widgets.lbl("• " + s.t)
 			l.autowrap_mode = TextServer.AUTOWRAP_WORD
@@ -80,10 +80,10 @@ static func build(app) -> void:
 	tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	side.add_child(tabs)
 	var tab_game := VBoxContainer.new()
-	tab_game.name = "Partida"
+	tab_game.name = Lang.t("TAB_GAME")
 	tabs.add_child(tab_game)
 	var tab_opts := VBoxContainer.new()
-	tab_opts.name = "Opciones"
+	tab_opts.name = Lang.t("TAB_OPTIONS")
 	tabs.add_child(tab_opts)
 	var tab_chat := VBoxContainer.new()
 	tab_chat.name = "Chat"
@@ -111,7 +111,7 @@ static func build(app) -> void:
 	# bandejas de capturadas — sección colapsable (clic en el toggle
 	# oculta/muestra; estilo panel lichess)
 	var cap_t := CheckButton.new()
-	cap_t.text = "Capturas"
+	cap_t.text = Lang.t("HUD_CAPTURES")
 	cap_t.button_pressed = true
 	tg.add_child(cap_t)
 	var cap_box := VBoxContainer.new()
@@ -131,7 +131,7 @@ static func build(app) -> void:
 	cap_box.add_child(tr1)
 	# historial de movimientos — sección colapsable propia
 	var mv_t := CheckButton.new()
-	mv_t.text = "Movimientos (clic para revisar)"
+	mv_t.text = Lang.t("HUD_MOVES")
 	mv_t.button_pressed = true
 	tg.add_child(mv_t)
 	var mv_box := VBoxContainer.new()
@@ -151,14 +151,14 @@ static func build(app) -> void:
 	tab_chat.add_child(app.hud_log)
 	app.btn_cov = CheckButton.new()
 	# también marca destinos MOVER — es influencia, no solo amenaza
-	app.btn_cov.text = "Mapa de influencia"
+	app.btn_cov.text = Lang.t("HUD_INFLUENCE")
 	app.btn_cov.toggled.connect(func(on):
 		app.board.show_coverage = on; app.board.queue_redraw())
 	opts.add_child(app.btn_cov)
 	var btn_row := HBoxContainer.new()
 	opts.add_child(btn_row)
 	var b_undo := Button.new()
-	b_undo.text = "Deshacer"
+	b_undo.text = Lang.t("HUD_UNDO")
 	b_undo.pressed.connect(func():
 		# online desincronizaría; tras el fin, undo resucitaría la
 		# partida (las terminaciones no están en history)
@@ -174,17 +174,17 @@ static func build(app) -> void:
 			app.board.pre_sel = Vector2i(-1, -1)
 			app.board.queue_redraw(); app._update_hud())
 	btn_row.add_child(b_undo)
-	var b_resign := Widgets.danger("Rendirse")
+	var b_resign := Widgets.danger(Lang.t("HUD_RESIGN"))
 	b_resign.pressed.connect(func():
 		# IA-vs-IA: el espectador no puede rendir a los bots; ni hay
 		# partida que abandonar si tm no existe (diálogo huérfano)
 		if app.tm == null or app.tm.over or app.ai_both: return
 		# diálogo de confirmación (estilo ProperUI Modal)
 		var dlg := ConfirmationDialog.new()
-		dlg.title = "Rendirse"
-		dlg.dialog_text = "¿Seguro que quieres abandonar la partida?"
-		dlg.ok_button_text = "Rendirse"
-		dlg.cancel_button_text = "Seguir jugando"
+		dlg.title = Lang.t("HUD_RESIGN")
+		dlg.dialog_text = Lang.t("DLG_RESIGN_CONFIRM")
+		dlg.ok_button_text = Lang.t("HUD_RESIGN")
+		dlg.cancel_button_text = Lang.t("DLG_KEEP_PLAYING")
 		app.add_child(dlg)
 		dlg.confirmed.connect(func():
 			# la partida pudo terminar con el diálogo abierto
@@ -195,46 +195,47 @@ static func build(app) -> void:
 		dlg.popup_centered())
 	btn_row.add_child(b_resign)
 	var b_export := Button.new()
-	b_export.text = "Exportar"
+	b_export.text = Lang.t("HUD_EXPORT")
 	b_export.pressed.connect(func():
 		var p: String = app.tm.export_log(app.EXPORT_PATH)
-		app.hud_alert("Partida exportada: " + p if p != "" \
-			else "Error exportando"))
+		app.hud_alert(Lang.t("HUD_EXPORTED") + p if p != "" \
+			else Lang.t("HUD_EXPORT_ERR")))
 	btn_row.add_child(b_export)
 	var btn_row2 := HBoxContainer.new()
 	opts.add_child(btn_row2)
 	var b_flip := Button.new()
-	b_flip.text = "Girar"
+	b_flip.text = Lang.t("HUD_FLIP")
 	b_flip.pressed.connect(func():
 		app.board.flipped = not app.board.flipped
 		app.board.queue_redraw())
 	btn_row2.add_child(b_flip)
 	var b_hint := Button.new()
-	b_hint.text = "Sugerir"
+	b_hint.text = Lang.t("HUD_HINT")
 	b_hint.pressed.connect(app._suggest)
 	btn_row2.add_child(b_hint)
 	var b_draw := Button.new()
-	b_draw.text = "Ofrecer tablas" if app.online else "Tablas"
+	b_draw.text = Lang.t("HUD_DRAW_OFFER") if app.online \
+		else Lang.t("HUD_DRAW")
 	# online ahora es oferta→aceptar/rechazar real, no tablas
 	# unilaterales: el rival decide con un diálogo
 	b_draw.pressed.connect(app._offer_draw)
 	btn_row2.add_child(b_draw)
 	var b_save := Button.new()
-	b_save.text = "Guardar"
+	b_save.text = Lang.t("HUD_SAVE")
 	b_save.pressed.connect(func():
 		# una partida online/run se recarga como hotseat local — fork
 		# silencioso (y un reloj a 0 flaggeaba al instante)
 		if app.online or app.run_active:
-			app.hud_alert("Solo se puede guardar en partidas locales.")
+			app.hud_alert(Lang.t("HUD_SAVE_LOCAL"))
 			return
 		StatsStore.atomic_write(app.SAVE_PATH,
 			JSON.stringify(app.tm.save_game()))
-		app.hud_alert("Partida guardada."))
+		app.hud_alert(Lang.t("HUD_SAVED")))
 	btn_row2.add_child(b_save)
 	var btn_row3 := HBoxContainer.new()
 	opts.add_child(btn_row3)
 	var b_theme := Button.new()
-	b_theme.text = "Tema"
+	b_theme.text = Lang.t("HUD_THEME")
 	b_theme.pressed.connect(func():
 		app.board.theme_i = (app.board.theme_i + 1) \
 			% BoardView.THEMES.size()
@@ -258,7 +259,7 @@ static func build(app) -> void:
 		app.board.queue_redraw())
 	btn_row3.add_child(b_next)
 	var b_live := Button.new()
-	b_live.text = "Vivo"
+	b_live.text = Lang.t("HUD_LIVE")
 	b_live.pressed.connect(func():
 		app.board.view_i = -1; app.board.queue_redraw())
 	btn_row3.add_child(b_live)
@@ -266,7 +267,7 @@ static func build(app) -> void:
 	var btn_row4 := HBoxContainer.new()
 	opts.add_child(btn_row4)
 	var b_thr := CheckButton.new()
-	b_thr.text = "Amenazas"
+	b_thr.text = Lang.t("HUD_THREATS")
 	b_thr.toggled.connect(func(on):
 		app.board.show_threats = on; app.board.queue_redraw()
 		app._save_settings())
@@ -287,8 +288,8 @@ static func build(app) -> void:
 		app._save_settings())
 	btn_row4.add_child(zoom)
 	var opt_anim := OptionButton.new()
-	for t in ["Animación lenta", "Animación normal", "Animación rápida",
-			"Sin animación"]:
+	for t in [Lang.t("ANIM_SLOW"), Lang.t("ANIM_NORMAL"),
+			Lang.t("ANIM_FAST"), Lang.t("ANIM_OFF")]:
 		opt_anim.add_item(t)
 	# seleccionar el valor cargado, no siempre "normal"
 	var adurs := [0.35, 0.18, 0.08, 0.001]
@@ -310,7 +311,7 @@ static func build(app) -> void:
 	inp.custom_minimum_size = Vector2(80, 0)
 	key_row.add_child(inp)
 	var b_go := Button.new()
-	b_go.text = "Mover"
+	b_go.text = Lang.t("HUD_MOVE")
 	var do_key_move := func():
 		var txt: String = inp.text.strip_edges().to_lower() \
 			.replace(" ", "")
@@ -341,8 +342,8 @@ static func build(app) -> void:
 	var btn_row5 := HBoxContainer.new()
 	opts.add_child(btn_row5)
 	var b_blind := CheckButton.new()
-	b_blind.text = "Ciego"
-	b_blind.tooltip_text = "Oculta las piezas (memoria)"
+	b_blind.text = Lang.t("HUD_BLIND")
+	b_blind.tooltip_text = Lang.t("HUD_BLIND_TIP")
 	b_blind.toggled.connect(func(on):
 		app.board.blindfold = on; app.board.queue_redraw()
 		app._save_settings())
@@ -355,15 +356,15 @@ static func build(app) -> void:
 		app._save_settings())
 	btn_row5.add_child(b_coords)
 	var b_conf := CheckButton.new()
-	b_conf.text = "Confirmar"
-	b_conf.tooltip_text = "Requiere un 2º clic en el destino"
+	b_conf.text = Lang.t("HUD_CONFIRM")
+	b_conf.tooltip_text = Lang.t("HUD_CONFIRM_TIP")
 	b_conf.toggled.connect(func(on):
 		app.board.confirm_moves = on; app._save_settings())
 	btn_row5.add_child(b_conf)
 	var btn_row6 := HBoxContainer.new()
 	opts.add_child(btn_row6)
 	var b_mute := CheckButton.new()
-	b_mute.text = "Silencio"
+	b_mute.text = Lang.t("HUD_MUTE")
 	b_mute.toggled.connect(func(on):
 		app.muted = on; app._save_settings())
 	btn_row6.add_child(b_mute)
@@ -372,12 +373,12 @@ static func build(app) -> void:
 		"conf": b_conf, "mute": b_mute}
 	var b_png := Button.new()
 	b_png.text = "PNG"
-	b_png.tooltip_text = "Exportar el tablero como imagen"
+	b_png.tooltip_text = Lang.t("HUD_PNG_TIP")
 	b_png.pressed.connect(app._export_png)
 	btn_row6.add_child(b_png)
 	var b_bel := Button.new()
 	b_bel.text = "BEL-FEN"
-	b_bel.tooltip_text = "Copiar la posición como texto compartible"
+	b_bel.tooltip_text = Lang.t("HUD_BEL_TIP")
 	b_bel.pressed.connect(func():
 		# opt_* ya están liberados — usar la config congelada
 		var s := BoardState.to_bel(app.tm.state,
@@ -385,15 +386,15 @@ static func build(app) -> void:
 			app._last_sel[1], int(app._saved_opts.get("eq1", 0)),
 			app.tm.current)
 		DisplayServer.clipboard_set(s)
-		app.hud_alert("Posición copiada: " + s.left(48) + "…"))
+		app.hud_alert(Lang.t("HUD_BEL_COPIED") + s.left(48) + "…"))
 	btn_row6.add_child(b_bel)
 	var b_bel2 := Button.new()
 	b_bel2.text = "Zen"
-	b_bel2.tooltip_text = "Ocultar el panel (modo concentración)"
+	b_bel2.tooltip_text = Lang.t("HUD_ZEN_TIP")
 	b_bel2.pressed.connect(func(): app._toggle_zen())
 	btn_row6.add_child(b_bel2)
 	var btn := Button.new()
-	btn.text = "Nueva partida"
+	btn.text = Lang.t("HUD_NEW_GAME")
 	btn.pressed.connect(app._restart)
 	opts.add_child(btn)
 	# botón Zen SIEMPRE visible: fuera de lo que se oculta, si no no
@@ -407,7 +408,7 @@ static func build(app) -> void:
 	# chat online (protocolo ya existe en relay y arbitro)
 	if app.online:
 		var chat := LineEdit.new()
-		chat.placeholder_text = "Chat… (Enter para enviar)"
+		chat.placeholder_text = Lang.t("HUD_CHAT_PH")
 		chat.text_submitted.connect(func(t):
 			if t.strip_edges() == "": return
 			if app.ws != null:
@@ -435,15 +436,17 @@ static func update(app) -> void:
 	var f: Dictionary = tm.state.factions[tm.current]
 	var extra := ""
 	if tm.moves_left > 1:
-		extra = "  (quedan %d movimientos)" % tm.moves_left
+		extra = Lang.t("HUD_MOVES_LEFT") % tm.moves_left
 	var who: String = f.name
 	if app.online:
-		who += "  (eres J%d — %s)" % [app.my_net + 1,
-			"tu turno" if tm.current == app.my_net else "turno rival"]
+		who += Lang.t("HUD_YOU_ARE") % [app.my_net + 1,
+			Lang.t("HUD_YOUR_TURN") if tm.current == app.my_net
+			else Lang.t("HUD_THEIR_TURN")]
 	elif app.coop and tm.current == 0:
-		who += "  (%s mueve)" % \
-			("Humano A" if app.coop_turn == 0 else "Humano B")
-	app.hud_turn.text = "Turno: %s" % who
+		who += Lang.t("HUD_COOP_TURN") % \
+			(Lang.t("HUD_HUMAN_A") if app.coop_turn == 0
+			else Lang.t("HUD_HUMAN_B"))
+	app.hud_turn.text = Lang.t("HUD_TURN") % who
 	app.hud_turn.add_theme_color_override("font_color", f.color)
 	# tarjeta del rival (arriba del panel): facción + bando
 	var riv: int = 1 - app.my_net if app.online else \
@@ -457,7 +460,7 @@ static func update(app) -> void:
 	var l0 := tm.state.leaders_alive(0)
 	var l1 := tm.state.leaders_alive(1)
 	app.hud_info.text = \
-		"Líderes — %s: %d  |  %s: %d%s\nMaterial — %d vs %d" % [
+		Lang.t("HUD_INFO") % [
 			tm.state.factions[0].name, l0,
 			tm.state.factions[1].name, l1, extra,
 			tm.material_value(0), tm.material_value(1)]

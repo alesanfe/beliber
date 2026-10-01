@@ -36,6 +36,7 @@ func _init() -> void:
 	_test_zero_and_leg2_deploy()
 	_test_load_regression()
 	_test_bak_recovery()
+	_test_i18n()
 	print("== %s ==" % ("OK" if failures == 0 else "%d FALLOS" % failures))
 	quit(0 if failures == 0 else 1)
 
@@ -797,3 +798,16 @@ func _test_bak_recovery() -> void:
 		ProjectSettings.globalize_path(p))
 	DirAccess.remove_absolute(
 		ProjectSettings.globalize_path(p + ".bak"))
+
+## i18n: las claves de Lang.t deben traducirse en es y en — una clave
+## ausente devolvería la propia clave en la UI.
+func _test_i18n() -> void:
+	var es: Translation = load("res://i18n/ui.es.translation")
+	var en: Translation = load("res://i18n/ui.en.translation")
+	_ok(es != null and en != null, "i18n: translation resources cargan")
+	var prev := TranslationServer.get_locale()
+	TranslationServer.set_locale("es")
+	_ok(Lang.t("MENU_PLAY") == "Jugar", "i18n: es traduce")
+	TranslationServer.set_locale("en")
+	_ok(Lang.t("MENU_PLAY") == "Play", "i18n: en traduce")
+	TranslationServer.set_locale(prev)

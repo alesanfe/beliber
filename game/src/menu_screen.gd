@@ -37,7 +37,7 @@ static func build(app) -> void:
 	select_ui.add_child(title)
 
 	var sub := Label.new()
-	sub.text = "Ajedrez asimétrico por facciones"
+	sub.text = Lang.t("MENU_SUBTITLE")
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	select_ui.add_child(sub)
 
@@ -46,27 +46,27 @@ static func build(app) -> void:
 	row1.alignment = BoxContainer.ALIGNMENT_CENTER
 	row1.add_theme_constant_override("separation", 10)
 	select_ui.add_child(row1)
-	var btn := Widgets.primary("Jugar", 64)
+	var btn := Widgets.primary(Lang.t("MENU_PLAY"), 64)
 	btn.custom_minimum_size.x = 210
-	btn.tooltip_text = "Partida local con la configuración elegida"
+	btn.tooltip_text = Lang.t("MENU_PLAY_TIP")
 	btn.pressed.connect(app._start_game)
 	row1.add_child(btn)
 	var btn_onl := Button.new()
 	btn_onl.text = "Online"
 	btn_onl.custom_minimum_size = Vector2(145, 64)
-	btn_onl.tooltip_text = "Matchmaking, salas, LAN y clasificación"
+	btn_onl.tooltip_text = Lang.t("MENU_ONLINE_TIP")
 	btn_onl.pressed.connect(app._open_online)
 	row1.add_child(btn_onl)
 	var btn_tut := Button.new()
 	btn_tut.text = "Tutorial"
 	btn_tut.custom_minimum_size = Vector2(135, 64)
-	btn_tut.tooltip_text = "Partida guiada con objetivos paso a paso"
+	btn_tut.tooltip_text = Lang.t("MENU_TUTORIAL_TIP")
 	btn_tut.pressed.connect(app._start_tutorial)
 	row1.add_child(btn_tut)
 	var btn_prof := Button.new()
-	btn_prof.text = "Perfil"
+	btn_prof.text = Lang.t("MENU_PROFILE")
 	btn_prof.custom_minimum_size = Vector2(105, 64)
-	btn_prof.tooltip_text = "Estadísticas, logros y récords"
+	btn_prof.tooltip_text = Lang.t("MENU_PROFILE_TIP")
 	btn_prof.pressed.connect(app._open_profile)
 	row1.add_child(btn_prof)
 
@@ -77,8 +77,8 @@ static func build(app) -> void:
 	grid.columns = 3
 	select_ui.add_child(grid)
 
-	grid.add_child(Widgets.lbl("Jugador 1 (abajo)"))
-	grid.add_child(Widgets.lbl("Jugador 2 (arriba)"))
+	grid.add_child(Widgets.lbl(Lang.t("MENU_P1")))
+	grid.add_child(Widgets.lbl(Lang.t("MENU_P2")))
 	grid.add_child(Control.new())
 
 	app.opt_p0 = app._faction_picker()
@@ -113,18 +113,18 @@ static func build(app) -> void:
 	app.val_lbl1 = Widgets.lbl(""); grid.add_child(app.val_lbl1)
 	grid.add_child(Control.new())
 
-	grid.add_child(Widgets.lbl("Equipo"))
-	grid.add_child(Widgets.lbl("Equipo"))
+	grid.add_child(Widgets.lbl(Lang.t("MENU_TEAM")))
+	grid.add_child(Widgets.lbl(Lang.t("MENU_TEAM")))
 	grid.add_child(Control.new())
 
 	app.opt_eq0 = OptionButton.new()
 	app.opt_eq0.add_item("Eq1"); app.opt_eq0.add_item("Eq2")
-	app.opt_eq0.add_item("Personalizado")
+	app.opt_eq0.add_item(Lang.t("MENU_CUSTOM"))
 	app.opt_eq0.item_selected.connect(func(_i): app._refresh_values())
 	grid.add_child(app.opt_eq0)
 	app.opt_eq1 = OptionButton.new()
 	app.opt_eq1.add_item("Eq1"); app.opt_eq1.add_item("Eq2")
-	app.opt_eq1.add_item("Personalizado")
+	app.opt_eq1.add_item(Lang.t("MENU_CUSTOM"))
 	app.opt_eq1.item_selected.connect(func(_i): app._refresh_values())
 	grid.add_child(app.opt_eq1)
 	grid.add_child(Control.new())
@@ -135,8 +135,8 @@ static func build(app) -> void:
 	# ── CONFIGURACIÓN AVANZADA (colapsada por defecto — reduce la
 	# carga visual del menú; todo sigue a un clic de distancia) ──
 	var adv_t := CheckButton.new()
-	adv_t.text = "⚙ Configuración avanzada"
-	adv_t.tooltip_text = "Reglas, rival IA, reloj, co-op y tema"
+	adv_t.text = Lang.t("MENU_ADVANCED")
+	adv_t.tooltip_text = Lang.t("MENU_ADVANCED_TIP")
 	select_ui.add_child(adv_t)
 	var adv := VBoxContainer.new()
 	adv.visible = false
@@ -145,15 +145,14 @@ static func build(app) -> void:
 
 	# reglas opcionales (de la competencia: Chess 2 midline, anti-stall)
 	app.chk_midline = CheckBox.new()
-	app.chk_midline.text = \
-		"Invasión de línea (líder llega a la última fila rival)"
+	app.chk_midline.text = Lang.t("RULE_MIDLINE")
 	adv.add_child(app.chk_midline)
 	var stall_row := HBoxContainer.new()
 	adv.add_child(stall_row)
 	app.chk_stall = CheckBox.new()
-	app.chk_stall.text = "Anti-estancamiento"
+	app.chk_stall.text = Lang.t("RULE_STALL")
 	stall_row.add_child(app.chk_stall)
-	stall_row.add_child(Widgets.lbl("turnos sin captura:"))
+	stall_row.add_child(Widgets.lbl(Lang.t("RULE_STALL_TURNS")))
 	app.stall_spin = SpinBox.new()
 	app.stall_spin.min_value = 10; app.stall_spin.max_value = 60
 	app.stall_spin.value = 30
@@ -162,32 +161,32 @@ static func build(app) -> void:
 	# rival IA + reloj
 	var opt_row := HBoxContainer.new()
 	adv.add_child(opt_row)
-	opt_row.add_child(Widgets.lbl("Jugador 2:"))
+	opt_row.add_child(Widgets.lbl(Lang.t("MENU_P2_LABEL")))
 	app.opt_ai = OptionButton.new()
-	for t in ["Humano", "IA nivel 1", "IA nivel 2", "IA nivel 3",
-			"IA vs IA"]:
+	for t in [Lang.t("AI_HUMAN"), Lang.t("AI_LVL1"), Lang.t("AI_LVL2"),
+			Lang.t("AI_LVL3"), Lang.t("AI_VS_AI")]:
 		app.opt_ai.add_item(t)
 	opt_row.add_child(app.opt_ai)
-	opt_row.add_child(Widgets.lbl("  Estilo:"))
+	opt_row.add_child(Widgets.lbl(Lang.t("MENU_STYLE_LABEL")))
 	app.opt_style = OptionButton.new()
-	for t in ["Auto (facción)", "Equilibrada", "Agresiva", "Defensiva"]:
+	for t in [Lang.t("STYLE_AUTO"), Lang.t("STYLE_BALANCED"),
+			Lang.t("STYLE_AGGRESSIVE"), Lang.t("STYLE_DEFENSIVE")]:
 		app.opt_style.add_item(t)
 	opt_row.add_child(app.opt_style)
 	var opt_row2 := HBoxContainer.new()
 	adv.add_child(opt_row2)
-	opt_row2.add_child(Widgets.lbl("Reloj:"))
+	opt_row2.add_child(Widgets.lbl(Lang.t("MENU_CLOCK_LABEL")))
 	app.opt_clock = OptionButton.new()
-	for t in ["Sin reloj", "1+0 Bullet", "3+2 Blitz", "5+0 Blitz",
-			"10+5 Rapid", "30 min Clásico"]:
+	for t in [Lang.t("CLOCK_NONE"), "1+0 Bullet", "3+2 Blitz",
+			"5+0 Blitz", "10+5 Rapid", Lang.t("CLOCK_CLASSIC")]:
 		app.opt_clock.add_item(t)
 	opt_row2.add_child(app.opt_clock)
 	app.chk_handicap = CheckBox.new()
-	app.chk_handicap.text = "La IA juega con la mitad de tiempo"
+	app.chk_handicap.text = Lang.t("MENU_HANDICAP")
 	opt_row2.add_child(app.chk_handicap)
 	app.chk_coop = CheckBox.new()
-	app.chk_coop.text = "Co-op: 2 humanos vs IA"
-	app.chk_coop.tooltip_text = \
-		"Dos jugadores alternan los movimientos de J1"
+	app.chk_coop.text = Lang.t("MENU_COOP")
+	app.chk_coop.tooltip_text = Lang.t("MENU_COOP_TIP")
 	# solo tiene sentido contra una IA: con 'Humano' o 'IA vs IA' no hay
 	# ai_player y el toggle era una promesa vacía que confundía
 	var _coop_gate := func(_i: int = -1):
@@ -199,10 +198,11 @@ static func build(app) -> void:
 	opt_row2.add_child(app.chk_coop)
 	var opt_row3 := HBoxContainer.new()
 	adv.add_child(opt_row3)
-	opt_row3.add_child(Widgets.lbl("Tema:"))
+	opt_row3.add_child(Widgets.lbl(Lang.t("MENU_THEME_LABEL")))
 	var opt_skin := OptionButton.new()
 	var modes := ["dark", "light", "contrast"]
-	for t in ["Oscuro", "Claro", "Alto contraste"]:
+	for t in [Lang.t("THEME_DARK"), Lang.t("THEME_LIGHT"),
+			Lang.t("THEME_CONTRAST")]:
 		opt_skin.add_item(t)
 	opt_skin.select(maxi(0, modes.find(app.ui_theme_mode)))
 	opt_skin.item_selected.connect(func(i):
@@ -212,12 +212,12 @@ static func build(app) -> void:
 		app._save_settings())
 	opt_row3.add_child(opt_skin)
 	app.chk_flip = CheckBox.new()
-	app.chk_flip.text = "Girar el tablero cada turno (modo local)"
+	app.chk_flip.text = Lang.t("MENU_FLIP")
 	adv.add_child(app.chk_flip)
 
 	# ── NIVEL 2: modos de juego (botones medianos) ──
 	select_ui.add_child(HSeparator.new())
-	select_ui.add_child(Widgets.lbl("Modos"))
+	select_ui.add_child(Widgets.lbl(Lang.t("MENU_MODES")))
 	var row2 := HBoxContainer.new()
 	row2.alignment = BoxContainer.ALIGNMENT_CENTER
 	row2.add_theme_constant_override("separation", 8)
@@ -228,65 +228,63 @@ static func build(app) -> void:
 	var today: int = int(_d.year) * 10000 + int(_d.month) * 100 \
 		+ int(_d.day)
 	var played_today: bool = int(app.stats.get("daily", 0)) == today
-	btn_daily.text = "Desafío diario" + (" ✓" if played_today else "")
+	btn_daily.text = Lang.t("MENU_DAILY") + (" ✓" if played_today else "")
 	btn_daily.custom_minimum_size = Vector2(130, 42)
-	btn_daily.tooltip_text = "Enfrentamiento determinista por fecha" + \
-		(" (ya jugado hoy)" if played_today else "")
+	btn_daily.tooltip_text = Lang.t("MENU_DAILY_TIP") + \
+		(Lang.t("MENU_DAILY_DONE") if played_today else "")
 	btn_daily.pressed.connect(app._daily_challenge)
 	row2.add_child(btn_daily)
 	var btn_run := Button.new()
-	btn_run.text = "Modo Run"
+	btn_run.text = Lang.t("MENU_RUN")
 	btn_run.custom_minimum_size = Vector2(105, 42)
-	btn_run.tooltip_text = "Racha: cada victoria sube el nivel del rival"
+	btn_run.tooltip_text = Lang.t("MENU_RUN_TIP")
 	btn_run.pressed.connect(app._start_run)
 	row2.add_child(btn_run)
 	var btn_draft := Button.new()
 	btn_draft.text = "Draft"
 	btn_draft.custom_minimum_size = Vector2(90, 42)
-	btn_draft.tooltip_text = \
-		"Pick alterno de piezas con presupuesto (CEO)"
+	btn_draft.tooltip_text = Lang.t("MENU_DRAFT_TIP")
 	btn_draft.pressed.connect(app._open_draft)
 	row2.add_child(btn_draft)
 	var btn_puz := Button.new()
 	btn_puz.text = "Puzzles"
 	btn_puz.custom_minimum_size = Vector2(100, 42)
-	btn_puz.tooltip_text = "Encuentra la captura del líder"
+	btn_puz.tooltip_text = Lang.t("MENU_PUZZLES_TIP")
 	btn_puz.pressed.connect(app._open_puzzles)
 	row2.add_child(btn_puz)
 
 	# ── NIVEL 3: herramientas (discretas) ──
-	select_ui.add_child(Widgets.lbl("Herramientas"))
+	select_ui.add_child(Widgets.lbl(Lang.t("MENU_TOOLS")))
 	var row3 := HBoxContainer.new()
 	row3.alignment = BoxContainer.ALIGNMENT_CENTER
 	row3.add_theme_constant_override("separation", 6)
 	select_ui.add_child(row3)
 	var btn_ed := Button.new()
-	btn_ed.text = "Editor de piezas"
+	btn_ed.text = Lang.t("MENU_PIECE_EDITOR")
 	btn_ed.custom_minimum_size = Vector2(125, 36)
 	btn_ed.pressed.connect(app._open_editor)
 	row3.add_child(btn_ed)
 	var btn_ab := Button.new()
-	btn_ab.text = "Constructor"
+	btn_ab.text = Lang.t("MENU_BUILDER")
 	btn_ab.custom_minimum_size = Vector2(115, 36)
-	btn_ab.tooltip_text = "Constructor de ejército personalizado"
+	btn_ab.tooltip_text = Lang.t("MENU_BUILDER_TIP")
 	btn_ab.pressed.connect(app._open_builder)
 	row3.add_child(btn_ab)
 	var btn_pos := Button.new()
-	btn_pos.text = "Editor de posición"
+	btn_pos.text = Lang.t("MENU_POS_EDITOR")
 	btn_pos.custom_minimum_size = Vector2(135, 36)
 	btn_pos.pressed.connect(app._open_pos_editor)
 	row3.add_child(btn_pos)
 	var btn_guide := Button.new()
-	btn_guide.text = "Guía"
+	btn_guide.text = Lang.t("MENU_GUIDE")
 	btn_guide.custom_minimum_size = Vector2(70, 36)
-	btn_guide.tooltip_text = \
-		"Aprende cada facción: ejército, reglas y patrones"
+	btn_guide.tooltip_text = Lang.t("MENU_GUIDE_TIP")
 	btn_guide.pressed.connect(app._open_guide)
 	row3.add_child(btn_guide)
 	var btn_load := Button.new()
-	btn_load.text = "Cargar"
+	btn_load.text = Lang.t("MENU_LOAD")
 	btn_load.custom_minimum_size = Vector2(80, 36)
-	btn_load.tooltip_text = "Cargar partida guardada"
+	btn_load.tooltip_text = Lang.t("MENU_LOAD_TIP")
 	btn_load.disabled = not FileAccess.file_exists(app.SAVE_PATH)
 	btn_load.pressed.connect(app._load_game)
 	row3.add_child(btn_load)
@@ -307,20 +305,24 @@ static func build(app) -> void:
 	# estadísticas y logros (línea dim al pie)
 	var st := Widgets.lbl("")
 	var parts := []
-	parts.append("Partidas: %d" % int(app.stats.games))
+	parts.append(Lang.t("STATS_GAMES") % int(app.stats.games))
 	for fid in app.stats.wins:
-		parts.append("%s: %dV" % [fid, app.stats.wins[fid]])
+		parts.append(Lang.t("STATS_WINS") % [fid,
+			app.stats.wins[fid]])
 	# dominio por facción (XP): nivel = xp/100 + 1
 	if app.stats.has("xp") and app.stats.xp.size() > 0:
 		var lvls := []
 		for fid in app.stats.xp:
-			lvls.append("%s nv%d" % [fid, app._faction_level(fid)])
-		parts.append("Dominio: " + " · ".join(lvls))
+			lvls.append(Lang.t("STATS_LV") % [fid,
+				app._faction_level(fid)])
+		parts.append(Lang.t("STATS_MASTERY") + " · ".join(lvls))
 	if app.stats.ach.size() > 0:
 		var names := []
 		for a in app.stats.ach:
-			names.append(StatsStore.ACH.get(a, a))
-		parts.append("Logros: " + ", ".join(names))
+			var k: String = "ACH_" + a.to_upper()
+			var tr_: String = Lang.t(k)
+			names.append(tr_ if tr_ != k else StatsStore.ACH.get(a, a))
+		parts.append(Lang.t("STATS_ACH") + ", ".join(names))
 	st.text = " · ".join(parts)
 	select_ui.add_child(st)
 	app._refresh_values()
