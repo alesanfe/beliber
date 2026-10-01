@@ -160,6 +160,10 @@ func _ready() -> void:
 	left.custom_minimum_size = Vector2(280, 0)
 	root.add_child(left)
 
+	# hueco para el botón "← Volver" (absolute en 8,8 sobre esta UI)
+	var pad := Control.new()
+	pad.custom_minimum_size.y = 36
+	left.add_child(pad)
 	left.add_child(_title("Editor de piezas"))
 	opt_mode = OptionButton.new()
 	opt_mode.add_item("Movimiento")

@@ -1098,6 +1098,8 @@ func _restart() -> void:
 	ai_both = false
 	tm = null   # el manager muere con la partida (su tick de reloj
 	#         tocaría hud_clock, ya liberado por game_ui)
+	var ov := find_child("PostGameOverlay", false, false)
+	if ov != null: ov.queue_free()   # cuelga de app, no de game_ui
 	game_ui.queue_free()
 	_build_menu()
 

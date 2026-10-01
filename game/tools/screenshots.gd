@@ -28,6 +28,7 @@ func _init() -> void:
 		["game", func(): _close(); _app._start_game()],
 		["postgame", func(): PostGame.modal(_app, 0,
 			PostGame.summary(_app.tm))],
+		["tutorial", func(): _app._restart(); _app._start_tutorial()],
 	]
 
 func _close() -> void:

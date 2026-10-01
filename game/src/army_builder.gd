@@ -76,6 +76,10 @@ func _ready() -> void:
 	var left := VBoxContainer.new()
 	left.custom_minimum_size = Vector2(280, 0)
 	root.add_child(left)
+	# hueco para el botón "← Volver" (absolute en 8,8 sobre esta UI)
+	var pad := Control.new()
+	pad.custom_minimum_size.y = 36
+	left.add_child(pad)
 	var t := Label.new()
 	t.text = "Constructor de ejército"
 	t.add_theme_font_size_override("font_size", 24)

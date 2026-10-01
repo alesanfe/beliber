@@ -73,7 +73,10 @@ static func modal(app, w: int, resumen: String) -> void:
 	var overlay := ColorRect.new()
 	overlay.color = Color(0, 0, 0, 0.55)
 	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	app.game_ui.add_child(overlay)
+	# sobre app (no game_ui): game_ui es un BoxContainer y un hijo sin
+	# min-size quedaba con altura 0 — el modal nunca se veía
+	overlay.name = "PostGameOverlay"   # _restart lo libera aparte
+	app.add_child(overlay)
 	var cc := CenterContainer.new()
 	cc.set_anchors_preset(Control.PRESET_FULL_RECT)
 	overlay.add_child(cc)
