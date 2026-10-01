@@ -324,5 +324,8 @@ static func build(app) -> void:
 			names.append(tr_ if tr_ != k else StatsStore.ACH.get(a, a))
 		parts.append(Lang.t("STATS_ACH") + ", ".join(names))
 	st.text = " · ".join(parts)
+	# los logros acumulados desbordaban el ancho de la ventana —
+	# autowrap en vez de clippear por el borde derecho
+	st.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	select_ui.add_child(st)
 	app._refresh_values()
