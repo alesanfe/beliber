@@ -21,7 +21,25 @@ func _init() -> void:
 		["guide", func(): _close(); _app._open_guide()],
 		["piece_editor", func(): _close(); _app._open_editor()],
 		["builder", func(): _close(); _app._open_builder()],
-		["pos_editor", func(): _close(); _app._open_pos_editor()],
+		# el editor arranca vacío: precargo el setup oficial de ambas
+		# facciones para que la captura muestre el tablero real
+		["pos_editor", func():
+			_close(); _app._open_pos_editor()
+			var ed: PosEditor = _app.editor_ui
+			for pl in [0, 1]:
+				var f: Dictionary = _app.factions[
+					_app.opt_p0.selected if pl == 0
+					else _app.opt_p1.selected]
+				var base := 7 if pl == 0 else 0
+				var d := -1 if pl == 0 else 1
+				var rows: Array = f.setups[0]
+				for j in rows.size():
+					for x in mini(rows[j].length(), 8):
+						var ch: String = rows[j].substr(x, 1)
+						if ch != "." and ch != " ":
+							ed.grid[Vector2i(x, base + d * j)] = \
+								{"l": ch, "o": pl}
+			ed._board.queue_redraw()],
 		["puzzles", func(): _close(); _app._open_puzzles()],
 		["profile", func(): _close(); _app._open_profile()],
 		# un par de picks para que la captura muestre estado, no la
