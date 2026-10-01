@@ -1145,10 +1145,8 @@ func _close_net() -> void:
 		multiplayer.multiplayer_peer = null
 
 func _load_game() -> void:
-	var f := FileAccess.open(SAVE_PATH, FileAccess.READ)
-	if f == null: return
-	var data = JSON.parse_string(f.get_as_text())
-	f.close()
+	# load_json recupera desde .bak si el save está corrupto
+	var data = StatsStore.load_json(SAVE_PATH)
 	if typeof(data) != TYPE_DICTIONARY: return
 	var loaded := TurnManager.load_game(data, factions)
 	if loaded == null: return

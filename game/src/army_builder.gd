@@ -314,10 +314,7 @@ func _load() -> void:
 	_update_cost()
 
 static func _load_all() -> Dictionary:
-	if not FileAccess.file_exists(SAVE_PATH): return {}
-	var f := FileAccess.open(SAVE_PATH, FileAccess.READ)
-	var parsed = JSON.parse_string(f.get_as_text())
-	f.close()
+	var parsed = StatsStore.load_json(SAVE_PATH)
 	return parsed if parsed is Dictionary else {}
 
 ## Inserta las filas como un setup cualquiera (idx). Escribir en el

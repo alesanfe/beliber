@@ -89,13 +89,10 @@ func _init() -> void:
 ## ===== Ladder (ELO por nick, persistido en JSON) =====
 
 func _load_ratings() -> void:
-	if FileAccess.file_exists(RATINGS_PATH):
-		var f := FileAccess.open(RATINGS_PATH, FileAccess.READ)
-		# 'x or {}' no vale: 'or' devuelve bool en GDScript y un JSON
-		# corrupto asignaba true a 'ratings' (parse error al arrancar)
-		var parsed = JSON.parse_string(f.get_as_text())
-		f.close()
-		if parsed is Dictionary: ratings = parsed
+	# StatsStore.load_json cae a .bak si el principal está corrupto —
+	# un corte a mitad de escritura ya no borra el ladder entero
+	var parsed = StatsStore.load_json(RATINGS_PATH)
+	if parsed is Dictionary: ratings = parsed
 
 func _save_ratings() -> void:
 	StatsStore.atomic_write(RATINGS_PATH, JSON.stringify(ratings))
@@ -114,11 +111,8 @@ var TOKENS_PATH := OS.get_environment("BELIBER_TOKENS") \
 	else "user://beliber_idtokens.json"
 
 func _load_idtokens() -> void:
-	if FileAccess.file_exists(TOKENS_PATH):
-		var f := FileAccess.open(TOKENS_PATH, FileAccess.READ)
-		var parsed = JSON.parse_string(f.get_as_text())
-		f.close()
-		if parsed is Dictionary: idtokens = parsed
+	var parsed = StatsStore.load_json(TOKENS_PATH)
+	if parsed is Dictionary: idtokens = parsed
 
 func _save_idtokens() -> void:
 	StatsStore.atomic_write(TOKENS_PATH, JSON.stringify(idtokens))

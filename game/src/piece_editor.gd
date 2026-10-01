@@ -559,10 +559,7 @@ func _apply_to_memory() -> void:
 ## Lee el archivo de sobrescrituras tal cual (estático: lo usa la
 ## cfg online — los overrides viajan al rival, no solo aplican local).
 static func load_overrides() -> Dictionary:
-	if not FileAccess.file_exists(SAVE_PATH): return {}
-	var f := FileAccess.open(SAVE_PATH, FileAccess.READ)
-	var parsed = JSON.parse_string(f.get_as_text())
-	f.close()
+	var parsed = StatsStore.load_json(SAVE_PATH)
 	return parsed if parsed is Dictionary else {}
 
 func _saved_overrides() -> Dictionary:

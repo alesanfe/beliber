@@ -35,6 +35,7 @@ func _init() -> void:
 	_test_match_legal()
 	_test_zero_and_leg2_deploy()
 	_test_load_regression()
+	_test_bak_recovery()
 	print("== %s ==" % ("OK" if failures == 0 else "%d FALLOS" % failures))
 	quit(0 if failures == 0 else 1)
 
@@ -776,3 +777,23 @@ func _test_load_regression() -> void:
 		if mv.to == Vector2i(4, 2):
 			ep_found = true
 	_ok(not ep_found, "al paso: casilla ocupada no genera captura")
+
+## load_json: si el JSON principal está corrupto se recupera desde
+## <path>.bak (última escritura buena) — un corte a mitad de write
+## no borra stats/ratings/saves.
+func _test_bak_recovery() -> void:
+	var p := "user://_test_bak.json"
+	StatsStore.atomic_write(p, JSON.stringify({"a": 1}))
+	_ok(FileAccess.file_exists(p + ".bak"),
+		"atomic_write deja .bak")
+	# corrompe el principal: el fallback debe devolver el .bak
+	var f := FileAccess.open(p, FileAccess.WRITE)
+	f.store_string("{\"a\": tru")
+	f.close()
+	var r = StatsStore.load_json(p)
+	_ok(r is Dictionary and r.get("a") == 1,
+		"load_json recupera desde .bak")
+	DirAccess.remove_absolute(
+		ProjectSettings.globalize_path(p))
+	DirAccess.remove_absolute(
+		ProjectSettings.globalize_path(p + ".bak"))

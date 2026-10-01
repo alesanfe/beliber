@@ -22,14 +22,25 @@ const ACH := {
 const XP_GAME := 10   # por jugar
 const XP_WIN := 30    # bonus por ganar
 
+## Lectura tolerante con recuperación: si el JSON principal está
+## corrupto o es ilegible se cae a <path>.bak (la última versión
+## escrita con éxito por atomic_write) en vez de devolver datos
+## vacíos — la restauración no exige copiar ficheros a mano.
+static func load_json(path: String) -> Variant:
+	for p in [path, path + ".bak"]:
+		if not FileAccess.file_exists(p): continue
+		var f := FileAccess.open(p, FileAccess.READ)
+		if f == null: continue
+		var parsed: Variant = JSON.parse_string(f.get_as_text())
+		f.close()
+		if parsed is Dictionary or parsed is Array: return parsed
+	return null
+
 static func load_stats() -> Dictionary:
 	var stats := {}
-	if FileAccess.file_exists(STATS_PATH):
-		var f := FileAccess.open(STATS_PATH, FileAccess.READ)
-		# solo aceptar Dictionary (un JSON dañado puede dar bool/null)
-		var parsed: Variant = JSON.parse_string(f.get_as_text())
-		if parsed is Dictionary: stats = parsed
-		f.close()
+	# solo aceptar Dictionary (un JSON dañado puede dar bool/null)
+	var parsed: Variant = load_json(STATS_PATH)
+	if parsed is Dictionary: stats = parsed
 	stats.merge({"games": 0, "wins": {}, "ach": [], "xp": {},
 		"w": 0, "l": 0, "d": 0, "fstat": {}, "history": [],
 		"rec_fast": 0, "rec_long": 0}, false)
