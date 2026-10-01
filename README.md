@@ -18,6 +18,18 @@ reprogramables, IA con niveles y estilos, y juego en red con ladder ELO.
 [Seguridad](SECURITY.md) ·
 [Changelog](CHANGELOG.md)
 
+## Contenido
+
+- [Estado](#estado) · [Características](#características) ·
+  [Qué incluye / qué no](#qué-incluye--qué-no)
+- [Inicio rápido](#inicio-rápido) · [Tests](#tests) ·
+  [Estructura](#estructura) · [Host](#operar-el-host-autoritativo-opcional)
+- [Solución de problemas](#solución-de-problemas) ·
+  [Hoja de ruta](#hoja-de-ruta) ·
+  [Limitaciones](#limitaciones-conocidas)
+- [Documentación](#documentación) · [Contribuir](#contribuir) ·
+  [Licencia](#licencia)
+
 ## Estado
 
 > [!NOTE]
@@ -147,6 +159,32 @@ godot --headless --path game -s res://server/host.gd -- 7779
 | ADRs | [docs/decisions/](docs/decisions/) |
 | Operación | [docs/operations/](docs/operations/) |
 
+## Solución de problemas
+
+**`godot` no se reconoce** — usa la ruta completa del binario o define
+`GODOT=<ruta>` al lanzar `tools/test_all`.
+
+**El host WebSocket no acepta conexiones `wss://`** — sin
+`BELIBER_TLS_CERT`/`BELIBER_TLS_KEY` el host solo sirve `ws://`
+(texto plano); TLS es opt-in.
+
+**Stats/saves corruptos tras un corte** — `StatsStore` escribe atómico
+y conserva `.bak`; borra el JSON principal y restaura el `.bak`.
+
+**La UI muestra claves tipo `MENU_PLAY`** — falta
+`i18n/ui.<loc>.translation`; ejecuta una importación (`godot --import`)
+o abre el proyecto en el editor una vez.
+
+## Hoja de ruta
+
+- [x] Motor completo con las 7 facciones y sus reglas distintivas.
+- [x] Editores de piezas, ejército y posición; draft; Run; puzzles.
+- [x] Online (ENet + relay WS + host autoritativo) con ladder ELO.
+- [x] i18n (es/en) en menú, HUD y main; resto de pantallas en curso.
+- [ ] Arte final y animaciones (sustituir glifos de ajedrez).
+- [ ] Sonido completo (sustituir beeps sintetizados).
+- [ ] Versión 1.0: congelar BEL-FEN y datos de facciones.
+
 ## Limitaciones conocidas
 
 - Arte temporal (glifos de ajedrez); sprites definitivos pendientes.
@@ -156,12 +194,26 @@ godot --headless --path game -s res://server/host.gd -- 7779
 
 ## Contribuir
 
-Ver [CONTRIBUTING.md](CONTRIBUTING.md). Bugs y propuestas: issues.
+Ver [CONTRIBUTING.md](CONTRIBUTING.md). Bugs y propuestas: issues del
+repo con las plantillas de `.github/`.
 
 ## Seguridad
 
 Ver [SECURITY.md](SECURITY.md) — modelos de confianza por transporte y
-canal de reporte privado.
+canal de reporte privado (**no** abras un issue público para
+vulnerabilidades).
+
+## Autores y mantenimiento
+
+Mantenido por [alesanfe](https://github.com/alesanfe). Las decisiones
+de diseño viven en [`docs/decisions/`](docs/decisions/) y la gobernanza
+en [`docs/GOVERNANCE.md`](docs/GOVERNANCE.md).
+
+## Reconocimientos
+
+Inspirado por Chess Evolved Online, Prismata, Root, Chess 2 y Shotgun
+King (ver [COMPETENCIA.md](COMPETENCIA.md) para la comparativa). Hecho
+con [Godot Engine](https://godotengine.org).
 
 ## Licencia
 
