@@ -84,6 +84,16 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
   sensibles.
 - `docs/DATA_MODEL.md`, `docs/PRIVACY.md`, `docs/operations/SLO.md`
   (SLI/SLO, RPO/RTO, alertas, capacidad verificada).
+- Icono propio (`game/icon.png` + `.ico`): el ejecutable y la web ya
+  no usan el genérico de Godot.
+- `hello`/`pong` del host llevan `v` (versión desplegada —
+  observabilidad).
+- `BELIBER_SEED=<n>` fija el RNG del bot → tests y partidas vs IA
+  reproducibles.
+- `.well-known/security.txt` (RFC 9116), `docs/operations/INCIDENTS.md`
+  (severidades, contención, postmortem), `.githooks/pre-commit`
+  (opt-in: gdlint + py_compile + secretos) y `tools/release.ps1`
+  (bump SemVer + suite completa + tag).
 
 ### Documentación
 

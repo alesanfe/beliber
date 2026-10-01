@@ -17,7 +17,11 @@ func _init(p_depth := 2, p_style := "normal", p_blunder := 0.0) -> void:
 	depth = clampi(p_depth, 1, 3)
 	style = p_style
 	blunder = p_blunder
-	rng.randomize()
+	# BELIBER_SEED=<n> → RNG determinista (tests reproducibles);
+	# sin env, aleatorio normal.
+	var s := OS.get_environment("BELIBER_SEED")
+	if s.is_valid_int(): rng.seed = int(s)
+	else: rng.randomize()
 
 ## Bonus de estilo tras aplicar el movimiento sobre el estado clonado.
 func _style_bonus(state: BoardState, mv: Dictionary, player: int) -> float:

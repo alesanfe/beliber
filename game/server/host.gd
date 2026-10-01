@@ -24,6 +24,9 @@ const MAX_ROOMS := 500      # cap de salas activas (anti-DoS capacidad)
 const MIN_RATED_PLIES := 4  # un leave/resign en los primeros plies no
                             # mueve ELO (freno a farming con smurfs)
 const STATS_EVERY := 60.0   # heartbeat de métricas al log
+## Versión desplegada — viaja en hello/pong para que la observabilidad
+## pueda responder "¿qué versión corre el host?".
+const VERSION := "0.1.1"
 
 var tcp := TCPServer.new()
 var pending: Array = []          # [WebSocketPeer, deadline_ms] en handshake
@@ -193,7 +196,7 @@ func _process(_d: float) -> bool:
 		if p.get_ready_state() == WebSocketPeer.STATE_OPEN:
 			pending.erase(e)
 			peers[p] = {"room": null, "side": -1}
-			_send(p, {"op": "hello"})
+			_send(p, {"op": "hello", "v": VERSION})
 		elif p.get_ready_state() == WebSocketPeer.STATE_CLOSED \
 				or Time.get_ticks_msec() > e[1]:
 			pending.erase(e)
@@ -326,7 +329,7 @@ func _dispatch(p: WebSocketPeer, m: Dictionary) -> void:
 		"ping":
 			# health check: permite monitorizar el servicio sin sala
 			_send(p, {"op": "pong", "rooms": rooms.size(),
-				"queue": queue.size()})
+				"queue": queue.size(), "v": VERSION})
 		"chat":
 			# side puede ser -1 (peer sin sala): other(-1)=2 indexaba
 			# fuera de sides[]

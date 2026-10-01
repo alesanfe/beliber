@@ -63,15 +63,15 @@ C→S: `create{cfg,name,pid,tok}` · `join{code,name,pid,tok,ovr}` ·
 `rejoin{code,side,token}` · `queue{name,pid,tok,prefs}` · `dequeue` ·
 `play{from:{x,y},to:{x,y},second_to?} | {resign:true} |
 {draw:"offer|accept|decline"}` · `leave` · `chat{text}` · `ladder` ·
-`ping` (health check → `pong{rooms,queue}`).
+`ping` (health check → `pong{rooms,queue,v}`).
 
-S→C: `hello` · `room{code,side,token,cfg}` (la cfg SIEMPRE va en
+S→C: `hello{v}` (v = versión desplegada) · `room{code,side,token,cfg}` (la cfg SIEMPRE va en
 `room`; `resync` no la repite) · `peer{side}` · `start{cfg?}` ·
 `move{mv,n}` (jugada **resuelta**, a ambos — echo autoritativo) ·
 `resync{moves,side}` · `offline{on}` · `over{winner|reason}` ·
 `rating{you}` · `ladder{rows}` · `id_tok{tok}` / `id_err` (auth del
 ladder) · `draw_offer`/`draw_decline` · `err{msg}` ·
-`queued`/`dequeued` · `pong{rooms,queue}`.
+`queued`/`dequeued` · `pong{rooms,queue,v}`.
 
 El servidor mantiene un `TurnManager` por sala: el cliente envía solo
 intención (`from`/`to`/`second_to`), el host resuelve la jugada legal

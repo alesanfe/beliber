@@ -1,0 +1,24 @@
+#!/bin/sh
+# Gate local rápido antes de cada commit (~2 s). Opt-in:
+#   git config core.hooksPath .githooks
+set -e
+cd "$(git rev-parse --show-toplevel)"
+
+# GDScript lint (si gdlint está instalado)
+if command -v gdlint >/dev/null 2>&1; then
+    gdlint game/src game/server game/tests >/dev/null || {
+        echo "pre-commit: gdlint encontró problemas" >&2; exit 1; }
+fi
+
+# Python compila
+if command -v python >/dev/null 2>&1; then
+    python -m py_compile server/*.py || exit 1
+fi
+
+# Secretos obvios en lo staged
+git diff --cached --name-only | while read -r f; do
+    case "$f" in
+        *.pem|*.key|*.p12|*.pfx|*idtokens*.json)
+            echo "pre-commit: '$f' parece un secreto" >&2; exit 1;;
+    esac
+done

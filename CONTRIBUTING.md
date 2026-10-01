@@ -29,6 +29,18 @@ godot --headless --path game -s res://tests/e2e_net.gd
 - Los tests están aislados del perfil real (`StatsStore.disabled` + env
   `BELIBER_*`); no los desactives.
 
+Gate local opt-in (lint + py_compile + check de secretos, ~2 s):
+`git config core.hooksPath .githooks`
+
+Tests reproducibles: `BELIBER_SEED=<n>` fija el RNG del bot
+(`playthrough.gd` y partidas vs IA se vuelven deterministas).
+
+## Releases
+
+`powershell tools/release.ps1 <x.y.z>` — exige sección en CHANGELOG,
+bumpea `config/version` + `host.VERSION`, corre la batería completa
+y taggea. Push con `git push --follow-tags`.
+
 ## Piezas y ejércitos
 
 El contenido es data-driven: no hace falta tocar código para crear piezas

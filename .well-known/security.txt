@@ -1,0 +1,6 @@
+# RFC 9116 — security.txt. Servir en /.well-known/security.txt si el
+# proyecto se publica. Las políticas completas están en SECURITY.md.
+Contact: mailto:alex.0002002@gmail.com
+Preferred-Languages: es, en
+Expires: 2027-12-31T23:59:00Z
+Policy: https://github.com/alesanfe/beliber/blob/master/SECURITY.md
