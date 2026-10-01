@@ -14,9 +14,16 @@ reprogramables, IA con niveles y estilos, y juego en red con ladder ELO.
 ![Tablero de Beliber en partida: Humenex (azul) vs Elfos (verde), con HUD de capturas, movimientos y evaluación](docs/assets/game.png)
 
 <details>
-<summary>Menú principal (modos, editores y estadísticas)</summary>
+<summary>Más capturas — menú, guía de facción, draft y post-partida</summary>
 
-![Menú principal de Beliber](docs/assets/menu.png)
+| Menú | Guía de facción |
+|---|---|
+| ![Menú principal](docs/assets/menu.png) | ![Guía con ejército, reglas y entrenamiento](docs/assets/guide.png) |
+
+| Draft | Resumen post-partida |
+|---|---|
+| ![Draft por turnos con presupuesto](docs/assets/draft.png) | ![Panel post-partida](docs/assets/postgame.png) |
+
 </details>
 
 [Reglas](COMO_FUNCIONA.md) ·
