@@ -26,17 +26,20 @@ func _init(p_factions: Array, p_f0 := 0, p_f1 := 1) -> void:
 	fi = [p_f0, p_f1]
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	# and_offsets: set_anchors_preset solo tocaba las anchors y los
+	# offsets quedaban -1280 → pantalla con size 0, contenido pegado
+	# arriba-izquierda en vez de centrado
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	budget[0] = PiecesData.army_value(factions[fi[0]], 0)
 	budget[1] = PiecesData.army_value(factions[fi[1]], 0)
-	var root := VBoxContainer.new()
+	# CenterContainer directo: el VBox+CenterContainer anterior dejaba
+	# el contenido apretado arriba-izquierda (la pantalla quedaba ~80%
+	# vacía)
+	var root := CenterContainer.new()
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
-	root.alignment = BoxContainer.ALIGNMENT_CENTER
 	add_child(root)
-	var cc := CenterContainer.new()
-	root.add_child(cc)
 	var col := VBoxContainer.new()
-	cc.add_child(col)
+	root.add_child(col)
 	var t := Label.new()
 	t.text = "Draft — elegid piezas por turnos"
 	t.add_theme_font_size_override("font_size", 26)

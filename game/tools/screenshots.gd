@@ -24,7 +24,12 @@ func _init() -> void:
 		["pos_editor", func(): _close(); _app._open_pos_editor()],
 		["puzzles", func(): _close(); _app._open_puzzles()],
 		["profile", func(): _close(); _app._open_profile()],
-		["draft", func(): _close(); _app._open_draft()],
+		# un par de picks para que la captura muestre estado, no la
+		# pantalla vacía inicial
+		["draft", func():
+			_close(); _app._open_draft()
+			var d: DraftScreen = _app.editor_ui
+			d._pick("Y"); d._pick("X"); d._pick("C"); d._pick("T")],
 		["game", func(): _close(); _app._start_game()],
 		["postgame", func(): PostGame.modal(_app, 0,
 			PostGame.summary(_app.tm))],
