@@ -96,6 +96,10 @@ godot --headless --path game -s res://server/host.gd -- 7779
 - Guía técnica: `game/README.md`
 - Referencias de diseño: `COMPETENCIA.md`
 - Decisiones de arquitectura: `docs/decisions/` (ADR)
+- Requisitos trazables: `docs/REQUIREMENTS.md`
+- Modelo de amenazas: `docs/THREAT_MODEL.md`
+- Runbook del host: `docs/operations/RUNBOOK.md`
+- Inventario de dependencias: `DEPENDENCIES.md`
 
 ## Contribuir
 

@@ -51,11 +51,6 @@ static func save(stats: Dictionary) -> void:
 ## truncado (el load tolera el parseo nulo, pero los datos se
 ## pierden igualmente).
 static func atomic_write(path: String, text: String) -> void:
-	# .bak = última versión buena conocida (restauración manual si el
-	# fichero se corrompe pese a la escritura atómica)
-	if FileAccess.file_exists(path):
-		DirAccess.copy_absolute(ProjectSettings.globalize_path(path),
-			ProjectSettings.globalize_path(path + ".bak"))
 	var tmp := path + ".tmp"
 	var f := FileAccess.open(tmp, FileAccess.WRITE)
 	if f == null: return
@@ -77,6 +72,10 @@ static func atomic_write(path: String, text: String) -> void:
 			if d != null:
 				d.store_string(text)
 				d.close()
+	# .bak = última versión escrita con éxito — restore manual de un
+	# fichero corrupto es copiar el .bak encima
+	DirAccess.copy_absolute(ProjectSettings.globalize_path(path),
+		ProjectSettings.globalize_path(path + ".bak"))
 
 ## Nivel de dominio de una facción (progresión estilo perfil lichess).
 static func faction_level(stats: Dictionary, fid: String) -> int:

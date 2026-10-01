@@ -6,6 +6,8 @@ on:
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 jobs:
   build:
@@ -38,6 +40,12 @@ jobs:
         run: |
           pip install cyclonedx-bom
           cyclonedx-py requirements server/requirements.txt -o sbom.json
+      - name: Attest build provenance (SLSA)
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            beliber-windows.zip
+            beliber-web.zip
       - name: Publicar release
         uses: softprops/action-gh-release@v2
         with:

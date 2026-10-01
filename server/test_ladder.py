@@ -108,6 +108,13 @@ async def main():
     ok(m["op"] == "ladder" and m["rows"][0]["name"] == "alice",
        "ladder devuelve ranking")
 
+    # .bak de ratings: atomic_write lo mantiene como última versión
+    # escrita con éxito (restore manual ante corrupción)
+    import os
+    rpath = os.environ.get("BELIBER_RATINGS", "")
+    if rpath:
+        ok(os.path.exists(rpath + ".bak"), ".bak de ratings existe")
+
     await h.close(); await c.close()
     print("== %s ==" % ("OK" if fails == 0 else f"{fails} FALLOS"))
     return fails
