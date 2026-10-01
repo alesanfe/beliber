@@ -1,0 +1,19 @@
+# Convención del repo: tabs en GDScript (estándar Godot), espacios
+# en Python/YAML/Markdown. Los editores con soporte EditorConfig lo
+# aplican solos.
+root = true
+
+[*.gd]
+indent_style = tab
+indent_size = 4
+
+[*.{py,yml,yaml}]
+indent_style = space
+indent_size = 4
+
+[*.{yml,yaml}]
+indent_size = 2
+
+[*.{md,toml,json,cfg}]
+indent_style = space
+insert_final_newline = true

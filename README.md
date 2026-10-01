@@ -1,5 +1,9 @@
 # Beliber
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+![Godot 4.7](https://img.shields.io/badge/Godot-4.7-478cbf)
+![Version](https://img.shields.io/badge/version-0.1.1-green)
+
 Juego de estrategia por turnos **asimétrico** tipo ajedrez, implementado en
 **Godot 4**: 7 facciones con piezas, efectos y reglas de victoria propias
 (empujar, atraer, atravesar, inmovilizar, salto de Aquonte, doble apertura
@@ -91,6 +95,7 @@ godot --headless --path game -s res://server/host.gd -- 7779
 
 ## Documentación
 
+- Arquitectura: `docs/ARCHITECTURE.md`
 - Reglas del juego: `COMO_FUNCIONA.md`
 - Protocolo de red: `server/PROTOCOL.md`
 - Guía técnica: `game/README.md`

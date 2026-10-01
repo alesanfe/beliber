@@ -1,0 +1,6 @@
+# Normalización EOL: LF en el índice para todo el código/docs —
+# evita el churn CRLF en Windows y mantiene diffs limpios.
+* text=auto eol=lf
+
+# Los PEM generados de prueba nunca entran al repo por accidente
+*.pem export-ignore
