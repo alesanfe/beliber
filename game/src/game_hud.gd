@@ -374,9 +374,18 @@ static func build(app) -> void:
 	b_mute.toggled.connect(func(on):
 		app.muted = on; app._save_settings())
 	btn_row6.add_child(b_mute)
+	# reduce motion (WCAG 2.3.3): pop_in, hover, toasts y confetti
+	# se vuelven instantáneos
+	var b_rm := CheckButton.new()
+	b_rm.text = Lang.t("HUD_REDUCE")
+	b_rm.tooltip_text = Lang.t("HUD_REDUCE_TIP")
+	b_rm.button_pressed = Juice.reduce
+	b_rm.toggled.connect(func(on):
+		Juice.reduce = on; app._save_settings())
+	btn_row6.add_child(b_rm)
 	app._opt_toggles = {
 		"blind": b_blind, "coords": b_coords,
-		"conf": b_conf, "mute": b_mute}
+		"conf": b_conf, "mute": b_mute, "reduce": b_rm}
 	var b_png := Button.new()
 	b_png.text = "PNG"
 	b_png.tooltip_text = Lang.t("HUD_PNG_TIP")
@@ -438,6 +447,7 @@ static func build(app) -> void:
 	app._opt_toggles.coords.set_pressed_no_signal(app.board.show_coords)
 	app._opt_toggles.conf.set_pressed_no_signal(app.board.confirm_moves)
 	app._opt_toggles.mute.set_pressed_no_signal(app.muted)
+	app._opt_toggles.reduce.set_pressed_no_signal(Juice.reduce)
 	app._update_hud()
 	app._maybe_bot()
 

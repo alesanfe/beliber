@@ -113,6 +113,9 @@ static func modal(app, w: int, resumen: String) -> void:
 		Juice.fade_out(overlay, 0.2))
 	row.add_child(b_close)
 	Juice.pop_in(panel)
+	# foco en la acción principal del modal (Rematch o Ver tablero
+	# si no hay rematch — online)
+	Widgets.focus_first(row)
 	if w >= 0:
 		# celebración: confeti del color ganador sobre el dim del
 		# overlay; las partículas son hijas suyas y mueren con él

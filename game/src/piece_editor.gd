@@ -303,7 +303,10 @@ func _ready() -> void:
 	b_dsave.pressed.connect(_save_deploy)
 	dep_sec.add_child(b_dsave)
 	var b_dreset := Button.new(); b_dreset.text = Lang.t("PE_DEP_RESET")
-	b_dreset.pressed.connect(_reset_deploy)
+	b_dreset.pressed.connect(func():
+		Widgets.confirm(self, Lang.t("PE_DEP_RESET_T"),
+			Lang.t("PE_DEP_RESET_C"), Lang.t("PE_DEP_RESET"),
+			_reset_deploy))
 	dep_sec.add_child(b_dreset)
 	dep_sec.visible = false
 
@@ -312,7 +315,9 @@ func _ready() -> void:
 	b_save.pressed.connect(_save)
 	right.add_child(b_save)
 	var b_reset := Button.new(); b_reset.text = Lang.t("PE_RESET")
-	b_reset.pressed.connect(_reset)
+	b_reset.pressed.connect(func():
+		Widgets.confirm(self, Lang.t("PE_RESET_T"),
+			Lang.t("PE_RESET_C"), Lang.t("PE_RESET"), _reset))
 	right.add_child(b_reset)
 	var b_wipe := Widgets.danger(Lang.t("PE_WIPE_BTN"))
 	b_wipe.pressed.connect(func():

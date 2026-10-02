@@ -699,6 +699,7 @@ func _open_draft() -> void:
 	editor_ui = d
 	menu_root.visible = false
 	add_child(d)
+	Widgets.focus_first(d)
 	d.done.connect(func(pos: Array):
 		var o := _tm_opts()
 		o["pos"] = pos
@@ -736,6 +737,7 @@ func _open_editor() -> void:
 	menu_root.queue_free()
 	editor_ui = PieceEditor.new(factions)
 	add_child(editor_ui)
+	Widgets.focus_first(editor_ui)
 	# botón volver dedicado para no depender del nombre del nodo raíz;
 	# debe colgar de editor_ui — antes era hijo de app y quedaba
 	# huérfano encima del menú tras cada visita
@@ -804,6 +806,7 @@ func _add_back() -> void:
 	# visita a guía/puzzles/online dejaba un '← Volver' apilado
 	if is_instance_valid(editor_ui):
 		editor_ui.add_child(back)
+		Widgets.focus_first(editor_ui)
 	else:
 		add_child(back)
 
@@ -817,6 +820,7 @@ func _open_builder() -> void:
 	back.z_index = 10
 	back.pressed.connect(_close_editor)
 	editor_ui.add_child(back)   # hijo de la pantalla: se libera con ella
+	Widgets.focus_first(editor_ui)
 
 ## Construcción del HUD de partida (delegada a GameHUD).
 func _build_game() -> void:
@@ -1018,6 +1022,7 @@ func _save_settings() -> void:
 	c.set_value("ui", "blind", board.blindfold)
 	c.set_value("ui", "confirm", board.confirm_moves)
 	c.set_value("ui", "mute", muted)
+	c.set_value("ui", "reduce_motion", Juice.reduce)
 	c.save(CFG_PATH)
 
 func _apply_settings() -> void:
@@ -1033,6 +1038,7 @@ func _apply_settings() -> void:
 	board.blindfold = bool(c.get_value("ui", "blind", false))
 	board.confirm_moves = bool(c.get_value("ui", "confirm", false))
 	muted = bool(c.get_value("ui", "mute", false))
+	Juice.reduce = bool(c.get_value("ui", "reduce_motion", false))
 
 ## Escala efectiva del tablero = zoom del usuario × factor de encaje
 ## (ventanas < ~536 px encogen el tablero en vez de desbordarlo).

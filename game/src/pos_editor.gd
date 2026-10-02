@@ -85,7 +85,10 @@ func _ready() -> void:
 
 	var b_clear := Button.new()
 	b_clear.text = Lang.t("POSE_CLEAR")
-	b_clear.pressed.connect(func(): grid.clear(); board.queue_redraw())
+	b_clear.pressed.connect(func():
+		Widgets.confirm(self, Lang.t("POSE_CLEAR_T"),
+			Lang.t("POSE_CLEAR_C"), Lang.t("POSE_CLEAR"),
+			func(): grid.clear(); board.queue_redraw()))
 	side.add_child(b_clear)
 	# línea de errores persistente — antes cada fallo APILABA un
 	# Label nuevo en el panel (nunca se limpiaban)

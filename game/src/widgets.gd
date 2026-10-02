@@ -66,6 +66,8 @@ static func screen(title: String, w := 480) -> Control:
 	box.add_child(t)
 	box.add_child(HSeparator.new())
 	Juice.pop_in(root, 0.18)
+	# foco inicial: deferred — los hijos se añaden tras return
+	focus_first(root)
 	return root
 
 ## El panel interior (hijos) de una screen.
@@ -92,3 +94,40 @@ static func _style_primary(b: Button) -> void:
 static func _juice(b: Button) -> void:
 	Juice.hover_pop(b)
 	Juice.squash(b)
+
+## Foco inicial para teclado/lector: primer control enfocable en
+## orden de árbol (deferred — las screens se construyen fuera del
+## árbol y el foco solo existe dentro).
+static func focus_first(root: Control) -> void:
+	(func():
+		if not is_instance_valid(root): return
+		var f := _first_focusable(root)
+		if f != null: f.grab_focus()).call_deferred()
+
+static func _first_focusable(c: Control) -> Control:
+	if not c.visible:
+		return null
+	if (c is BaseButton or c is LineEdit or c is TextEdit
+			or c is SpinBox or c is Slider) \
+			and not (c is BaseButton and c.disabled) \
+			and c.focus_mode != Control.FOCUS_NONE:
+		return c
+	for ch in c.get_children():
+		var f := _first_focusable(ch)
+		if f != null:
+			return f
+	return null
+
+## Confirmación de acción destructiva: texto explícito con la
+## consecuencia + botón de acción nombrado (nunca "Sí/No" ambiguo).
+static func confirm(host: Control, title: String, text: String,
+		ok_label: String, on_ok: Callable) -> void:
+	var dlg := ConfirmationDialog.new()
+	dlg.title = title
+	dlg.dialog_text = text
+	dlg.ok_button_text = ok_label
+	dlg.get_cancel_button().text = Lang.t("DLG_CANCEL")
+	host.add_child(dlg)
+	dlg.confirmed.connect(func(): on_ok.call(); dlg.queue_free())
+	dlg.canceled.connect(dlg.queue_free)
+	dlg.popup_centered()

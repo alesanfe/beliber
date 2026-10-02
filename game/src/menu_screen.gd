@@ -337,3 +337,5 @@ static func build(app) -> void:
 	st.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	select_ui.add_child(st)
 	app._refresh_values()
+	Widgets.focus_first(margin)
+

@@ -129,7 +129,10 @@ func _ready() -> void:
 	b_eq.pressed.connect(_copy_official)
 	right.add_child(b_eq)
 	var b_clear := Button.new(); b_clear.text = Lang.t("AB_CLEAR")
-	b_clear.pressed.connect(func(): grid.clear(); _update_cost())
+	b_clear.pressed.connect(func():
+		Widgets.confirm(self, Lang.t("AB_CLEAR_T"),
+			Lang.t("AB_CLEAR_C"), Lang.t("AB_CLEAR"),
+			func(): grid.clear(); _update_cost()))
 	right.add_child(b_clear)
 	right.add_child(HSeparator.new())
 	var b_save := Button.new(); b_save.text = Lang.t("AB_SAVE")

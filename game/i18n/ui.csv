@@ -443,3 +443,18 @@ Press «%s»."
 PUZ_WRONG,"Esa no mata al líder. Prueba otra.
 Resueltos: %d","That doesn't take the leader. Try another.
 Solved: %d"
+HUD_REDUCE,Reducir movimiento,Reduce motion
+HUD_REDUCE_TIP,"Desactiva animaciones decorativas (pop-in, hover, confetti, toasts) — accesibilidad vestibular.","Disables decorative animation (pop-in, hover, confetti, toasts) — vestibular accessibility."
+DLG_CANCEL,Cancelar,Cancel
+AB_CLEAR_T,Vaciar el ejército,Clear the army
+AB_CLEAR_C,"Se retirarán todas las piezas colocadas.
+No se puede deshacer.","All placed pieces will be removed.
+This cannot be undone."
+POSE_CLEAR_T,Limpiar el tablero,Clear the board
+POSE_CLEAR_C,"Se retirarán todas las piezas de la posición.
+No se puede deshacer.","All pieces will be removed from the position.
+This cannot be undone."
+PE_RESET_T,Restablecer la pieza,Reset the piece
+PE_RESET_C,Se descartarán los cambios sin guardar y se restaurará la plantilla.,Unsaved changes will be discarded and the template restored.
+PE_DEP_RESET_T,Restablecer el despliegue,Reset the deployment
+PE_DEP_RESET_C,Se descartará el despliegue editado y se restaurará el oficial.,The edited deployment will be discarded and the official one restored.
