@@ -29,9 +29,12 @@ func _letters(owner: int) -> Array:
 	return f.pieces.keys()
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	# and_offsets: set_anchors_preset solo tocaba anchors y la
+	# pantalla quedaba con size 0 — el tablero se cortaba tras la
+	# columna lateral en vez de centrarse en el área disponible
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var hbox := HBoxContainer.new()
-	hbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	hbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(hbox)
 
 	# tablero

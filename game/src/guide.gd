@@ -24,9 +24,9 @@ var quiz_btn: Button
 
 func _init(p_factions: Array) -> void:
 	factions = p_factions
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var row := HBoxContainer.new()
-	row.set_anchors_preset(Control.PRESET_FULL_RECT)
+	row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(row)
 
 	var center := CenterContainer.new()
