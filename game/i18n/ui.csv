@@ -161,3 +161,5 @@ RUN_OVER,"
 Run terminada — racha: %d (mejor: %d)","
 Run over — streak: %d (best: %d)"
 HUD_PNG_SAVED,Tablero exportado: ,Board exported:
+
+CHAT_OFFLINE,El chat está disponible en partidas online.,Chat is available in online games.

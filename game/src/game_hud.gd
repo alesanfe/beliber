@@ -418,6 +418,12 @@ static func build(app) -> void:
 			app._chat_log("[tú] " + t)
 			chat.text = "")
 		tab_chat.add_child(chat)
+	else:
+		# local/hotseat: sin input, pero un aviso explica por qué la
+		# pestaña queda vacía (en vez de un panel en blanco)
+		var hint := Widgets.lbl(Lang.t("CHAT_OFFLINE"), 13, true)
+		hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		tab_chat.add_child(hint)
 
 	app._wire_tm()
 	app._apply_settings()
