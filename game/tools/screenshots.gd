@@ -49,10 +49,25 @@ func _init() -> void:
 			var d: DraftScreen = _app.editor_ui
 			d._pick("Y"); d._pick("X"); d._pick("C"); d._pick("T")],
 		["game", func(): _close(); _app._start_game()],
+		# pestañas Opciones/Chat del HUD (TabContainer del side_panel)
+		["game_opts", func(): _hud_tab(1)],
+		["game_chat", func(): _hud_tab(2)],
 		["postgame", func(): PostGame.modal(_app, 0,
 			PostGame.summary(_app.tm))],
+		# bendición roguelike: panel de elección tras ganar el combate
+		["run_boon", func():
+			var ov: Node = _app.find_child("PostGameOverlay",
+				false, false)
+			if ov: ov.queue_free()
+			_app._run_boon()],
 		["tutorial", func(): _app._restart(); _app._start_tutorial()],
 	]
+
+## Cambia la pestaña del HUD (0 Partida / 1 Opciones / 2 Chat).
+func _hud_tab(i: int) -> void:
+	var tabs := _app.find_children("*", "TabContainer",
+		true, false)[0] as TabContainer
+	if tabs: tabs.current_tab = i
 
 func _close() -> void:
 	if _app.editor_ui != null or (
