@@ -109,8 +109,15 @@ static func build(app) -> void:
 	grid.add_child(Control.new())
 
 	# valor del ejército (regla de equilibrio estilo Betza/CEO)
-	app.val_lbl0 = Widgets.lbl(""); grid.add_child(app.val_lbl0)
-	app.val_lbl1 = Widgets.lbl(""); grid.add_child(app.val_lbl1)
+	app.val_lbl0 = Widgets.lbl("")
+	app.val_lbl1 = Widgets.lbl("")
+	# la descripción de estilo va en la misma línea y se salía de su
+	# columna rozando la del rival — wrap para que quede contenida
+	for vl in [app.val_lbl0, app.val_lbl1]:
+		vl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		vl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid.add_child(app.val_lbl0)
+	grid.add_child(app.val_lbl1)
 	grid.add_child(Control.new())
 
 	grid.add_child(Widgets.lbl(Lang.t("MENU_TEAM")))
