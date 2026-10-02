@@ -71,6 +71,9 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var root := HBoxContainer.new()
 	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	# sin margen el texto de la columna izquierda se corta en el
+	# borde de la ventana ("onstructor de ejército")
+	root.offset_left = 12
 	add_child(root)
 
 	var left := VBoxContainer.new()
