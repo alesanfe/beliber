@@ -11,6 +11,8 @@ reprogramables, IA con niveles y estilos, y juego en red con ladder ELO.
 ![Version](https://img.shields.io/badge/version-0.1.1-green)
 [![CI](https://github.com/alesanfe/beliber/actions/workflows/ci.yml/badge.svg)](https://github.com/alesanfe/beliber/actions/workflows/ci.yml)
 
+![Partida autojugada IA-vs-IA de Beliber: Humenex (azul) vs Elfos (verde) moviendo por turnos](docs/assets/demo.gif)
+
 ![Tablero de Beliber en partida: Humenex (azul) vs Elfos (verde), con HUD de capturas, movimientos y evaluación](docs/assets/game.png)
 
 <details>
