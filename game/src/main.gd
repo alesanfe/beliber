@@ -560,19 +560,37 @@ func _run_boon() -> void:
 		{"t": tr("BOON_FIRST"),
 			"f": func(): run_first = true},
 	]
+	# modal centrado: la elección de bendición es el punto de decisión
+	# del run — antes era una caja pequeña al pie del side_panel
+	var overlay := PanelContainer.new()
+	overlay.name = "BoonOverlay"
+	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var dim := StyleBoxFlat.new()
+	dim.bg_color = Color(0, 0, 0, 0.55)
+	overlay.add_theme_stylebox_override("panel", dim)
+	var cc := CenterContainer.new()
+	cc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.add_child(cc)
+	var panel := PanelContainer.new()   # hereda el panel del tema
+	panel.custom_minimum_size.x = 360
+	cc.add_child(panel)
 	var box := VBoxContainer.new()
-	box.add_child(Widgets.lbl(
-		tr("RUN_BOON_TITLE") % run_level))
+	box.add_theme_constant_override("separation", 10)
+	panel.add_child(box)
+	var title := Widgets.lbl(tr("RUN_BOON_TITLE") % run_level, 20)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(title)
 	for o in opts:
 		var b := Button.new()
 		b.text = o.t
+		b.custom_minimum_size = Vector2(320, 38)
 		b.pressed.connect(func():
 			o.f.call()
-			for c in box.get_children(): c.queue_free()
-			box.queue_free()
+			overlay.queue_free()
 			_run_next())
 		box.add_child(b)
-	side_panel.add_child(box)
+	add_child(overlay)
+	Juice.pop_in(panel)
 
 func _run_next() -> void:
 	run_level += 1
