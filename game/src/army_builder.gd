@@ -84,7 +84,7 @@ func _ready() -> void:
 	pad.custom_minimum_size.y = 36
 	left.add_child(pad)
 	var t := Label.new()
-	t.text = "Constructor de ejército"
+	t.text = Lang.t("AB_TITLE")
 	t.add_theme_font_size_override("font_size", 24)
 	left.add_child(t)
 
@@ -94,7 +94,7 @@ func _ready() -> void:
 	opt_f.item_selected.connect(func(_i): _reload())
 	left.add_child(opt_f)
 
-	left.add_child(_lbl("Piezas (clic izq coloca, der borra)"))
+	left.add_child(_lbl(Lang.t("AB_PIECES_LBL")))
 	# Columna única con scroll: en 2 columnas de 132px los nombres
 	# ("X Emperatriz (12)") se cortaban con elipsis.
 	var pal_scroll := ScrollContainer.new()
@@ -117,7 +117,7 @@ func _ready() -> void:
 	var right := VBoxContainer.new()
 	right.custom_minimum_size = Vector2(240, 0)
 	root.add_child(right)
-	right.add_child(_lbl("Presupuesto de puntos"))
+	right.add_child(_lbl(Lang.t("AB_BUDGET")))
 	budget_spin = SpinBox.new()
 	budget_spin.min_value = 10; budget_spin.max_value = 200
 	budget_spin.value = 60
@@ -125,26 +125,28 @@ func _ready() -> void:
 	right.add_child(budget_spin)
 	cost_lbl = Label.new()
 	right.add_child(cost_lbl)
-	var b_eq := Button.new(); b_eq.text = "Copiar setup oficial"
+	var b_eq := Button.new(); b_eq.text = Lang.t("AB_COPY")
 	b_eq.pressed.connect(_copy_official)
 	right.add_child(b_eq)
-	var b_clear := Button.new(); b_clear.text = "Vaciar"
+	var b_clear := Button.new(); b_clear.text = Lang.t("AB_CLEAR")
 	b_clear.pressed.connect(func(): grid.clear(); _update_cost())
 	right.add_child(b_clear)
 	right.add_child(HSeparator.new())
-	var b_save := Button.new(); b_save.text = "Guardar como Eq personalizado"
+	var b_save := Button.new(); b_save.text = Lang.t("AB_SAVE")
 	b_save.pressed.connect(_save)
 	right.add_child(b_save)
-	var b_load := Button.new(); b_load.text = "Cargar guardado"
+	var b_load := Button.new(); b_load.text = Lang.t("AB_LOAD")
 	b_load.pressed.connect(_load)
 	right.add_child(b_load)
 	# comparador + métricas aproximadas vs el despliegue oficial
 	right.add_child(HSeparator.new())
-	right.add_child(_lbl("vs. despliegue oficial (Eq1)"))
+	right.add_child(_lbl(Lang.t("AB_VS_OFFICIAL")))
 	comp_lbl = _lbl("")
 	right.add_child(comp_lbl)
-	for m in ["Agresión", "Movilidad", "Control", "Resistencia"]:
-		right.add_child(_lbl(m))
+	for m in ["AB_MET_AGGRO", "AB_MET_MOBILITY", "AB_MET_CONTROL",
+			"AB_MET_RESIST"]:
+		var label: String = Lang.t(m)
+		right.add_child(_lbl(label))
 		var bc := ProgressBar.new()
 		bc.max_value = 100; bc.show_percentage = false
 		bc.custom_minimum_size = Vector2(0, 10)
@@ -170,7 +172,7 @@ func _reload() -> void:
 		var b := Button.new()
 		b.text = "%s %s (%d)" % [letter, p.name, p.get("value", 0)]
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		b.tooltip_text = "%s — %s (valor %d)" % [
+		b.tooltip_text = Lang.t("AB_PIECE_TIP") % [
 			letter, p.name, p.get("value", 0)]
 		b.custom_minimum_size = Vector2(0, 26)
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -210,7 +212,8 @@ func leaders() -> int:
 func _update_cost() -> void:
 	var c := cost()
 	var l := leaders()
-	cost_lbl.text = "Coste: %d / %d   Líderes: %d" % [c, int(budget_spin.value), l]
+	cost_lbl.text = Lang.t("AB_COST_FMT") % [
+		c, int(budget_spin.value), l]
 	cost_lbl.add_theme_color_override("font_color",
 		Color(0.4, 1, 0.4) if c <= budget_spin.value and l >= 1
 		else Color(1, 0.4, 0.4))
@@ -252,11 +255,13 @@ static func _metrics(fac: Dictionary, letters: Array) -> Dictionary:
 			if fx & FX.MOVE: moves += w
 			if fx & (FX.JUMP | FX.ATRAVESAR): moves += 0.5
 			if fx & (FX.EMPUJAR | FX.ATRAER): special += 1.5
+	# las claves son las de i18n — las barras se indexan por clave,
+	# no por el texto localizado
 	return {
-		"Agresión": caps * 2.2,
-		"Movilidad": moves * 1.8,
-		"Control": cover.size() * 0.9 + special * 4.0,
-		"Resistencia": val * 1.2 + nlead * 8.0,
+		"AB_MET_AGGRO": caps * 2.2,
+		"AB_MET_MOBILITY": moves * 1.8,
+		"AB_MET_CONTROL": cover.size() * 0.9 + special * 4.0,
+		"AB_MET_RESIST": val * 1.2 + nlead * 8.0,
 	}
 
 ## Compara el grid actual con el setup oficial y refresca las barras.
@@ -279,10 +284,10 @@ func _update_compare() -> void:
 	var l_off := 0
 	for ch in off:
 		if faction.pieces.get(ch, {}).get("leader", false): l_off += 1
-	comp_lbl.text = "Valor: %d vs %d (%+d)\nLíderes: %d vs %d\n%s" % [
+	comp_lbl.text = Lang.t("AB_COMPARE_FMT") % [
 		cost(), val_off, cost() - val_off, leaders(), l_off,
-		"Cambios: " + ", ".join(diff) if not diff.is_empty()
-			else "Idéntico al oficial"]
+		Lang.t("AB_CHANGES") + " " + ", ".join(diff)
+			if not diff.is_empty() else Lang.t("AB_IDENTICAL")]
 	var mc := _metrics(faction, cur)
 	var mo := _metrics(faction, off)
 	for m in bars:
@@ -307,15 +312,15 @@ func _to_rows() -> Array:
 
 func _save() -> void:
 	if leaders() < 1:
-		cost_lbl.text = "¡Necesitas al menos 1 líder!"
+		cost_lbl.text = Lang.t("AB_NEED_LEADER")
 		return
 	if cost() > budget_spin.value:
-		cost_lbl.text = "¡Sobre el presupuesto!"
+		cost_lbl.text = Lang.t("AB_OVER_BUDGET")
 		return
 	var data := _load_all()
 	data[faction.id] = {"rows": _to_rows(), "budget": int(budget_spin.value)}
 	StatsStore.atomic_write(SAVE_PATH, JSON.stringify(data, "\t"))
-	cost_lbl.text = "Guardado. Disponible como 'Personalizado' al elegir equipo."
+	cost_lbl.text = Lang.t("AB_SAVED") % Lang.t("MENU_CUSTOM")
 
 func _load() -> void:
 	var data := _load_all()

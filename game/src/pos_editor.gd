@@ -53,12 +53,12 @@ func _ready() -> void:
 	var side := VBoxContainer.new()
 	side.custom_minimum_size = Vector2(280, 0)
 	hbox.add_child(side)
-	side.add_child(_lbl("Editor de posición", 22))
-	side.add_child(_lbl("Clic izq: colocar · Clic der: borrar"))
+	side.add_child(_lbl(Lang.t("MENU_POS_EDITOR"), 22))
+	side.add_child(_lbl(Lang.t("POSE_HINT")))
 
 	for who in [0, 1]:
 		var f: Dictionary = f0 if who == 0 else f1
-		side.add_child(_lbl("J%d — %s" % [who + 1, f.name], 16))
+		side.add_child(_lbl(Lang.t("POSE_PLAYER") % [who + 1, f.name], 16))
 		var flow := GridContainer.new()
 		flow.columns = 8
 		side.add_child(flow)
@@ -76,14 +76,14 @@ func _ready() -> void:
 	side.add_child(HSeparator.new())
 	var row := HBoxContainer.new()
 	side.add_child(row)
-	row.add_child(_lbl("Mueve primero:"))
+	row.add_child(_lbl(Lang.t("POSE_FIRST")))
 	var opt := OptionButton.new()
-	opt.add_item("Jugador 1"); opt.add_item("Jugador 2")
+	opt.add_item(Lang.t("POSE_P1")); opt.add_item(Lang.t("POSE_P2"))
 	opt.item_selected.connect(func(i): first = i)
 	row.add_child(opt)
 
 	var b_clear := Button.new()
-	b_clear.text = "Limpiar tablero"
+	b_clear.text = Lang.t("POSE_CLEAR")
 	b_clear.pressed.connect(func(): grid.clear(); board.queue_redraw())
 	side.add_child(b_clear)
 	# línea de errores persistente — antes cada fallo APILABA un
@@ -101,29 +101,28 @@ func _ready() -> void:
 	fen_edit.custom_minimum_size = Vector2(150, 0)
 	fen_row.add_child(fen_edit)
 	var b_fexp := Button.new()
-	b_fexp.text = "Copiar"
+	b_fexp.text = Lang.t("POSE_COPY")
 	b_fexp.pressed.connect(func():
 		fen_edit.text = _export_bel()
 		DisplayServer.clipboard_set(fen_edit.text))
 	fen_row.add_child(b_fexp)
 	var b_fimp := Button.new()
-	b_fimp.text = "Importar"
+	b_fimp.text = Lang.t("POSE_IMPORT")
 	b_fimp.pressed.connect(func():
 		_err_lbl.text = _import_bel(fen_edit.text)
 		board.queue_redraw())
 	fen_row.add_child(b_fimp)
 	var b_play := Button.new()
-	b_play.text = "Jugar desde aquí"
+	b_play.text = Lang.t("POSE_PLAY")
 	b_play.custom_minimum_size = Vector2(0, 40)
 	b_play.pressed.connect(func():
 		if _leaders(0) == 0 or _leaders(1) == 0:
-			_err_lbl.text = \
-				"Cada bando necesita al menos un líder (Y/X/…)"
+			_err_lbl.text = Lang.t("POSE_NEED_LEADERS")
 			return
 		start.emit(_to_array(), first))
 	side.add_child(b_play)
 	var b_back := Button.new()
-	b_back.text = "Volver"
+	b_back.text = Lang.t("POSE_BACK")
 	b_back.pressed.connect(func(): cancel.emit())
 	side.add_child(b_back)
 
@@ -150,7 +149,7 @@ func _import_bel(s: String) -> String:
 	for e in r.pos:
 		var f: Dictionary = f0 if e.o == 0 else f1
 		if not f.pieces.has(e.l):
-			return "la facción %s no tiene la pieza '%s'" % [f.name, e.l]
+			return Lang.t("POSE_IMPORT_ERR") % [f.name, e.l]
 		tmp[Vector2i(int(e.x), int(e.y))] = {"l": e.l, "o": e.o,
 			"has_moved": bool(e.get("has_moved", false))}
 	grid = tmp   # propagar '*' de BEL-FEN (has_moved)
@@ -209,7 +208,7 @@ func _draw_board(board: Control) -> void:
 		var ts := font.get_string_size(sel_letter,
 			HORIZONTAL_ALIGNMENT_CENTER, -1, 14)
 		board.draw_string(font, mp + Vector2(6, -ts.y / 2),
-			sel_letter + " J%d" % (sel_owner + 1),
+			Lang.t("POSE_CURSOR") % [sel_letter, sel_owner + 1],
 			HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color.WHITE)
 
 func _on_board_input(event: InputEvent) -> void:

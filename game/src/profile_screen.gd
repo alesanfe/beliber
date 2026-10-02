@@ -7,7 +7,7 @@ extends RefCounted
 
 static func build(app) -> void:
 	app.menu_root.queue_free()
-	app.editor_ui = Widgets.screen("Perfil", 560)
+	app.editor_ui = Widgets.screen(Lang.t("MENU_PROFILE"), 560)
 	app.add_child(app.editor_ui)
 	var box := Widgets.screen_body(app.editor_ui)
 	var stats: Dictionary = app.stats
@@ -18,70 +18,68 @@ static func build(app) -> void:
 	var l: int = int(stats.get("l", 0))
 	var d: int = int(stats.get("d", 0))
 	var played := w + l + d
-	box.add_child(Widgets.heading("General"))
+	box.add_child(Widgets.heading(Lang.t("PROF_GENERAL")))
 	box.add_child(Widgets.lbl(
-		"Partidas: %d   ·   %dV %dE %dD   ·   %d%% de victorias" % [
+		Lang.t("PROF_GAMES") % [
 			g, w, d, l, int(100.0 * w / maxi(played, 1))]))
 
 	# — por facción: winrate + dominio (nivel XP) —
 	var fstat: Dictionary = stats.get("fstat", {})
 	if not fstat.is_empty():
 		box.add_child(HSeparator.new())
-		box.add_child(Widgets.heading("Por facción"))
+		box.add_child(Widgets.heading(Lang.t("PROF_BY_FACTION")))
 		var fav := ""; var fav_g := 0
 		var eff := ""; var eff_wr := -1.0
 		for fid in fstat:
 			var fs: Dictionary = fstat[fid]
 			var wr := 100.0 * int(fs.w) / maxi(int(fs.g), 1)
 			box.add_child(Widgets.lbl(
-				"  %s  nv%d  —  %d partidas, %d%% victorias" % [
+				Lang.t("PROF_FAC_LINE") % [
 					fid.capitalize(), app._faction_level(fid),
 					int(fs.g), int(wr)]))
 			if int(fs.g) > fav_g: fav = fid; fav_g = int(fs.g)
 			if int(fs.g) >= 3 and wr > eff_wr: eff = fid; eff_wr = wr
-		var extra := "  Favorita: %s" % fav.capitalize()
-		if eff != "": extra += "   ·   Más efectiva: %s" % eff.capitalize()
+		var extra := Lang.t("PROF_FAV") % fav.capitalize()
+		if eff != "": extra += Lang.t("PROF_EFF") % eff.capitalize()
 		box.add_child(Widgets.lbl(extra))
 
 	# — historial reciente —
 	var hist: Array = stats.get("history", [])
 	if not hist.is_empty():
 		box.add_child(HSeparator.new())
-		box.add_child(Widgets.heading("Últimas partidas"))
+		box.add_child(Widgets.heading(Lang.t("PROF_RECENT")))
 		var marks := {"V": "✔", "E": "½", "D": "✘"}
 		var n := mini(8, hist.size())
 		for i in range(hist.size() - n, hist.size()):
 			var h: Dictionary = hist[i]
 			box.add_child(Widgets.lbl(
-				"  %s  %s vs %s — %d jugadas (%s)" % [
+				Lang.t("PROF_HIST_LINE") % [
 					marks.get(h.r, "?"), String(h.me).capitalize(),
 					String(h.vs).capitalize(), int(h.mv), h.mode]))
 
 	# — récords —
 	box.add_child(HSeparator.new())
-	box.add_child(Widgets.heading("Récords"))
+	box.add_child(Widgets.heading(Lang.t("PROF_RECORDS")))
 	var recs := []
 	if int(stats.get("rec_fast", 0)) > 0:
-		recs.append("Victoria más rápida: %d jugadas"
-			% int(stats.rec_fast))
+		recs.append(Lang.t("PROF_REC_FAST") % int(stats.rec_fast))
 	if int(stats.get("rec_long", 0)) > 0:
-		recs.append("Partida más larga: %d jugadas" % int(stats.rec_long))
+		recs.append(Lang.t("PROF_REC_LONG") % int(stats.rec_long))
 	if int(stats.get("run_best", 0)) > 0:
-		recs.append("Mejor racha Run: nivel %d" % int(stats.run_best))
+		recs.append(Lang.t("PROF_REC_RUN") % int(stats.run_best))
 	box.add_child(Widgets.lbl("  ".join(recs) if not recs.is_empty()
-		else "Sin récords todavía."))
+		else Lang.t("PROF_REC_NONE")))
 
 	# — logros —
 	var ach: Array = stats.get("ach", [])
 	box.add_child(HSeparator.new())
-	box.add_child(Widgets.heading("Logros"))
+	box.add_child(Widgets.heading(Lang.t("PROF_ACH")))
 	if ach.is_empty():
-		box.add_child(Widgets.lbl(
-			"Ninguno aún — gana tu primera partida."))
+		box.add_child(Widgets.lbl(Lang.t("PROF_ACH_NONE")))
 	else:
 		for a in ach:
 			box.add_child(Widgets.lbl(
-				"  🏆 " + str(StatsStore.ACH.get(a, a))))
-	var b := Widgets.secondary("Volver")
+				"  🏆 " + StatsStore.ach_name(a)))
+	var b := Widgets.secondary(Lang.t("UI_BACK"))
 	b.pressed.connect(app._close_editor)
 	box.add_child(b)

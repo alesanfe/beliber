@@ -329,9 +329,7 @@ static func build(app) -> void:
 	if app.stats.ach.size() > 0:
 		var names := []
 		for a in app.stats.ach:
-			var k: String = "ACH_" + a.to_upper()
-			var tr_: String = Lang.t(k)
-			names.append(tr_ if tr_ != k else StatsStore.ACH.get(a, a))
+			names.append(StatsStore.ach_name(a))
 		parts.append(Lang.t("STATS_ACH") + ", ".join(names))
 	st.text = " · ".join(parts)
 	# los logros acumulados desbordaban el ancho de la ventana —

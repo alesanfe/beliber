@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://bocsapu811vgo"
+
+[deps]
+
+files=["res://i18n/_frag_editors.Movimiento.translation", "res://i18n/_frag_editors.Movement.translation"]
+
+source_file="res://i18n/_frag_editors.csv"
+dest_files=["res://i18n/_frag_editors.Movimiento.translation", "res://i18n/_frag_editors.Movement.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

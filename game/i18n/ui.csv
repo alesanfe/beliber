@@ -161,5 +161,178 @@ RUN_OVER,"
 Run terminada — racha: %d (mejor: %d)","
 Run over — streak: %d (best: %d)"
 HUD_PNG_SAVED,Tablero exportado: ,Board exported:
-
 CHAT_OFFLINE,El chat está disponible en partidas online.,Chat is available in online games.
+ONLINE_TITLE,Jugar online,Play online
+ONLINE_TAB_QUICK,Rápida,Quick
+ONLINE_TAB_ROOMS,Salas,Rooms
+ONLINE_TAB_LAN,LAN,LAN
+ONLINE_TAB_LADDER,Ladder,Ladder
+ONLINE_SERVER,Servidor:,Server:
+ONLINE_NICK_PH,Tu nick,Your nick
+ONLINE_QUEUE_INFO,"Cola automática: se empareja con tu facción, equipo y reloj.","Automatic queue: matched by your faction, army and clock."
+ONLINE_FIND,Buscar rival,Find opponent
+ONLINE_FIND_TIP,Matchmaking: cola automática (tu facción/equipo),Matchmaking: automatic queue (your faction/army)
+ONLINE_CODE,Código:,Code:
+ONLINE_CREATE_ROOM,Crear sala,Create room
+ONLINE_CREATE_ROOM_TIP,Crear sala online en el servidor,Create an online room on the server
+ONLINE_JOIN_ROOM,Entrar,Join
+ONLINE_JOIN_ROOM_TIP,Unirse a una sala por código,Join a room by code
+ONLINE_ROOM_INFO,"El creador comparte el código. Sin código y con sala previa, «Entrar» intenta reconectar.","The creator shares the code. With no code and a previous room, «Join» tries to reconnect."
+ONLINE_IP,IP:,IP:
+ONLINE_PORT,Puerto:,Port:
+ONLINE_HOST,Crear partida,Host game
+ONLINE_JOIN,Unirse,Join
+ONLINE_LAN_INFO,Conexión directa punto a punto — el host juega como J1.,Direct peer-to-peer connection — the host plays as P1.
+ONLINE_LADDER_VIEW,Ver clasificación,View ladder
+ONLINE_LADDER_TIP,Clasificación ELO del servidor,Server ELO ladder
+ONLINE_CONN_FAIL,No se pudo conectar,Could not connect
+PROF_GENERAL,General,General
+PROF_GAMES,Partidas: %d   ·   %dV %dE %dD   ·   %d%% de victorias,Games: %d   ·   %dW %dD %dL   ·   %d%% win rate
+PROF_BY_FACTION,Por facción,By faction
+PROF_FAC_LINE,"  %s  nv%d  —  %d partidas, %d%% victorias","  %s  lv%d  —  %d games, %d%% wins"
+PROF_FAV,  Favorita: %s,  Favorite: %s
+PROF_EFF,   ·   Más efectiva: %s,   ·   Most effective: %s
+PROF_RECENT,Últimas partidas,Recent games
+PROF_HIST_LINE,  %s  %s vs %s — %d jugadas (%s),  %s  %s vs %s — %d moves (%s)
+PROF_RECORDS,Récords,Records
+PROF_REC_FAST,Victoria más rápida: %d jugadas,Fastest win: %d moves
+PROF_REC_LONG,Partida más larga: %d jugadas,Longest game: %d moves
+PROF_REC_RUN,Mejor racha Run: nivel %d,Best Run streak: level %d
+PROF_REC_NONE,Sin récords todavía.,No records yet.
+PROF_ACH,Logros,Achievements
+PROF_ACH_NONE,Ninguno aún — gana tu primera partida.,None yet — win your first game.
+POST_REMATCH,Revancha,Rematch
+POST_VIEW_BOARD,Ver tablero,View board
+POST_OPENING,Apertura — ,Opening — 
+POST_PACE,"Ritmo medio: %.1f s/jugada
+","Average pace: %.1f s/move
+"
+POST_SUMMARY,"Movimientos: %d
+%sCapturado J1: %s
+Capturado J2: %s
+Piezas: %d/%d vs %d/%d
+Material: %d vs %d
+%s","Moves: %d
+%sCaptured P1: %s
+Captured P2: %s
+Pieces: %d/%d vs %d/%d
+Material: %d vs %d
+%s"
+POST_ANALYSIS,Análisis: ,Analysis: 
+POST_ACCURACY,Precisión (aprox): J1 %d%% · J2 %d%%,Accuracy (approx): P1 %d%% · P2 %d%%
+POST_BEST,Mejor J%d en jugada %d: %s (+%d),Best P%d on move %d: %s (+%d)
+POST_BLUNDER,Error J%d en jugada %d: %s (perdió %d),Blunder P%d on move %d: %s (lost %d)
+POST_DECISIVE,"Momento decisivo: jugada %d (%s, swing %d)","Decisive moment: move %d (%s, swing %d)"
+POST_CLEAN,Sin errores graves detectados.,No major blunders detected.
+DRAFT_TITLE,Draft — elegid piezas por turnos,Draft — take turns picking pieces
+DRAFT_TURN,Turno de J%d — %s,P%d's turn — %s
+DRAFT_POINTS,Puntos: %d / %d   ·   Piezas: %d,Points: %d / %d   ·   Pieces: %d
+DRAFT_PICKS,J%d (%s): %s — %d/%d pts%s,P%d (%s): %s — %d/%d pts%s
+DRAFT_PASSED, (pasó), (passed)
+DRAFT_PASS,Pasar turno,Pass turn
+DRAFT_PLAY,¡A jugar!,Let's play!
+DRAFT_VALUE_TIP,valor %d%s,value %d%s
+DRAFT_LEADER, · LÍDER, · LEADER
+PE_MODE_MOVES,Movimiento,Movement
+PE_MODE_DEPLOY,Posición inicial,Starting position
+PE_EFFECT_LBL,"Efecto (clic izq pinta, der borra)","Effect (left click paints, right erases)"
+PE_TEMPLATES,Plantillas rápidas,Quick templates
+TPL_KNIGHT,Caballero,Knight
+TPL_ARCHER,Arquero,Archer
+TPL_ROOK,Torre,Rook
+TPL_BISHOP,Alfil,Bishop
+TPL_LEAP,Salto,Leap
+TPL_TELEPORT,Teleport,Teleport
+PE_PREVIEW,Vista previa de movimientos (tablero vacío),Move preview (empty board)
+PE_RELOCATE,Reubicar pieza (clic en el tablero),Relocate piece (click on the board)
+PE_LEG2,Editar 2º tramo (cadena),Edit 2nd leg (chain)
+PE_PROPS,Propiedades,Properties
+PE_NAME,Nombre,Name
+PE_VALUE,Valor,Value
+PE_SYM,Simetría,Symmetry
+PE_SYM_ALL,Simétrica (8 direcciones),Symmetric (8 directions)
+PE_SYM_LIT,Literal (solo hacia adelante),Literal (forward only)
+PE_LEADER,Líder (victoria),Leader (victory)
+PE_SWAP,Roba movimientos al capturar,Steals moves on capture
+PE_CASTLE,Pareja de enroque (estilo torre),Castling partner (rook-style)
+PE_TEAM_EDIT,Equipo a editar,Army to edit
+PE_EQ1,Eq1,Army 1
+PE_EQ2,Eq2,Army 2
+PE_DEP_PIECE,"Pieza a colocar (clic izq, der borra)","Piece to place (left click, right erases)"
+PE_DEP_SAVE,Guardar despliegue,Save deployment
+PE_DEP_RESET,Restaurar despliegue,Reset deployment
+PE_SAVE,Guardar pieza,Save piece
+PE_RESET,Restaurar por defecto,Restore defaults
+PE_WIPE_BTN,Borrar TODAS las sobrescrituras,Delete ALL overrides
+PE_WIPE_TITLE,Borrar sobrescrituras,Delete overrides
+PE_WIPE_CONFIRM,¿Eliminar TODAS las piezas y despliegues personalizados de todas las facciones? No se puede deshacer.,Delete ALL custom pieces and deployments for all factions? This cannot be undone.
+PE_DEPLOY_HINT,Modo despliegue: pinta las casillas iniciales.,Deploy mode: paint the starting squares.
+PE_DEPLOY_SAVED,Despliegue guardado.,Deployment saved.
+PE_DEPLOY_RESTORED,Despliegue restaurado.,Deployment restored.
+PE_TPL_APPLIED,Plantilla «%s» aplicada — ajusta y guarda.,Template '%s' applied — tweak and save.
+PE_SAVED,Guardada. Activa al instante en nuevas partidas.,Saved. Active immediately in new games.
+PE_RESTORED,Restaurada a los valores por defecto.,Restored to defaults.
+PE_WIPED,Todas las sobrescrituras eliminadas.,All overrides deleted.
+PE_LEG2_TITLE,2º TRAMO (%d celdas),2ND LEG (%d cells)
+PE_PIECE_TITLE,PIEZA (%s),PIECE (%s)
+PE_SYM_LIT_SHORT,literal,literal
+PE_SYM_ALL_SHORT,simétrico,symmetric
+PE_DEPLOY_FOOT,fila inferior = fila trasera del jugador,bottom row = player's back rank
+AB_ZONE,zona de despliegue (filas propias),deploy zone (your ranks)
+AB_TITLE,Constructor de ejército,Army builder
+AB_PIECES_LBL,"Piezas (clic izq coloca, der borra)","Pieces (left click places, right erases)"
+AB_BUDGET,Presupuesto de puntos,Points budget
+AB_COPY,Copiar setup oficial,Copy official setup
+AB_CLEAR,Vaciar,Clear
+AB_SAVE,Guardar como Eq personalizado,Save as custom army
+AB_LOAD,Cargar guardado,Load saved
+AB_VS_OFFICIAL,vs. despliegue oficial (Eq1),vs. official deployment (Army 1)
+AB_MET_AGGRO,Agresión,Aggression
+AB_MET_MOBILITY,Movilidad,Mobility
+AB_MET_CONTROL,Control,Control
+AB_MET_RESIST,Resistencia,Resilience
+AB_PIECE_TIP,%s — %s (valor %d),%s — %s (value %d)
+AB_COST_FMT,Coste: %d / %d   Líderes: %d,Cost: %d / %d   Leaders: %d
+AB_COMPARE_FMT,"Valor: %d vs %d (%+d)
+Líderes: %d vs %d
+%s","Value: %d vs %d (%+d)
+Leaders: %d vs %d
+%s"
+AB_CHANGES,Cambios: ,Changes:
+AB_IDENTICAL,Idéntico al oficial,Identical to official
+AB_NEED_LEADER,¡Necesitas al menos 1 líder!,You need at least 1 leader!
+AB_OVER_BUDGET,¡Sobre el presupuesto!,Over budget!
+AB_SAVED,Guardado. Disponible como '%s' al elegir equipo.,Saved. Available as '%s' when picking an army.
+POSE_HINT,Clic izq: colocar · Clic der: borrar,Left click: place · Right click: erase
+POSE_PLAYER,J%d — %s,P%d — %s
+POSE_FIRST,Mueve primero:,Moves first:
+POSE_P1,Jugador 1,Player 1
+POSE_P2,Jugador 2,Player 2
+POSE_CLEAR,Limpiar tablero,Clear board
+POSE_COPY,Copiar,Copy
+POSE_IMPORT,Importar,Import
+POSE_PLAY,Jugar desde aquí,Play from here
+POSE_NEED_LEADERS,Cada bando necesita al menos un líder (Y/X/…),Each side needs at least one leader (Y/X/…)
+POSE_BACK,Volver,Back
+POSE_IMPORT_ERR,la facción %s no tiene la pieza '%s',faction %s has no piece '%s'
+POSE_CURSOR,%s J%d,%s P%d
+GUIDE_TITLE,Guía de facción,Faction guide
+GUIDE_RULES,Reglas especiales:,Special rules:
+GUIDE_RULES_NONE, ninguna., none.
+GUIDE_PIECES,Piezas:,Pieces:
+GUIDE_VALUE,valor %d,value %d
+RULE_FIRST,Siempre mueve primero,Always moves first
+RULE_SECOND,Siempre mueve segundo,Always moves second
+RULE_DOUBLE_OPEN,Su primer turno tiene 2 movimientos,Its first turn has 2 moves
+RULE_DOUBLE_LEAD,Tiene dos líderes (hay que caer ambos),Has two leaders (both must fall)
+GUIDE_QUIZ_BTN,🎯 Entrenamiento: ¿dónde puede mover?,🎯 Training: where can it move?
+GUIDE_QUIZ_TIP,Te pregunta por los movimientos legales de piezas al azar,Asks you for the legal moves of random pieces
+GUIDE_NEXT,Otra pieza,Another piece
+GUIDE_CLICK,Haz clic en una pieza para ver sus movimientos.,Click a piece to see its moves.
+GUIDE_QUIZ_PAUSE,Entrenamiento en pausa. Aciertos: %d/%d,Training paused. Score: %d/%d
+GUIDE_QUIZ_NONE,No hay piezas con movimientos.,No pieces have moves.
+GUIDE_QUIZ_ASK,¿A qué casillas puede mover %s? (%d/%d),Which squares can %s move to? (%d/%d)
+GUIDE_QUIZ_OK,✔ ¡Correcto! %s sí puede ir ahí. (%d/%d) — clic para seguir,✔ Correct! %s can go there. (%d/%d) — click to continue
+GUIDE_QUIZ_MISS,✘ No. %s tenía %d destinos legales (marcados). (%d/%d) — clic para seguir,✘ No. %s had %d legal targets (marked). (%d/%d) — click to continue
+CAP_CAPTURED,Capturado: ,Captured: 
+CAP_NOTHING,nada,nothing

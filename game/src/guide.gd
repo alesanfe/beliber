@@ -42,7 +42,7 @@ func _init(p_factions: Array) -> void:
 	var side := VBoxContainer.new()
 	side.custom_minimum_size = Vector2(340, 0)
 	row.add_child(side)
-	side.add_child(_lbl("Guía de facción", 26))
+	side.add_child(_lbl(Lang.t("GUIDE_TITLE"), 26))
 	opt = OptionButton.new()
 	for f in factions:
 		opt.add_item(f.name)
@@ -53,9 +53,8 @@ func _init(p_factions: Array) -> void:
 	side.add_child(info)
 	side.add_child(HSeparator.new())
 	quiz_btn = Button.new()
-	quiz_btn.text = "🎯 Entrenamiento: ¿dónde puede mover?"
-	quiz_btn.tooltip_text = "Te pregunta por los movimientos legales " + \
-		"de piezas al azar"
+	quiz_btn.text = Lang.t("GUIDE_QUIZ_BTN")
+	quiz_btn.tooltip_text = Lang.t("GUIDE_QUIZ_TIP")
 	quiz_btn.toggled.connect(_quiz_toggle)
 	quiz_btn.toggle_mode = true
 	side.add_child(quiz_btn)
@@ -63,11 +62,11 @@ func _init(p_factions: Array) -> void:
 	quiz_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
 	side.add_child(quiz_lbl)
 	var b_next := Button.new()
-	b_next.text = "Otra pieza"
+	b_next.text = Lang.t("GUIDE_NEXT")
 	b_next.pressed.connect(_quiz_next)
 	side.add_child(b_next)
 	side.add_child(HSeparator.new())
-	side.add_child(_lbl("Haz clic en una pieza para ver sus movimientos.", 13))
+	side.add_child(_lbl(Lang.t("GUIDE_CLICK"), 13))
 	piece_lbl = _lbl("", 14)
 	piece_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
 	piece_lbl.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -91,27 +90,28 @@ func _pick(i: int) -> void:
 
 func _show_faction(i: int) -> void:
 	var f: Dictionary = factions[i]
-	info.text = "%s — %s\n\nReglas especiales:" % [
-		f.name, PiecesData.STYLES.get(f.id, "")]
+	info.text = "%s — %s\n\n" % [
+		f.name, PiecesData.STYLES.get(f.id, "")] + Lang.t("GUIDE_RULES")
 	var rules: Dictionary = f.get("rules", {})
 	if rules.is_empty():
-		info.text += " ninguna."
+		info.text += Lang.t("GUIDE_RULES_NONE")
 	for k in rules:
 		info.text += "\n• " + _rule_text(k)
-	info.text += "\n\nPiezas:"
+	info.text += "\n\n" + Lang.t("GUIDE_PIECES")
 	for letter in f.pieces:
 		var p: Dictionary = f.pieces[letter]
-		info.text += "\n%s %s (valor %d)%s" % [
-			letter, p.name, int(p.get("value", 0)),
-			" — LÍDER" if p.get("leader", false) else ""]
+		info.text += "\n%s %s (%s)%s" % [
+			letter, p.name,
+			Lang.t("GUIDE_VALUE") % int(p.get("value", 0)),
+			Lang.t("DRAFT_LEADER") if p.get("leader", false) else ""]
 	board.queue_redraw()
 
 static func _rule_text(k: String) -> String:
 	match k:
-		"primero": return "Siempre mueve primero"
-		"segundo": return "Siempre mueve segundo"
-		"doble_apertura": return "Su primer turno tiene 2 movimientos"
-		"doble_lider": return "Tiene dos líderes (hay que caer ambos)"
+		"primero": return Lang.t("RULE_FIRST")
+		"segundo": return Lang.t("RULE_SECOND")
+		"doble_apertura": return Lang.t("RULE_DOUBLE_OPEN")
+		"doble_lider": return Lang.t("RULE_DOUBLE_LEAD")
 	return k
 
 ## ——— Entrenamiento: quiz de movimientos legales ———
@@ -125,7 +125,7 @@ func _quiz_toggle(on: bool) -> void:
 	if on:
 		_quiz_next()
 	else:
-		quiz_lbl.text = "Entrenamiento en pausa. Aciertos: %d/%d" % [
+		quiz_lbl.text = Lang.t("GUIDE_QUIZ_PAUSE") % [
 			quiz_ok, quiz_total]
 		board.selected = Vector2i(-1, -1)
 		board.queue_redraw()
@@ -141,7 +141,7 @@ func _quiz_next() -> void:
 			var mv := MoveGen.moves_for(tm.state, c)
 			if not mv.is_empty(): cands.append({"c": c, "mv": mv})
 	if cands.is_empty():
-		quiz_lbl.text = "No hay piezas con movimientos."
+		quiz_lbl.text = Lang.t("GUIDE_QUIZ_NONE")
 		return
 	var pick: Dictionary = cands[randi() % cands.size()]
 	quiz_cell = pick.c
@@ -152,7 +152,7 @@ func _quiz_next() -> void:
 	var p: Dictionary = tm.state.at(quiz_cell)
 	board.selected = quiz_cell      # marca el origen
 	board.legal = []                # destinos ocultos hasta responder
-	quiz_lbl.text = "¿A qué casillas puede mover %s? (%d/%d)" % [
+	quiz_lbl.text = Lang.t("GUIDE_QUIZ_ASK") % [
 		p.def.name, quiz_ok, quiz_total]
 	board.queue_redraw()
 
@@ -167,11 +167,9 @@ func _quiz_click(c: Vector2i) -> void:
 	board.legal = quiz_moves      # revela la respuesta correcta
 	if c in quiz_targets:
 		quiz_ok += 1
-		quiz_lbl.text = ("✔ ¡Correcto! %s sí puede ir ahí. " + \
-			"(%d/%d) — clic para seguir") % [
+		quiz_lbl.text = Lang.t("GUIDE_QUIZ_OK") % [
 			p.def.name, quiz_ok, quiz_total]
 	else:
-		quiz_lbl.text = ("✘ No. %s tenía %d destinos legales " + \
-			"(marcados). (%d/%d) — clic para seguir") % [
+		quiz_lbl.text = Lang.t("GUIDE_QUIZ_MISS") % [
 			p.def.name, quiz_targets.size(), quiz_ok, quiz_total]
 	board.queue_redraw()

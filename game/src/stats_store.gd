@@ -11,13 +11,20 @@ const STATS_PATH := "user://beliber_stats.json"
 ## logros fantasmas).
 static var disabled := false
 
-const ACH := {
-	"primera": "Primera victoria",
-	"caza5": "Cazador: 5+ capturas en una partida",
-	"ia3": "Vencer a la IA nivel 3",
-	"cinco": "Cinco partidas disputadas",
-	"veloz": "Ganar en menos de 15 movimientos",
+# mapa de logro → clave i18n (los textos viven en ui.csv; antes eran
+# const con español hardcoded, que ignoraba el idioma)
+const ACH_KEYS := {
+	"primera": "ACH_PRIMERA",
+	"caza5": "ACH_CAZA5",
+	"ia3": "ACH_IA3",
+	"cinco": "ACH_CINCO",
+	"veloz": "ACH_VELOZ",
 }
+
+## Nombre localizado del logro (fallback = id si falta la clave).
+static func ach_name(id: String) -> String:
+	var key: String = ACH_KEYS.get(id, "")
+	return Lang.t(key) if key != "" else id
 
 const XP_GAME := 10   # por jugar
 const XP_WIN := 30    # bonus por ganar
@@ -157,4 +164,4 @@ static func record_result(app) -> void:
 static func grant(app, id: String) -> void:
 	if app.stats.ach.has(id): return
 	app.stats.ach.append(id)
-	app.hud_alert("🏆 " + ACH[id])
+	app.hud_alert("🏆 " + ach_name(id))

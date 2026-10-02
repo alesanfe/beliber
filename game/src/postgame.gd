@@ -39,7 +39,7 @@ static func opening_name(tm: TurnManager) -> String:
 		var f: Dictionary = tm.state.factions[pl]
 		var pn: String = f.pieces.get(letter, {}).get("name", letter)
 		parts.append("%s: %s" % [f.name, pn])
-	return "Apertura — " + " · ".join(parts) if parts else ""
+	return Lang.t("POST_OPENING") + " · ".join(parts) if parts else ""
 
 ## Texto del resumen de fin de partida: movimientos, capturas,
 ## piezas restantes vs iniciales, material, ritmo y análisis.
@@ -59,8 +59,8 @@ static func summary(tm: TurnManager) -> String:
 	if not tm.move_times.is_empty():
 		var acc := 0.0
 		for t in tm.move_times: acc += float(t)
-		mt = "Ritmo medio: %.1f s/jugada\n" % [acc / tm.move_times.size()]
-	return "Movimientos: %d\n%sCapturado J1: %s\nCapturado J2: %s\nPiezas: %d/%d vs %d/%d\nMaterial: %d vs %d\n%s" % [
+		mt = Lang.t("POST_PACE") % [acc / tm.move_times.size()]
+	return Lang.t("POST_SUMMARY") % [
 		tm.log.size(), mt, cap0 if cap0 != "" else "—",
 		cap1 if cap1 != "" else "—",
 		n0, tm.started[0].size(), n1, tm.started[1].size(),
@@ -85,8 +85,8 @@ static func modal(app, w: int, resumen: String) -> void:
 	cc.add_child(panel)
 	var box := VBoxContainer.new()
 	panel.add_child(box)
-	var title := Widgets.lbl("¡Tablas!" if w < 0 else \
-		"¡Ganan %s!" % app.tm.state.factions[w].name)
+	var title := Widgets.lbl(Lang.t("GAME_DRAW") if w < 0 else \
+		Lang.t("GAME_WIN") % app.tm.state.factions[w].name)
 	title.add_theme_font_size_override("font_size", 30)
 	if w >= 0:
 		title.add_theme_color_override("font_color",
@@ -100,14 +100,14 @@ static func modal(app, w: int, resumen: String) -> void:
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	box.add_child(row)
 	var b_re := Button.new()
-	b_re.text = "Revancha"
+	b_re.text = Lang.t("POST_REMATCH")
 	b_re.pressed.connect(app._rematch)
 	# online no hay rematch real: _rematch reiniciaba en hotseat y
 	# cortaba la conexión dejando al rival "offline" eterno
 	b_re.visible = not app.online
 	row.add_child(b_re)
 	var b_close := Button.new()
-	b_close.text = "Ver tablero"
+	b_close.text = Lang.t("POST_VIEW_BOARD")
 	b_close.pressed.connect(func():
 		Juice.fade_out(overlay, 0.2))
 	row.add_child(b_close)
@@ -159,23 +159,23 @@ static func analysis(tm: TurnManager) -> String:
 	for pl in [0, 1]:
 		var avg: float = loss[pl] / maxi(int(moves_n[pl]), 1)
 		acc.append(int(clampf(100.0 - avg * 2.0, 5.0, 100.0)))
-	lines.append("Precisión (aprox): J1 %d%% · J2 %d%%" % [acc[0], acc[1]])
+	lines.append(Lang.t("POST_ACCURACY") % [acc[0], acc[1]])
 	for pl in [0, 1]:
 		var bst: Dictionary = best[pl]
 		if int(bst.i) >= 0 and float(bst.d) > 30:
-			lines.append("Mejor J%d en jugada %d: %s (+%d)" % [
+			lines.append(Lang.t("POST_BEST") % [
 				pl + 1, int(bst.i) + 1,
 				tm.log[int(bst.i)].get_slice(" ", 1), int(bst.d)])
 	for pl in [0, 1]:
 		var w: Dictionary = worst[pl]
 		if int(w.i) >= 0 and float(w.d) < -30:
-			lines.append("Error J%d en jugada %d: %s (perdió %d)" % [
+			lines.append(Lang.t("POST_BLUNDER") % [
 				pl + 1, int(w.i) + 1,
 				tm.log[int(w.i)].get_slice(" ", 1), int(-w.d)])
 	if decisive_i >= 0 and decisive_swing > 40:
-		lines.append("Momento decisivo: jugada %d (%s, swing %d)" % [
+		lines.append(Lang.t("POST_DECISIVE") % [
 			decisive_i + 1, tm.log[decisive_i].get_slice(" ", 1),
 			int(decisive_swing)])
 	if lines.size() <= 1:
-		lines.append("Sin errores graves detectados.")
-	return "Análisis: " + "\n".join(lines)
+		lines.append(Lang.t("POST_CLEAN"))
+	return Lang.t("POST_ANALYSIS") + "\n".join(lines)

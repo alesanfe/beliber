@@ -77,10 +77,10 @@ class EditorCanvas extends Control:
 			EDIT_CELL, EDIT_CELL)
 		draw_rect(ra.grow(1), Color(0.1, 0.1, 0.1))
 		_text(font, ed.piece_def.letter, ra, Color.WHITE, true)
-		var lbl := "2º TRAMO (%d celdas)" % ed.leg2_cells.size() \
-			if ed.editing_leg2 else "PIEZA (%s)" % (
-				"literal" if ed.piece_def.get("sym") == "lit"
-				else "simétrico")
+		var lbl := Lang.t("PE_LEG2_TITLE") % ed.leg2_cells.size() \
+			if ed.editing_leg2 else Lang.t("PE_PIECE_TITLE") % (
+				Lang.t("PE_SYM_LIT_SHORT") if ed.piece_def.get("sym") == "lit"
+				else Lang.t("PE_SYM_ALL_SHORT"))
 		# Label real en move_box — antes se dibujaba a y=-24 (fuera del
 		# control) y quedaba cortado por el borde superior
 		ed.canvas_lbl.text = lbl
@@ -132,7 +132,7 @@ class DeployCanvas extends Control:
 						if def.get("leader", false):
 							draw_circle(r.get_center() + Vector2(0, -EDIT_CELL*0.34),
 								5.0, Color(1, 0.85, 0.2))
-		_t(font, "fila inferior = fila trasera del jugador",
+		_t(font, Lang.t("PE_DEPLOY_FOOT"),
 			Rect2(0, 8 * EDIT_CELL + 4, 640, 20), Color(0.4, 0.4, 0.4))
 
 	func _t(font: Font, t: String, r: Rect2, col: Color) -> void:
@@ -170,10 +170,10 @@ func _ready() -> void:
 	var pad := Control.new()
 	pad.custom_minimum_size.y = 36
 	left.add_child(pad)
-	left.add_child(_title("Editor de piezas"))
+	left.add_child(_title(Lang.t("MENU_PIECE_EDITOR")))
 	opt_mode = OptionButton.new()
-	opt_mode.add_item("Movimiento")
-	opt_mode.add_item("Posición inicial")
+	opt_mode.add_item(Lang.t("PE_MODE_MOVES"))
+	opt_mode.add_item(Lang.t("PE_MODE_DEPLOY"))
 	opt_mode.item_selected.connect(func(_i): _switch_mode())
 	left.add_child(opt_mode)
 	opt_f = OptionButton.new()
@@ -185,7 +185,7 @@ func _ready() -> void:
 	opt_p.item_selected.connect(func(_i): _load_piece())
 	left.add_child(opt_p)
 
-	left.add_child(_lbl("Efecto (clic izq pinta, der borra)"))
+	left.add_child(_lbl(Lang.t("PE_EFFECT_LBL")))
 	# Paleta en una columna con scroll: en 2 columnas de ~132px los nombres
 	# largos ("Mover/Capturar atravesando") se cortaban con elipsis y el
 	# efecto solo se leía por tooltip.
@@ -212,14 +212,14 @@ func _ready() -> void:
 		pal.add_child(b)
 
 	# plantillas rápidas: patrones clásicos de un clic
-	left.add_child(_lbl("Plantillas rápidas"))
+	left.add_child(_lbl(Lang.t("PE_TEMPLATES")))
 	var tpl := GridContainer.new()
 	tpl.columns = 3
 	left.add_child(tpl)
-	for tn in ["Caballero", "Arquero", "Torre", "Alfil", "Salto",
-			"Teleport"]:
+	for tn in ["knight", "archer", "rook", "bishop", "leap",
+			"teleport"]:
 		var tb := Button.new()
-		tb.text = tn
+		tb.text = Lang.t("TPL_" + tn.to_upper())
 		tb.custom_minimum_size = Vector2(0, 26)
 		var tname: String = tn
 		tb.pressed.connect(func(): _template(tname))
@@ -244,16 +244,16 @@ func _ready() -> void:
 	dep_canvas.visible = false
 	cv.add_child(dep_canvas)
 	var btn_preview := Button.new()
-	btn_preview.text = "Vista previa de movimientos (tablero vacío)"
+	btn_preview.text = Lang.t("PE_PREVIEW")
 	btn_preview.pressed.connect(_toggle_preview)
 	move_box.add_child(btn_preview)
 	var btn_place := Button.new()
-	btn_place.text = "Reubicar pieza (clic en el tablero)"
+	btn_place.text = Lang.t("PE_RELOCATE")
 	btn_place.pressed.connect(func(): placing_piece = true)
 	move_box.add_child(btn_place)
 	# segundo tramo encadenado (Tritón): mismo lienzo, otro mapa
 	var btn_leg2 := CheckButton.new()
-	btn_leg2.text = "Editar 2º tramo (cadena)"
+	btn_leg2.text = Lang.t("PE_LEG2")
 	btn_leg2.toggled.connect(func(on: bool):
 		editing_leg2 = on
 		preview = false; preview_moves = []
@@ -264,61 +264,61 @@ func _ready() -> void:
 	var right := VBoxContainer.new()
 	right.custom_minimum_size = Vector2(260, 0)
 	root.add_child(right)
-	right.add_child(_title("Propiedades"))
-	right.add_child(_lbl("Nombre"))
+	right.add_child(_title(Lang.t("PE_PROPS")))
+	right.add_child(_lbl(Lang.t("PE_NAME")))
 	name_edit = LineEdit.new()
 	right.add_child(name_edit)
-	right.add_child(_lbl("Valor"))
+	right.add_child(_lbl(Lang.t("PE_VALUE")))
 	value_spin = SpinBox.new()
 	value_spin.max_value = 20
 	right.add_child(value_spin)
-	right.add_child(_lbl("Simetría"))
+	right.add_child(_lbl(Lang.t("PE_SYM")))
 	sym_opt = OptionButton.new()
-	sym_opt.add_item("Simétrica (8 direcciones)")
-	sym_opt.add_item("Literal (solo hacia adelante)")
+	sym_opt.add_item(Lang.t("PE_SYM_ALL"))
+	sym_opt.add_item(Lang.t("PE_SYM_LIT"))
 	right.add_child(sym_opt)
-	leader_chk = CheckBox.new(); leader_chk.text = "Líder (victoria)"
+	leader_chk = CheckBox.new(); leader_chk.text = Lang.t("PE_LEADER")
 	right.add_child(leader_chk)
 	swap_chk = CheckBox.new()
-	swap_chk.text = "Roba movimientos al capturar"
+	swap_chk.text = Lang.t("PE_SWAP")
 	right.add_child(swap_chk)
 	castle_chk = CheckBox.new()
-	castle_chk.text = "Pareja de enroque (estilo torre)"
+	castle_chk.text = Lang.t("PE_CASTLE")
 	right.add_child(castle_chk)
 
 	# ---- sección despliegue (visible en modo Posición inicial) ----
 	right.add_child(HSeparator.new())
 	dep_sec = VBoxContainer.new()
 	right.add_child(dep_sec)
-	dep_sec.add_child(_lbl("Equipo a editar"))
+	dep_sec.add_child(_lbl(Lang.t("PE_TEAM_EDIT")))
 	opt_eq = OptionButton.new()
-	opt_eq.add_item("Eq1"); opt_eq.add_item("Eq2")
+	opt_eq.add_item(Lang.t("PE_EQ1")); opt_eq.add_item(Lang.t("PE_EQ2"))
 	opt_eq.item_selected.connect(func(_i): _load_deploy())
 	dep_sec.add_child(opt_eq)
-	dep_sec.add_child(_lbl("Pieza a colocar (clic izq, der borra)"))
+	dep_sec.add_child(_lbl(Lang.t("PE_DEP_PIECE")))
 	dep_pal = GridContainer.new()
 	dep_pal.columns = 2
 	dep_sec.add_child(dep_pal)
-	var b_dsave := Button.new(); b_dsave.text = "Guardar despliegue"
+	var b_dsave := Button.new(); b_dsave.text = Lang.t("PE_DEP_SAVE")
 	b_dsave.pressed.connect(_save_deploy)
 	dep_sec.add_child(b_dsave)
-	var b_dreset := Button.new(); b_dreset.text = "Restaurar despliegue"
+	var b_dreset := Button.new(); b_dreset.text = Lang.t("PE_DEP_RESET")
 	b_dreset.pressed.connect(_reset_deploy)
 	dep_sec.add_child(b_dreset)
 	dep_sec.visible = false
 
 	right.add_child(HSeparator.new())
-	var b_save := Button.new(); b_save.text = "Guardar pieza"
+	var b_save := Button.new(); b_save.text = Lang.t("PE_SAVE")
 	b_save.pressed.connect(_save)
 	right.add_child(b_save)
-	var b_reset := Button.new(); b_reset.text = "Restaurar por defecto"
+	var b_reset := Button.new(); b_reset.text = Lang.t("PE_RESET")
 	b_reset.pressed.connect(_reset)
 	right.add_child(b_reset)
-	var b_wipe := Widgets.danger("Borrar TODAS las sobrescrituras")
+	var b_wipe := Widgets.danger(Lang.t("PE_WIPE_BTN"))
 	b_wipe.pressed.connect(func():
 		var dlg := ConfirmationDialog.new()
-		dlg.title = "Borrar sobrescrituras"
-		dlg.dialog_text = "¿Eliminar TODAS las piezas y despliegues personalizados de todas las facciones? No se puede deshacer."
+		dlg.title = Lang.t("PE_WIPE_TITLE")
+		dlg.dialog_text = Lang.t("PE_WIPE_CONFIRM")
 		add_child(dlg)
 		dlg.confirmed.connect(_wipe_all)
 		dlg.canceled.connect(dlg.queue_free)
@@ -370,7 +370,7 @@ func _switch_mode() -> void:
 	dep_canvas.visible = mode == "deploy"
 	dep_sec.visible = mode == "deploy"
 	opt_p.get_parent().visible = mode == "moves"  # selector de pieza
-	status_lbl.text = "Modo despliegue: pinta las casillas iniciales." \
+	status_lbl.text = Lang.t("PE_DEPLOY_HINT") \
 		if mode == "deploy" else ""
 
 func on_deploy_cell(cell: Vector2i, button: int) -> void:
@@ -395,7 +395,7 @@ func _save_deploy() -> void:
 		data[faction.id]["_setups"] = {}
 	data[faction.id]["_setups"][str(idx)] = deploy_rows.duplicate()
 	_write(data)
-	status_lbl.text = "Despliegue guardado."
+	status_lbl.text = Lang.t("PE_DEPLOY_SAVED")
 
 func _reset_deploy() -> void:
 	var data := _saved_overrides()
@@ -414,7 +414,7 @@ func _reset_deploy() -> void:
 			factions[i].setups = fresh[i].setups.duplicate()
 			if custom != null: factions[i].setups.append(custom)
 	_load_deploy()
-	status_lbl.text = "Despliegue restaurado."
+	status_lbl.text = Lang.t("PE_DEPLOY_RESTORED")
 
 func _load_piece() -> void:
 	var letters: Array = faction.pieces.keys()
@@ -478,7 +478,7 @@ func _template(tname: String) -> void:
 					put.call(dx, dy, "j")
 	_refresh_preview()
 	canvas.queue_redraw()
-	status_lbl.text = "Plantilla «%s» aplicada — ajusta y guarda." \
+	status_lbl.text = Lang.t("PE_TPL_APPLIED") \
 		% tname
 
 func on_cell(cell: Vector2i, button: int) -> void:
@@ -548,7 +548,7 @@ func _save() -> void:
 	data[faction.id][piece_def.letter] = _def_from_editor()
 	_write(data)
 	_apply_to_memory()
-	status_lbl.text = "Guardada. Activa al instante en nuevas partidas."
+	status_lbl.text = Lang.t("PE_SAVED")
 
 func _reset() -> void:
 	var data := _saved_overrides()
@@ -557,12 +557,12 @@ func _reset() -> void:
 		if data[faction.id].is_empty(): data.erase(faction.id)
 	_write(data)
 	_reload_defaults()
-	status_lbl.text = "Restaurada a los valores por defecto."
+	status_lbl.text = Lang.t("PE_RESTORED")
 
 func _wipe_all() -> void:
 	DirAccess.remove_absolute(SAVE_PATH)
 	_reload_defaults()
-	status_lbl.text = "Todas las sobrescrituras eliminadas."
+	status_lbl.text = Lang.t("PE_WIPED")
 
 func _reload_defaults() -> void:
 	# reconstruye las facciones por defecto y recarga la pieza

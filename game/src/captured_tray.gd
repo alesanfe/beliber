@@ -22,7 +22,8 @@ func setup(p_letters: Array, victim_faction: Dictionary, p_diff := 0) -> void:
 	for l in letters:
 		var d: Variant = defs.get(l)
 		names.append(d.name if d != null else l)
-	tooltip_text = "Capturado: " + (", ".join(names) if names else "nada")
+	tooltip_text = Lang.t("CAP_CAPTURED") + (
+		", ".join(names) if names else Lang.t("CAP_NOTHING"))
 	queue_redraw()
 
 func _draw() -> void:

@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://x2k633ybay2b"
+
+[deps]
+
+files=["res://i18n/_frag_screens.Jugar online.translation", "res://i18n/_frag_screens.Play online.translation"]
+
+source_file="res://i18n/_frag_screens.csv"
+dest_files=["res://i18n/_frag_screens.Jugar online.translation", "res://i18n/_frag_screens.Play online.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

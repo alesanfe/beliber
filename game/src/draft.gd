@@ -42,7 +42,7 @@ func _ready() -> void:
 	var col := VBoxContainer.new()
 	root.add_child(col)
 	var t := Label.new()
-	t.text = "Draft — elegid piezas por turnos"
+	t.text = Lang.t("DRAFT_TITLE")
 	t.add_theme_font_size_override("font_size", 26)
 	col.add_child(t)
 	info = Label.new()
@@ -66,14 +66,14 @@ func _ready() -> void:
 	brow.alignment = BoxContainer.ALIGNMENT_CENTER
 	col.add_child(brow)
 	var b_pass := Button.new()
-	b_pass.text = "Pasar turno"
+	b_pass.text = Lang.t("DRAFT_PASS")
 	b_pass.pressed.connect(_pass)
 	brow.add_child(b_pass)
-	var b_done := Widgets.primary("¡A jugar!")
+	var b_done := Widgets.primary(Lang.t("DRAFT_PLAY"))
 	b_done.pressed.connect(_finish)
 	brow.add_child(b_done)
 	var b_cancel := Button.new()
-	b_cancel.text = "Volver"
+	b_cancel.text = Lang.t("UI_BACK")
 	b_cancel.pressed.connect(func(): cancel.emit())
 	brow.add_child(b_cancel)
 	_refresh()
@@ -82,17 +82,17 @@ func _fac() -> Dictionary: return factions[fi[turn]]
 
 func _refresh() -> void:
 	var f := _fac()
-	info.text = "Turno de J%d — %s" % [turn + 1, f.name]
+	info.text = Lang.t("DRAFT_TURN") % [turn + 1, f.name]
 	info.add_theme_color_override("font_color", f.color)
-	cost_lbl.text = "Puntos: %d / %d   ·   Piezas: %d" % [
+	cost_lbl.text = Lang.t("DRAFT_POINTS") % [
 		spent[turn], budget[turn], picked[turn].size()]
 	for pl in [0, 1]:
 		var pj: Array = picked[pl]
-		picks_lbl[pl].text = "J%d (%s): %s — %d/%d pts%s" % [
+		picks_lbl[pl].text = Lang.t("DRAFT_PICKS") % [
 			pl + 1, factions[fi[pl]].name,
 			" ".join(pj) if not pj.is_empty() else "—",
 			spent[pl], budget[pl],
-			" (pasó)" if passed[pl] else ""]
+			Lang.t("DRAFT_PASSED") if passed[pl] else ""]
 	for c in pool.get_children(): c.queue_free()
 	for letter in f.pieces:
 		var p: Dictionary = f.pieces[letter]
@@ -100,8 +100,8 @@ func _refresh() -> void:
 		var b := Button.new()
 		b.text = "%s %s (%d)" % [letter, p.name, v]
 		b.disabled = spent[turn] + v > budget[turn]
-		b.tooltip_text = "valor %d%s" % [v,
-			" · LÍDER" if p.get("leader", false) else ""]
+		b.tooltip_text = Lang.t("DRAFT_VALUE_TIP") % [v,
+			Lang.t("DRAFT_LEADER") if p.get("leader", false) else ""]
 		b.pressed.connect(func(): _pick(letter))
 		pool.add_child(b)
 

@@ -19,7 +19,7 @@ static func build(app) -> void:
 	var box := VBoxContainer.new()
 	box.custom_minimum_size = Vector2(560, 0)
 	cc.add_child(box)
-	var title := Widgets.lbl("Jugar online")
+	var title := Widgets.lbl(Lang.t("ONLINE_TITLE"))
 	title.add_theme_font_size_override("font_size", 28)
 	box.add_child(title)
 	var tabs := TabContainer.new()
@@ -29,11 +29,11 @@ static func build(app) -> void:
 
 	# — Rápida: matchmaking por cola (preferencias = tu facción/equipo) —
 	var t_q := VBoxContainer.new()
-	t_q.name = "Rápida"
+	t_q.name = Lang.t("ONLINE_TAB_QUICK")
 	tabs.add_child(t_q)
 	var srv := HBoxContainer.new()
 	t_q.add_child(srv)
-	srv.add_child(Widgets.lbl("Servidor:"))
+	srv.add_child(Widgets.lbl(Lang.t("ONLINE_SERVER")))
 	app.ws_url = LineEdit.new()
 	app.ws_url.text = app._ws_last_addr
 	app.ws_url.custom_minimum_size = Vector2(190, 0)
@@ -41,16 +41,14 @@ static func build(app) -> void:
 		func(t): app._ws_last_addr = t)
 	srv.add_child(app.ws_url)
 	app.ws_name = LineEdit.new()
-	app.ws_name.placeholder_text = "Tu nick"
+	app.ws_name.placeholder_text = Lang.t("ONLINE_NICK_PH")
 	app.ws_name.text = app._ws_last_nick
 	app.ws_name.text_changed.connect(
 		func(t): app._ws_last_nick = t)
 	srv.add_child(app.ws_name)
-	t_q.add_child(Widgets.lbl(
-		"Cola automática: se empareja con tu facción, equipo y reloj."))
-	var b_queue := Widgets.primary("Buscar rival", 44)
-	b_queue.tooltip_text = \
-		"Matchmaking: cola automática (tu facción/equipo)"
+	t_q.add_child(Widgets.lbl(Lang.t("ONLINE_QUEUE_INFO")))
+	var b_queue := Widgets.primary(Lang.t("ONLINE_FIND"), 44)
+	b_queue.tooltip_text = Lang.t("ONLINE_FIND_TIP")
 	b_queue.pressed.connect(func():
 		if app.ws != null and app.ws.get_ready_state() \
 				== WebSocketPeer.STATE_OPEN:
@@ -62,70 +60,67 @@ static func build(app) -> void:
 			app.ws = WebSocketPeer.new()
 			if app.ws.connect_to_url(
 					app.ws_url.text.strip_edges()) != OK:
-				app.hud_alert("No se pudo conectar")
+				app.hud_alert(Lang.t("ONLINE_CONN_FAIL"))
 				return
 			app._ws_pending = "queue")
 	t_q.add_child(b_queue)
 
 	# — Salas: crear / entrar por código / reconexión —
 	var t_r := VBoxContainer.new()
-	t_r.name = "Salas"
+	t_r.name = Lang.t("ONLINE_TAB_ROOMS")
 	tabs.add_child(t_r)
 	var rrow := HBoxContainer.new()
 	t_r.add_child(rrow)
-	rrow.add_child(Widgets.lbl("Código:"))
+	rrow.add_child(Widgets.lbl(Lang.t("ONLINE_CODE")))
 	app.ws_code = LineEdit.new()
 	app.ws_code.placeholder_text = "ABCD"
 	app.ws_code.custom_minimum_size = Vector2(90, 0)
 	rrow.add_child(app.ws_code)
 	var b_ws_host := Button.new()
-	b_ws_host.text = "Crear sala"
-	b_ws_host.tooltip_text = "Crear sala online en el servidor"
+	b_ws_host.text = Lang.t("ONLINE_CREATE_ROOM")
+	b_ws_host.tooltip_text = Lang.t("ONLINE_CREATE_ROOM_TIP")
 	b_ws_host.pressed.connect(func(): app._ws_connect(true))
 	rrow.add_child(b_ws_host)
 	var b_ws_join := Button.new()
-	b_ws_join.text = "Entrar"
-	b_ws_join.tooltip_text = "Unirse a una sala por código"
+	b_ws_join.text = Lang.t("ONLINE_JOIN_ROOM")
+	b_ws_join.tooltip_text = Lang.t("ONLINE_JOIN_ROOM_TIP")
 	b_ws_join.pressed.connect(func(): app._ws_connect(false))
 	rrow.add_child(b_ws_join)
-	t_r.add_child(Widgets.lbl(
-		"El creador comparte el código. " +
-		"Sin código y con sala previa, «Entrar» intenta reconectar."))
+	t_r.add_child(Widgets.lbl(Lang.t("ONLINE_ROOM_INFO")))
 
 	# — LAN: ENet directo por IP/puerto —
 	var t_l := VBoxContainer.new()
-	t_l.name = "LAN"
+	t_l.name = Lang.t("ONLINE_TAB_LAN")
 	tabs.add_child(t_l)
 	var lrow := HBoxContainer.new()
 	t_l.add_child(lrow)
-	lrow.add_child(Widgets.lbl("IP:"))
+	lrow.add_child(Widgets.lbl(Lang.t("ONLINE_IP")))
 	app.net_ip = LineEdit.new()
 	app.net_ip.placeholder_text = "127.0.0.1"
 	app.net_ip.custom_minimum_size = Vector2(140, 0)
 	lrow.add_child(app.net_ip)
-	lrow.add_child(Widgets.lbl("Puerto:"))
+	lrow.add_child(Widgets.lbl(Lang.t("ONLINE_PORT")))
 	app.net_port = LineEdit.new()
 	app.net_port.text = "7777"
 	app.net_port.custom_minimum_size = Vector2(70, 0)
 	lrow.add_child(app.net_port)
 	var b_host := Button.new()
-	b_host.text = "Crear partida"
+	b_host.text = Lang.t("ONLINE_HOST")
 	b_host.pressed.connect(app._host_game)
 	lrow.add_child(b_host)
 	var b_join := Button.new()
-	b_join.text = "Unirse"
+	b_join.text = Lang.t("ONLINE_JOIN")
 	b_join.pressed.connect(app._join_game)
 	lrow.add_child(b_join)
-	t_l.add_child(Widgets.lbl(
-		"Conexión directa punto a punto — el host juega como J1."))
+	t_l.add_child(Widgets.lbl(Lang.t("ONLINE_LAN_INFO")))
 
 	# — Ladder: clasificación ELO del servidor —
 	var t_d := VBoxContainer.new()
-	t_d.name = "Ladder"
+	t_d.name = Lang.t("ONLINE_TAB_LADDER")
 	tabs.add_child(t_d)
 	var b_ladder := Button.new()
-	b_ladder.text = "Ver clasificación"
-	b_ladder.tooltip_text = "Clasificación ELO del servidor"
+	b_ladder.text = Lang.t("ONLINE_LADDER_VIEW")
+	b_ladder.tooltip_text = Lang.t("ONLINE_LADDER_TIP")
 	t_d.add_child(b_ladder)
 	var lad_lbl := Label.new()
 	lad_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
@@ -137,7 +132,7 @@ static func build(app) -> void:
 			app.ws = WebSocketPeer.new()
 			if app.ws.connect_to_url(
 					app.ws_url.text.strip_edges()) != OK:
-				lad_lbl.text = "No se pudo conectar"
+				lad_lbl.text = Lang.t("ONLINE_CONN_FAIL")
 				return
 			app._ws_pending = "ladder"
 		else:
