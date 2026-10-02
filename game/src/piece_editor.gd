@@ -198,6 +198,8 @@ func _ready() -> void:
 		# GridContainer colapsa el botón a 0px de ancho
 		b.clip_text = true
 		b.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		# la elipsis oculta el efecto completo — tooltip lo recupera
+		b.tooltip_text = "%s — %s" % [code, PiecesData.CODE_NAMES[code]]
 		b.custom_minimum_size = Vector2(132, 26)
 		var sb := StyleBoxFlat.new()
 		sb.bg_color = PiecesData.code_color(code)

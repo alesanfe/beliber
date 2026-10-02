@@ -165,6 +165,8 @@ func _reload() -> void:
 		# nombres de piezas custom pueden desbordar la columna de 280px
 		b.clip_text = true
 		b.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		b.tooltip_text = "%s — %s (valor %d)" % [
+			letter, p.name, p.get("value", 0)]
 		b.custom_minimum_size.x = 132
 		b.pressed.connect(func(): paint = letter)
 		pal.add_child(b)

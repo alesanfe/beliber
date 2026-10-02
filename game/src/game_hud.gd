@@ -52,11 +52,17 @@ static func build(app) -> void:
 			app._rpc_move.rpc(mv))
 	board_row.add_child(app.board)
 
+	# margen inferior: el botón Zen (último hijo) quedaba pegado al
+	# borde de la ventana en 800px de alto
+	var side_m := MarginContainer.new()
+	side_m.add_theme_constant_override("margin_bottom", 8)
+	app.game_ui.add_child(side_m)
 	var side := VBoxContainer.new()
 	app.side_panel = side
 	side.name = "SideVBox"
 	side.custom_minimum_size = Vector2(300, 0)
-	app.game_ui.add_child(side)
+	side.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	side_m.add_child(side)
 	# tarjeta del rival (emblema + faccion, estilo chess.com)
 	var rc := HBoxContainer.new()
 	side.add_child(rc)
