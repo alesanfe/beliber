@@ -20,7 +20,7 @@ var budget_spin: SpinBox
 var cost_lbl: Label
 var comp_lbl: Label
 var bars := {}          # métrica -> [barra custom, barra oficial]
-var pal: GridContainer  # paleta de letras de piezas
+var pal: VBoxContainer  # paleta de letras de piezas (scroll, 1 col)
 var canvas: ABCanvas
 
 class ABCanvas extends Control:
@@ -95,9 +95,16 @@ func _ready() -> void:
 	left.add_child(opt_f)
 
 	left.add_child(_lbl("Piezas (clic izq coloca, der borra)"))
-	pal = GridContainer.new()
-	pal.columns = 2
-	left.add_child(pal)
+	# Columna única con scroll: en 2 columnas de 132px los nombres
+	# ("X Emperatriz (12)") se cortaban con elipsis.
+	var pal_scroll := ScrollContainer.new()
+	pal_scroll.custom_minimum_size = Vector2(0, 200)
+	pal_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	pal_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	left.add_child(pal_scroll)
+	pal = VBoxContainer.new()
+	pal.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	pal_scroll.add_child(pal)
 
 	var center := CenterContainer.new()
 	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -162,12 +169,11 @@ func _reload() -> void:
 		var p: Dictionary = faction.pieces[letter]
 		var b := Button.new()
 		b.text = "%s %s (%d)" % [letter, p.name, p.get("value", 0)]
-		# nombres de piezas custom pueden desbordar la columna de 280px
-		b.clip_text = true
-		b.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		b.tooltip_text = "%s — %s (valor %d)" % [
 			letter, p.name, p.get("value", 0)]
-		b.custom_minimum_size.x = 132
+		b.custom_minimum_size = Vector2(0, 26)
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		b.pressed.connect(func(): paint = letter)
 		pal.add_child(b)
 	# presupuesto por defecto = valor del ejército oficial

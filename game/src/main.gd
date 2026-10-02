@@ -850,17 +850,22 @@ func _process(dt: float) -> void:
 	# breakpoint: <950 px → panel debajo del tablero (estilo compacto)
 	if game_ui != null:
 		var want := get_viewport_rect().size.x < 950.0
-		if want != _compact:
+		# comparar con el estado real, no con _compact: tras
+		# _restart la flag quedaba true y la game_ui nueva nacía
+		# horizontal en ventana estrecha (panel cortado a la
+		# derecha en el tutorial a 800px)
+		if want != game_ui.vertical:
 			_compact = want
 			game_ui.vertical = want
 			side_panel.custom_minimum_size = \
 				Vector2(0, 200) if want else Vector2(300, 0)
+			_apply_zoom()
 		# auto-encaje: si el viewport no da para el tablero a 1:1 se
 		# reduce la escala efectiva sin pisar el zoom del usuario
+		# (en compacto también limita el alto: el panel lateral va
+		# debajo y necesita ~230px)
 		if board != null:
-			var fit := minf(1.0,
-				(get_viewport_rect().size.x - 24.0) / 512.0)
-			if absf(board.scale.x - zoom_v * fit) > 0.001:
+			if absf(board.scale.x - zoom_v * _fit_factor()) > 0.001:
 				_apply_zoom()
 	if tm != null and not tm.over and not tm.clock.is_empty():
 		# con árbitro autoritativo el fin por tiempo lo decide el servidor
@@ -1029,11 +1034,18 @@ func _apply_settings() -> void:
 
 ## Escala efectiva del tablero = zoom del usuario × factor de encaje
 ## (ventanas < ~536 px encogen el tablero en vez de desbordarlo).
+## Factor de encaje del tablero: por ancho siempre, y por alto en
+## modo compacto (el panel lateral va debajo y necesita ~230px).
+func _fit_factor() -> float:
+	var v := get_viewport_rect().size
+	var f := minf(1.0, (v.x - 24.0) / 512.0)
+	if _compact:
+		f = minf(f, (v.y - 230.0) / 512.0)
+	return f
+
 func _apply_zoom() -> void:
 	if board == null: return
-	var fit := minf(1.0,
-		(get_viewport_rect().size.x - 24.0) / 512.0)
-	var s: float = zoom_v * fit
+	var s: float = zoom_v * _fit_factor()
 	board.scale = Vector2(s, s)
 	board.custom_minimum_size = Vector2(512 * s, 512 * s)
 

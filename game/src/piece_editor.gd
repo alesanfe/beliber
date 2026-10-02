@@ -186,21 +186,25 @@ func _ready() -> void:
 	left.add_child(opt_p)
 
 	left.add_child(_lbl("Efecto (clic izq pinta, der borra)"))
-	var pal := GridContainer.new()
-	pal.columns = 2
-	left.add_child(pal)
+	# Paleta en una columna con scroll: en 2 columnas de ~132px los nombres
+	# largos ("Mover/Capturar atravesando") se cortaban con elipsis y el
+	# efecto solo se leía por tooltip.
+	var pal_scroll := ScrollContainer.new()
+	pal_scroll.custom_minimum_size = Vector2(0, 260)
+	pal_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	pal_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	left.add_child(pal_scroll)
+	var pal := VBoxContainer.new()
+	pal.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	pal_scroll.add_child(pal)
 	for code in ["m","c","o","j","g","J","t","T","w","p","P","3","e","a",
 			"E","d","k","q","Q"]:
 		var b := Button.new()
 		b.text = "%s  %s" % [code, PiecesData.CODE_NAMES[code]]
-		# clip + min-width: el texto largo ("w Mover/Capturar
-		# atravesando") desbordaba la columna; sin min-width el
-		# GridContainer colapsa el botón a 0px de ancho
-		b.clip_text = true
-		b.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-		# la elipsis oculta el efecto completo — tooltip lo recupera
+		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		b.tooltip_text = "%s — %s" % [code, PiecesData.CODE_NAMES[code]]
-		b.custom_minimum_size = Vector2(132, 26)
+		b.custom_minimum_size = Vector2(0, 26)
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var sb := StyleBoxFlat.new()
 		sb.bg_color = PiecesData.code_color(code)
 		b.add_theme_stylebox_override("normal", sb)

@@ -15,6 +15,10 @@ var _name := ""
 func _init() -> void:
 	_app = load("res://scenes/main.tscn").instantiate()
 	root.add_child(_app)
+	# Fijar ventana ancha: si el SO abre la ventana pequeña (<950px)
+	# el HUD entra en modo compacto (panel debajo del tablero) y las
+	# capturas game_opts/game_chat salen sin el panel.
+	root.size = Vector2i(1280, 800)
 	_queue = [
 		["menu", func(): pass],
 		["online", func(): _app._open_online()],
