@@ -58,7 +58,8 @@ func _ready() -> void:
 
 	for who in [0, 1]:
 		var f: Dictionary = f0 if who == 0 else f1
-		side.add_child(_lbl(Lang.t("POSE_PLAYER") % [who + 1, f.name], 16))
+		side.add_child(_lbl(Lang.t("POSE_PLAYER") % [
+			who + 1, PiecesData.fac_name(f)], 16))
 		var flow := GridContainer.new()
 		flow.columns = 8
 		side.add_child(flow)
@@ -66,7 +67,7 @@ func _ready() -> void:
 			var b := Button.new()
 			b.text = letter
 			b.custom_minimum_size = Vector2(30, 30)
-			b.tooltip_text = f.pieces[letter].get("name", letter)
+			b.tooltip_text = PiecesData.piece_name(f.pieces[letter])
 			var w: int = who; var l: String = letter
 			b.pressed.connect(func():
 				sel_owner = w; sel_letter = l

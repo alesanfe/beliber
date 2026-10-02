@@ -165,9 +165,39 @@ static func _pc(letter: String, nombre: String, valor: int, cells: Dictionary,
 static func _faction(id: String, nombre: String, color: Color, pieces: Array,
 		setups: Array, reglas := {}) -> Dictionary:
 	var map := {}
-	for p in pieces: map[p.letter] = p
+	for p in pieces:
+		p["fid"] = id   # para i18n: PIECE_<fid>_<letter>
+		map[p.letter] = p
 	return {"id": id, "name": nombre, "color": color, "pieces": map,
 		"setups": setups, "rules": reglas}
+
+## Nombre localizado de una facción (FAC_<ID> en ui.csv; el campo
+## 'name' del dict queda como fallback español para piezas custom).
+static func fac_name(f: Dictionary) -> String:
+	var k := "FAC_" + String(f.get("id", "")).to_upper()
+	var t := Lang.t(k)
+	return t if t != k else String(f.get("name", "?"))
+
+## Nombre localizado de una pieza (PIECE_<FID>_<LETRA>).
+static func piece_name(p: Dictionary) -> String:
+	var k := "PIECE_%s_%s" % [
+		String(p.get("fid", "")).to_upper(), String(p.letter)]
+	var t := Lang.t(k)
+	return t if t != k else String(p.get("name", "?"))
+
+## Arquetipo de facción localizado (STYLE_<ID> — antes el dict STYLES
+## era español puro).
+static func style_of(f: Dictionary) -> String:
+	var k := "STYLE_" + String(f.get("id", "")).to_upper()
+	var t := Lang.t(k)
+	return t if t != k else String(STYLES.get(f.get("id", ""), ""))
+
+## Nombre localizado de un efecto de casilla (FX_<código>; el código es
+## case-sensitive — 'p' empuja y 'P' captura/empuja, no se normaliza).
+static func code_name(ch: String) -> String:
+	var k := "FX_" + ch
+	var t := Lang.t(k)
+	return t if t != k else String(CODE_NAMES.get(ch, ch))
 
 ## Arquetipo de juego de cada facción (estilo Duelyst/Root): cómo se
 ## siente jugarla, mostrado en el menú.

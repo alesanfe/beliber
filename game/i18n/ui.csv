@@ -336,3 +336,110 @@ GUIDE_QUIZ_OK,✔ ¡Correcto! %s sí puede ir ahí. (%d/%d) — clic para seguir
 GUIDE_QUIZ_MISS,✘ No. %s tenía %d destinos legales (marcados). (%d/%d) — clic para seguir,✘ No. %s had %d legal targets (marked). (%d/%d) — click to continue
 CAP_CAPTURED,Capturado: ,Captured: 
 CAP_NOTHING,nada,nothing
+FX_m,Mover,Move
+FX_c,Capturar,Capture
+FX_o,Mover o Capturar,Move or Capture
+FX_j,Mover saltando,Jump-move
+FX_g,Capturar saltando,Jump-capture
+FX_J,Mover/Capturar saltando,Jump move/capture
+FX_t,Mover atravesando,Move through
+FX_T,Capturar atravesando,Capture through
+FX_w,Mover/Capturar atravesando,Move/Capture through
+FX_p,Mover o Empujar,Move or Push
+FX_P,Capturar o Empujar,Capture or Push
+FX_3,Mover/Capturar/Empujar,Move/Capture/Push
+FX_e,Empujar,Push
+FX_a,Atraer,Attract
+FX_E,Capturar / al paso,Capture / en passant
+FX_d,Despliegue,Deploy
+FX_k,Enroque,Castle
+FX_K,M/C o Enroque,M/C or Castle
+FX_q,Salto de Aquonte,Aquonte leap
+FX_Q,M/C o Aquonte,M/C or Aquonte
+FAC_HUMENEX,Humenex,Humenex
+FAC_ELFOS,Elfos,Elves
+FAC_MORTIFERS,Mortifers,Mortifers
+FAC_BESTIARIOS,Bestiarios,Beastlords
+FAC_ENANOS,Enanos,Dwarves
+FAC_CHLONTOS,Chlontos,Chlontos
+FAC_AQUONTES,Aquontes,Aquontes
+FAC_KRONTURS,Kronturs,Kronturs
+STYLE_HUMENEX,"Clásico equilibrado: enroque, al paso y doble apertura","Balanced classic: castling, en passant and double opening"
+STYLE_ELFOS,"Control móvil: atraviesan líneas, abren siempre ellos",Mobile control: they pass through lines and always move first
+STYLE_MORTIFERS,Combo corruptor: el Consorte copia lo que captura,Corrupter combo: the Consort copies what it captures
+STYLE_BESTIARIOS,"Horda de saltos: dos líderes, presión por saltos","Leap horde: two leaders, pressure by jumps"
+STYLE_ENANOS,Empuje y atrincheramiento: capturan al empujar,Push and entrench: they capture by pushing
+STYLE_CHLONTOS,Asedio aéreo: capturas y saltos de largo alcance,Aerial siege: long-range captures and leaps
+STYLE_AQUONTES,Avalancha: saltos encadenados y salto de Aquonte,Avalanche: chained leaps and the Aquonte jump
+STYLE_KRONTURS,Muro y martillo: empujan y capturan a la vez,Wall and hammer: they push and capture at once
+PIECE_HUMENEX_P,Peón,Pawn
+PIECE_HUMENEX_X,Emperatriz,Empress
+PIECE_HUMENEX_Y,Emperador,Emperor
+PIECE_HUMENEX_E,Espía,Spy
+PIECE_HUMENEX_C,Caballero,Knight
+PIECE_HUMENEX_T,Torre,Tower
+PIECE_ELFOS_P,Centinela,Sentinel
+PIECE_ELFOS_X,Dama,Lady
+PIECE_ELFOS_Y,Monarca,Monarch
+PIECE_ELFOS_H,Hostigador,Harrier
+PIECE_ELFOS_E,Explorador,Explorer
+PIECE_ELFOS_F,Forestal,Forester
+PIECE_MORTIFERS_P,Carroñero,Carrion
+PIECE_MORTIFERS_X,Consorte,Consort
+PIECE_MORTIFERS_Y,Tirano,Tyrant
+PIECE_MORTIFERS_C,Corruptor,Corruptor
+PIECE_MORTIFERS_M,Merodeador,Marauder
+PIECE_MORTIFERS_I,Incubo,Incubus
+PIECE_BESTIARIOS_H,Rahez,Rahez
+PIECE_BESTIARIOS_R,Rapaz,Raptor
+PIECE_BESTIARIOS_F,Fugaz,Fugaz
+PIECE_BESTIARIOS_E,Edaz,Edaz
+PIECE_BESTIARIOS_V,Voraz,Voraz
+PIECE_BESTIARIOS_S,Sagaz,Sagaz
+PIECE_BESTIARIOS_A,Audaz,Audaz
+PIECE_BESTIARIOS_X,Lideresa,Leaderess
+PIECE_BESTIARIOS_Y,Líder,Leader
+PIECE_ENANOS_S,Vasallo,Vassal
+PIECE_ENANOS_X,Sultana,Sultana
+PIECE_ENANOS_Y,Califa,Caliph
+PIECE_ENANOS_V,Verdugo,Executioner
+PIECE_ENANOS_R,Raudo,Fleet
+PIECE_ENANOS_Z,Zaguero,Rearguard
+PIECE_CHLONTOS_Z,Zángano,Drone
+PIECE_CHLONTOS_X,Matriarca,Matriarch
+PIECE_CHLONTOS_Y,Gerarca,Gerarch
+PIECE_CHLONTOS_R,Raptor,Raptor
+PIECE_CHLONTOS_C,Céfiro,Zephyr
+PIECE_CHLONTOS_H,Hoplita,Hoplite
+PIECE_AQUONTES_A,Alevín,Fryling
+PIECE_AQUONTES_X,Anfitrite,Amphitrite
+PIECE_AQUONTES_Y,Leviatán,Leviathan
+PIECE_AQUONTES_M,Mako,Mako
+PIECE_AQUONTES_T,Tritón,Triton
+PIECE_AQUONTES_C,Carchar,Carchar
+PIECE_KRONTURS_M,Mole,Bulk
+PIECE_KRONTURS_X,Zarina,Tsarina
+PIECE_KRONTURS_Y,Zar,Tsar
+PIECE_KRONTURS_A,Ariete,Battering Ram
+PIECE_KRONTURS_D,Dique,Dike
+PIECE_KRONTURS_G,Goliat,Goliath
+HUD_CHAIN_HINT,Cadena: cian = 2º tramo · amarillo = solo 1º · fuera = cancelar,Chain: cyan = 2nd leg · yellow = 1st only · outside = cancel
+PUZ_TITLE,Puzzle táctico,Tactical puzzle
+PUZ_NEXT,Otro puzzle,Another puzzle
+PUZ_RUSH,Rush (60 s),Rush (60 s)
+PUZ_RUSH_TIP,"Racha de puzzles: cada acierto suma,
+cada fallo resta 5 s. Modo estilo lichess Puzzle Rush.","Puzzle streak: each solve adds,
+each miss subtracts 5 s. Lichess Puzzle Rush style."
+PUZ_GEN,Generando…,Generating…
+PUZ_GEN_FAIL,Sin puzzle generado — pulsa «%s».,No puzzle generated — press «%s».
+PUZ_STATUS,"J%d (%s): captura un líder rival.
+Resueltos: %d","P%d (%s): capture an enemy leader.
+Solved: %d"
+PUZ_TIME_UP,¡Tiempo! Racha final: %d puzzles.,Time! Final streak: %d puzzles.
+PUZ_TIMER,⏱ %.0f s,⏱ %.0f s
+PUZ_OK,"¡Correcto! Resueltos: %d
+Pulsa «%s».","Correct! Solved: %d
+Press «%s»."
+PUZ_WRONG,"Esa no mata al líder. Prueba otra.
+Resueltos: %d","That doesn't take the leader. Try another.
+Solved: %d"

@@ -449,7 +449,7 @@ static func update(app) -> void:
 	var extra := ""
 	if tm.moves_left > 1:
 		extra = Lang.t("HUD_MOVES_LEFT") % tm.moves_left
-	var who: String = f.name
+	var who := PiecesData.fac_name(f)
 	if app.online:
 		who += Lang.t("HUD_YOU_ARE") % [app.my_net + 1,
 			Lang.t("HUD_YOUR_TURN") if tm.current == app.my_net
@@ -464,7 +464,7 @@ static func update(app) -> void:
 	var riv: int = 1 - app.my_net if app.online else \
 		(1 if not app.board.flipped else 0)
 	var rf: Dictionary = tm.state.factions[riv]
-	app.hud_rival.text = "%s  J%d" % [rf.name, riv + 1]
+	app.hud_rival.text = "%s  J%d" % [PiecesData.fac_name(rf), riv + 1]
 	app.hud_rival.add_theme_color_override("font_color", rf.color)
 	app.hud_rival_icon.fid = rf.id
 	app.hud_rival_icon.col = rf.color
@@ -473,8 +473,8 @@ static func update(app) -> void:
 	var l1 := tm.state.leaders_alive(1)
 	app.hud_info.text = \
 		Lang.t("HUD_INFO") % [
-			tm.state.factions[0].name, l0,
-			tm.state.factions[1].name, l1, extra,
+			PiecesData.fac_name(tm.state.factions[0]), l0,
+			PiecesData.fac_name(tm.state.factions[1]), l1, extra,
 			tm.material_value(0), tm.material_value(1)]
 	# bandejas: las piezas de la facción víctima en su color
 	var m0 := tm.material_value(0)

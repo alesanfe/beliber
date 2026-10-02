@@ -45,7 +45,7 @@ func _init(p_factions: Array) -> void:
 	side.add_child(_lbl(Lang.t("GUIDE_TITLE"), 26))
 	opt = OptionButton.new()
 	for f in factions:
-		opt.add_item(f.name)
+		opt.add_item(PiecesData.fac_name(f))
 	opt.item_selected.connect(_pick)
 	side.add_child(opt)
 	info = _lbl("", 15)
@@ -91,7 +91,8 @@ func _pick(i: int) -> void:
 func _show_faction(i: int) -> void:
 	var f: Dictionary = factions[i]
 	info.text = "%s — %s\n\n" % [
-		f.name, PiecesData.STYLES.get(f.id, "")] + Lang.t("GUIDE_RULES")
+		PiecesData.fac_name(f), PiecesData.style_of(f)] \
+		+ Lang.t("GUIDE_RULES")
 	var rules: Dictionary = f.get("rules", {})
 	if rules.is_empty():
 		info.text += Lang.t("GUIDE_RULES_NONE")
@@ -101,7 +102,7 @@ func _show_faction(i: int) -> void:
 	for letter in f.pieces:
 		var p: Dictionary = f.pieces[letter]
 		info.text += "\n%s %s (%s)%s" % [
-			letter, p.name,
+			letter, PiecesData.piece_name(p),
 			Lang.t("GUIDE_VALUE") % int(p.get("value", 0)),
 			Lang.t("DRAFT_LEADER") if p.get("leader", false) else ""]
 	board.queue_redraw()
@@ -153,7 +154,7 @@ func _quiz_next() -> void:
 	board.selected = quiz_cell      # marca el origen
 	board.legal = []                # destinos ocultos hasta responder
 	quiz_lbl.text = Lang.t("GUIDE_QUIZ_ASK") % [
-		p.def.name, quiz_ok, quiz_total]
+		PiecesData.piece_name(p.def), quiz_ok, quiz_total]
 	board.queue_redraw()
 
 func _quiz_click(c: Vector2i) -> void:
@@ -168,8 +169,9 @@ func _quiz_click(c: Vector2i) -> void:
 	if c in quiz_targets:
 		quiz_ok += 1
 		quiz_lbl.text = Lang.t("GUIDE_QUIZ_OK") % [
-			p.def.name, quiz_ok, quiz_total]
+			PiecesData.piece_name(p.def), quiz_ok, quiz_total]
 	else:
 		quiz_lbl.text = Lang.t("GUIDE_QUIZ_MISS") % [
-			p.def.name, quiz_targets.size(), quiz_ok, quiz_total]
+			PiecesData.piece_name(p.def), quiz_targets.size(),
+			quiz_ok, quiz_total]
 	board.queue_redraw()

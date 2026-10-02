@@ -38,7 +38,7 @@ static func opening_name(tm: TurnManager) -> String:
 		var letter := entry.substr(3, 1)
 		var f: Dictionary = tm.state.factions[pl]
 		var pn: String = f.pieces.get(letter, {}).get("name", letter)
-		parts.append("%s: %s" % [f.name, pn])
+		parts.append("%s: %s" % [PiecesData.fac_name(f), pn])
 	return Lang.t("POST_OPENING") + " · ".join(parts) if parts else ""
 
 ## Texto del resumen de fin de partida: movimientos, capturas,
@@ -86,7 +86,8 @@ static func modal(app, w: int, resumen: String) -> void:
 	var box := VBoxContainer.new()
 	panel.add_child(box)
 	var title := Widgets.lbl(Lang.t("GAME_DRAW") if w < 0 else \
-		Lang.t("GAME_WIN") % app.tm.state.factions[w].name)
+		Lang.t("GAME_WIN") % PiecesData.fac_name(
+			app.tm.state.factions[w]))
 	title.add_theme_font_size_override("font_size", 30)
 	if w >= 0:
 		title.add_theme_color_override("font_color",

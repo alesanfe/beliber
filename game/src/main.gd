@@ -400,7 +400,7 @@ func _tm_turn_ui(p: int) -> void:
 func _faction_picker() -> OptionButton:
 	var o := OptionButton.new()
 	for f in factions:
-		o.add_item(f.name)
+		o.add_item(PiecesData.fac_name(f))
 	return o
 
 func _refresh_values() -> void:
@@ -409,10 +409,10 @@ func _refresh_values() -> void:
 	var f1: Dictionary = factions[opt_p1.selected]
 	val_lbl0.text = tr("MENU_VALUE") % [
 		PiecesData.army_value(f0, opt_eq0.selected),
-		PiecesData.STYLES.get(f0.id, "")]
+		PiecesData.style_of(f0)]
 	val_lbl1.text = tr("MENU_VALUE") % [
 		PiecesData.army_value(f1, opt_eq1.selected),
-		PiecesData.STYLES.get(f1.id, "")]
+		PiecesData.style_of(f1)]
 	val_lbl0.add_theme_color_override("font_color", f0.color)
 	val_lbl1.add_theme_color_override("font_color", f1.color)
 	# "Personalizado" solo si la facción tiene setups[2] (ejército del
@@ -532,7 +532,8 @@ func _daily_challenge() -> void:
 	stats["daily"] = seed_val
 	_save_stats()
 	hud_alert(tr("DAILY_ALERT") % [
-		factions[f0].name, factions[f1].name])
+		PiecesData.fac_name(factions[f0]),
+		PiecesData.fac_name(factions[f1])])
 	_start_game()
 
 ## Modo Run (Shotgun King): cadena de enfrentamientos contra la IA.
@@ -970,7 +971,8 @@ func _on_game_over(w: int) -> void:
 	if w < 0:
 		hud_turn.text = tr("GAME_DRAW")
 	else:
-		hud_turn.text = tr("GAME_WIN") % tm.state.factions[w].name
+		hud_turn.text = tr("GAME_WIN") % \
+			PiecesData.fac_name(tm.state.factions[w])
 		sfx.fanfare()
 	var resumen := PostGame.summary(tm)
 	# modo run: victoria → bendición y siguiente combate
@@ -1208,5 +1210,6 @@ func _load_game() -> void:
 	if tm.over:
 		_over_handled = true
 		hud_turn.text = tr("GAME_DRAW") if tm.winner < 0 else \
-			tr("GAME_WIN") % tm.state.factions[tm.winner].name
+			tr("GAME_WIN") % PiecesData.fac_name(
+			tm.state.factions[tm.winner])
 

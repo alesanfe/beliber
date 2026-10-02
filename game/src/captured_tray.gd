@@ -21,7 +21,7 @@ func setup(p_letters: Array, victim_faction: Dictionary, p_diff := 0) -> void:
 	var names := []
 	for l in letters:
 		var d: Variant = defs.get(l)
-		names.append(d.name if d != null else l)
+		names.append(PiecesData.piece_name(d) if d != null else l)
 	tooltip_text = Lang.t("CAP_CAPTURED") + (
 		", ".join(names) if names else Lang.t("CAP_NOTHING"))
 	queue_redraw()
@@ -37,16 +37,16 @@ func _draw() -> void:
 	var items := []
 	for l in letters:
 		var d: Variant = defs.get(l)
-		var gl := PiecesData.chess_glyph(d) if d != null else "?"
+		var arch := PieceArt.arch_of_glyph(
+			PiecesData.chess_glyph(d)) if d != null else PieceArt.PAWN
 		var v := int(d.get("value", 0)) if d != null else 0
-		items.append([v, gl])
+		items.append([v, arch])
 	items.sort_custom(func(a, b): return a[0] < b[0])
+	# siluetas vectoriales (PieceArt) en vez de glifos de fuente
 	for it in items:
-		var gl: String = it[1]
-		draw_string(font, Vector2(x, y), gl,
-			HORIZONTAL_ALIGNMENT_LEFT, -1, 18, ink)
-		x += font.get_string_size(gl,
-			HORIZONTAL_ALIGNMENT_LEFT, -1, 18).x + 1.0
+		PieceArt.draw(self, Vector2(x + 9, y - 9), 20, it[1], ink,
+			Color(0, 0, 0, 0))
+		x += 19.0
 	if diff > 0:
 		var txt := "+%d" % diff
 		draw_string(base, Vector2(x + 4, y - 3), txt,

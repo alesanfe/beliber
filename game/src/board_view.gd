@@ -168,7 +168,6 @@ func _draw() -> void:
 		if mv.has("second"):
 			draw_circle(r.get_center(), 10.0, Color(1, 1, 1, 0.8))
 	# piezas: glifo de ajedrez sobre disco del color de la facción
-	var chess_font := _chess_font()
 	var animating := not anim.is_empty()
 	var anim_t := 0.0
 	if animating:
@@ -209,12 +208,10 @@ func _draw() -> void:
 			draw_arc(cpos + Vector2(0, -rad * 0.25), rad * 0.6,
 				PI * 1.15, PI * 1.85, 24, fc.lightened(0.35), 3.0)
 			draw_circle(cpos, rad, fc.darkened(0.7), false, 2.0)
-			var glyph := PiecesData.chess_glyph(p.def)
 			var ink := Color.BLACK if fc.get_luminance() > 0.45 else Color.WHITE
-			var gs := chess_font.get_string_size(glyph,
-				HORIZONTAL_ALIGNMENT_CENTER, -1, 40)
-			draw_string(chess_font, cpos + Vector2(-gs.x / 2, gs.y / 3 - 4),
-				glyph, HORIZONTAL_ALIGNMENT_LEFT, -1, 40, ink)
+			PieceArt.draw(self, cpos + Vector2(0, 2), CELL,
+				PieceArt.arch_of_glyph(PiecesData.chess_glyph(p.def)),
+				ink, fc)
 			# letra de la pieza abajo a la derecha
 			draw_string(font, cpos + Vector2(rad * 0.35, rad - 2),
 				p.def.letter, HORIZONTAL_ALIGNMENT_LEFT, -1, 14,
@@ -244,14 +241,11 @@ func _draw() -> void:
 			draw_circle(drag_pos, rad, fc.darkened(0.3))
 			draw_circle(drag_pos, rad - 3.0, fc.lightened(0.08))
 			draw_circle(drag_pos, rad, fc.darkened(0.7), false, 2.0)
-			var glyph := PiecesData.chess_glyph(p.def)
 			var ink := Color.BLACK if fc.get_luminance() > 0.45 \
 				else Color.WHITE
-			var gs := chess_font.get_string_size(glyph,
-				HORIZONTAL_ALIGNMENT_CENTER, -1, 40)
-			draw_string(chess_font,
-				drag_pos + Vector2(-gs.x / 2, gs.y / 3 - 4),
-				glyph, HORIZONTAL_ALIGNMENT_LEFT, -1, 40, ink)
+			PieceArt.draw(self, drag_pos + Vector2(0, 2), CELL,
+				PieceArt.arch_of_glyph(PiecesData.chess_glyph(p.def)),
+				ink, fc)
 	# origen de premove en selección: borde azul tenue
 	if pre_sel.x >= 0:
 		draw_rect(_cell_rect(pre_sel), Color(0.4, 0.7, 1, 0.6), false, 3.0)
@@ -289,7 +283,7 @@ func _draw() -> void:
 		# sin el texto el jugador no sabía que la cadena esperaba un
 		# segundo clic (o que clic fuera cancela)
 		draw_string(_chess_font(), Vector2(8, BoardState.SIZE * CELL - 8),
-			"Cadena: cian = 2º tramo · amarillo = solo 1º · fuera = cancelar",
+			Lang.t("HUD_CHAIN_HINT"),
 			HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(0.95, 0.95, 1.0))
 	# casilla bajo el cursor: highlight tenue
 	if BoardState.inside(hover):
@@ -329,7 +323,8 @@ func _draw_tooltip(def: Dictionary, cell: Vector2i) -> void:
 	var f: Dictionary = tm.state.factions[
 		(tm.state.at(cell) as Dictionary).owner]
 	var title := "%s  %s — %d pts" % [
-		def.letter, def.name, int(def.get("value", 0))]
+		def.letter, PiecesData.piece_name(def),
+		int(def.get("value", 0))]
 	var eff := _effects_of(def)
 	if def.get("leader", false): eff += " · LÍDER"
 	var lines := PackedStringArray([title, eff])
@@ -357,7 +352,7 @@ static func _effects_of(def: Dictionary) -> String:
 	var seen := {}
 	for key in def.cells:
 		var ch: String = def.cells[key]
-		var nombre: String = PiecesData.CODE_NAMES.get(ch, "")
+		var nombre := PiecesData.code_name(ch)
 		if nombre != "": seen[nombre] = true
 	var list := []
 	for k in seen: list.append(k)

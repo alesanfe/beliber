@@ -178,7 +178,7 @@ func _ready() -> void:
 	left.add_child(opt_mode)
 	opt_f = OptionButton.new()
 	for i in factions.size():
-		opt_f.add_item(factions[i].name)
+		opt_f.add_item(PiecesData.fac_name(factions[i]))
 	opt_f.item_selected.connect(func(_i): _reload_pieces())
 	left.add_child(opt_f)
 	opt_p = OptionButton.new()
@@ -200,9 +200,9 @@ func _ready() -> void:
 	for code in ["m","c","o","j","g","J","t","T","w","p","P","3","e","a",
 			"E","d","k","q","Q"]:
 		var b := Button.new()
-		b.text = "%s  %s" % [code, PiecesData.CODE_NAMES[code]]
+		b.text = "%s  %s" % [code, PiecesData.code_name(code)]
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		b.tooltip_text = "%s — %s" % [code, PiecesData.CODE_NAMES[code]]
+		b.tooltip_text = "%s — %s" % [code, PiecesData.code_name(code)]
 		b.custom_minimum_size = Vector2(0, 26)
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var sb := StyleBoxFlat.new()
@@ -342,7 +342,8 @@ func _reload_pieces() -> void:
 	opt_p.clear()
 	for k in faction.pieces:
 		var p: Dictionary = faction.pieces[k]
-		opt_p.add_item("%s — %s" % [p.letter, p.name])
+		opt_p.add_item("%s — %s" % [p.letter,
+			PiecesData.piece_name(p)])
 	_load_piece()
 	_reload_deploy()
 
@@ -352,7 +353,7 @@ func _reload_deploy() -> void:
 	for k in faction.pieces:
 		var p: Dictionary = faction.pieces[k]
 		var b := Button.new()
-		b.text = "%s — %s" % [p.letter, p.name]
+		b.text = "%s — %s" % [p.letter, PiecesData.piece_name(p)]
 		b.custom_minimum_size = Vector2(0, 24)
 		var letra: String = p.letter
 		b.pressed.connect(func(): dep_paint = letra)

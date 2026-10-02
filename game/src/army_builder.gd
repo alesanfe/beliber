@@ -90,7 +90,7 @@ func _ready() -> void:
 
 	opt_f = OptionButton.new()
 	for i in factions.size():
-		opt_f.add_item(factions[i].name)
+		opt_f.add_item(PiecesData.fac_name(factions[i]))
 	opt_f.item_selected.connect(func(_i): _reload())
 	left.add_child(opt_f)
 
@@ -170,10 +170,11 @@ func _reload() -> void:
 	for letter in faction.pieces:
 		var p: Dictionary = faction.pieces[letter]
 		var b := Button.new()
-		b.text = "%s %s (%d)" % [letter, p.name, p.get("value", 0)]
+		var pname := PiecesData.piece_name(p)
+		b.text = "%s %s (%d)" % [letter, pname, p.get("value", 0)]
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		b.tooltip_text = Lang.t("AB_PIECE_TIP") % [
-			letter, p.name, p.get("value", 0)]
+			letter, pname, p.get("value", 0)]
 		b.custom_minimum_size = Vector2(0, 26)
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		b.pressed.connect(func(): paint = letter)

@@ -82,14 +82,14 @@ func _fac() -> Dictionary: return factions[fi[turn]]
 
 func _refresh() -> void:
 	var f := _fac()
-	info.text = Lang.t("DRAFT_TURN") % [turn + 1, f.name]
+	info.text = Lang.t("DRAFT_TURN") % [turn + 1, PiecesData.fac_name(f)]
 	info.add_theme_color_override("font_color", f.color)
 	cost_lbl.text = Lang.t("DRAFT_POINTS") % [
 		spent[turn], budget[turn], picked[turn].size()]
 	for pl in [0, 1]:
 		var pj: Array = picked[pl]
 		picks_lbl[pl].text = Lang.t("DRAFT_PICKS") % [
-			pl + 1, factions[fi[pl]].name,
+			pl + 1, PiecesData.fac_name(factions[fi[pl]]),
 			" ".join(pj) if not pj.is_empty() else "—",
 			spent[pl], budget[pl],
 			Lang.t("DRAFT_PASSED") if passed[pl] else ""]
@@ -98,7 +98,7 @@ func _refresh() -> void:
 		var p: Dictionary = f.pieces[letter]
 		var v := int(p.get("value", 0))
 		var b := Button.new()
-		b.text = "%s %s (%d)" % [letter, p.name, v]
+		b.text = "%s %s (%d)" % [letter, PiecesData.piece_name(p), v]
 		b.disabled = spent[turn] + v > budget[turn]
 		b.tooltip_text = Lang.t("DRAFT_VALUE_TIP") % [v,
 			Lang.t("DRAFT_LEADER") if p.get("leader", false) else ""]
