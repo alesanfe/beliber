@@ -19,6 +19,9 @@ static func build(app) -> void:
 	margin.add_child(scroll)
 	var wrapper := CenterContainer.new()
 	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# sin EXPAND_FILL vertical el CenterContainer medía lo mismo que
+	# el VBox → el contenido quedaba pegado arriba con ~130px vacíos
+	wrapper.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.add_child(wrapper)
 	app.select_ui = VBoxContainer.new()
 	app.select_ui.custom_minimum_size = Vector2(560, 0)

@@ -7,11 +7,14 @@ extends RefCounted
 
 static func build(app) -> void:
 	app.editor_ui = Control.new()
-	app.editor_ui.set_anchors_preset(Control.PRESET_FULL_RECT)
+	# and_offsets: set_anchors_preset solo dejaba anchors=1 sin tocar
+	# offsets → size 0 si el padre medía 0 al añadirse (bug del draft)
+	app.editor_ui.set_anchors_and_offsets_preset(
+		Control.PRESET_FULL_RECT)
 	app.menu_root.visible = false
 	app.add_child(app.editor_ui)
 	var cc := CenterContainer.new()
-	cc.set_anchors_preset(Control.PRESET_FULL_RECT)
+	cc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	app.editor_ui.add_child(cc)
 	var box := VBoxContainer.new()
 	box.custom_minimum_size = Vector2(560, 0)
