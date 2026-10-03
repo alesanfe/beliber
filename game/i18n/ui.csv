@@ -468,3 +468,5 @@ UI_BACK_TIP,Volver a la pantalla anterior (Esc),Back to the previous screen (Esc
 KB_CELL_EMPTY,Casilla %s,Square %s
 KB_CELL_PIECE,%s: %s %s,%s: %s %s
 KB_CELL_LEGAL,Movimiento legal,Legal move
+HUD_MV_TO,a,to
+HUD_MV_CAPTURE,captura,capture

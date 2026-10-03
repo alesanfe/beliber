@@ -97,6 +97,9 @@ static func modal(app, w: int, resumen: String) -> void:
 	var res := Widgets.lbl(resumen)
 	res.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(res)
+	# lector de pantalla: el resultado es el estado final clave —
+	# sin anuncio un usuario sin vista no sabe cómo acabó la partida
+	Tts.say("%s. %s" % [title.text, resumen])
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	box.add_child(row)

@@ -12,6 +12,7 @@ static func build(app) -> void:
 	# (lista vacía) y las marcas !/? heredadas eran de la otra partida
 	app._log_n = -1
 	app._move_marks = []
+	app._tts_log_n = 0   # re-anunciar la 1ª jugada de la nueva partida
 	app.game_ui = BoxContainer.new()     # vertical flag → layout adaptable
 	app.game_ui.set_anchors_preset(Control.PRESET_FULL_RECT)
 	app.add_child(app.game_ui)
@@ -496,9 +497,22 @@ static func update(app) -> void:
 			else Lang.t("HUD_HUMAN_B"))
 	app.hud_turn.text = Lang.t("HUD_TURN") % who
 	app.hud_turn.add_theme_color_override("font_color", f.color)
-	# lector de pantalla: anunciar a quién le toca (Tts deduplica —
-	# update() se llama varias veces por jugada)
-	Tts.say(app.hud_turn.text)
+	# lector de pantalla: anunciar la jugada nueva (si la hay) y a
+	# quién le toca. Tts deduplica — update() se llama varias veces
+	# por jugada; la combinación en un solo say() evita que tts_stop
+	# de la segunda llamada pise a la primera.
+	var say_txt: String = app.hud_turn.text
+	if tm.log.size() > app._tts_log_n:
+		app._tts_log_n = tm.log.size()
+		# la notación usa glifos ("→", "x") que los motores TTS leen
+		# literalmente; traducirlos a palabras
+		var mv_say: String = tm.log.back() \
+			.replace("→", " " + Lang.t("HUD_MV_TO") + " ") \
+			.replace(" x", " " + Lang.t("HUD_MV_CAPTURE"))
+		say_txt = "%s. %s" % [mv_say, app.hud_turn.text]
+	elif tm.log.size() < app._tts_log_n:
+		app._tts_log_n = tm.log.size()   # undo/nueva partida
+	Tts.say(say_txt)
 	# tarjeta del rival (arriba del panel): facción + bando
 	var riv: int = 1 - app.my_net if app.online else \
 		(1 if not app.board.flipped else 0)

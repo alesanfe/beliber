@@ -46,6 +46,7 @@ var tut_steps: Array = []        # {text, done, check(mv)->bool}
 var tut_box: VBoxContainer
 var side_panel: VBoxContainer
 var _side_scroll: ScrollContainer   # scroll del panel (modo compacto)
+var _tts_log_n := 0                 # jugadas ya anunciadas por TTS
 var _opt_toggles := {}           # CheckButtons de Opciones (blind/coords/conf/mute)
 var _compact := false            # layout apilado (ventana estrecha)
 var _low_warned := [false, false]  # aviso <10 s ya emitido por bando
