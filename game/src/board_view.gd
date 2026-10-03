@@ -230,6 +230,18 @@ func _draw() -> void:
 	# selección
 	if selected.x >= 0:
 		draw_rect(_cell_rect(selected), Color.WHITE, false, 3.0)
+	# cursor de teclado: anillo discontinuo (no solo color — forma
+	# distinta al rect sólido de selección, así no se confunden)
+	if kb_cell.x >= 0 and view_i < 0 and not tm.over:
+		var kr: Rect2 = _cell_rect(kb_cell).grow(-4)
+		for i in 4:
+			var a: Vector2 = kr.position \
+				+ Vector2(kr.size.x, 0) * [0, 0, 1, 1][i] \
+				+ Vector2(0, kr.size.y) * [0, 1, 0, 1][i]
+			var b: Vector2 = kr.position \
+				+ Vector2(kr.size.x, 0) * [0, 1, 1, 0][i] \
+				+ Vector2(0, kr.size.y) * [1, 1, 0, 0][i]
+			draw_dashed_line(a, b, Color(1, 1, 1, 0.85), 2.5, 6.0)
 	# pieza arrastrada (dibujada al final, encima de todo)
 	if view_i < 0 and dragging.x >= 0:
 		var p: Variant = tm.state.at(dragging)
@@ -479,7 +491,85 @@ func _gui_input(event: InputEvent) -> void:
 			and event.button_index == MOUSE_BUTTON_LEFT:
 		var scr := Vector2i(int(event.position.x / CELL),
 			int(event.position.y / CELL))
-		var cell := _log(scr)
+		_activate_cell(_log(scr))
+
+## Navegación por teclado (WCAG 2.1.1 — la partida entera sin ratón):
+## flechas mueven el cursor de casilla, Enter/Espacio equivalen al
+## clic izquierdo, Esc deselecciona. El cursor es visual (la casilla
+## marcada con punto blanco); al voltear el tablero las flechas van
+## en dirección visual, no lógica.
+var kb_cell := Vector2i(-1, -1)
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	if not event is InputEventKey or not event.pressed \
+			or tm.over or view_i >= 0:
+		return
+	if defer_play and sync_pending: return
+	var dir := Vector2i.ZERO
+	match event.keycode:
+		KEY_LEFT:  dir = Vector2i(-1, 0)
+		KEY_RIGHT: dir = Vector2i(1, 0)
+		KEY_UP:    dir = Vector2i(0, -1)
+		KEY_DOWN:  dir = Vector2i(0, 1)
+		KEY_ENTER, KEY_KP_ENTER, KEY_SPACE:
+			if kb_cell.x >= 0:
+				if inspect:
+					if quiz:
+						cell_picked.emit(kb_cell)
+					else:
+						var ip: Variant = tm.state.at(kb_cell)
+						if ip != null:
+							selected = kb_cell
+							legal = MoveGen.moves_for(tm.state, kb_cell)
+						else:
+							selected = Vector2i(-1, -1)
+							legal = []
+						queue_redraw()
+				else:
+					_activate_cell(kb_cell)
+			accept_event()
+			return
+		KEY_ESCAPE:
+			if selected.x >= 0 or not pending.is_empty():
+				selected = Vector2i(-1, -1)
+				legal = []
+				pending = {}
+				chain_cands = []
+				queue_redraw()
+				accept_event()
+			return
+		_: return
+	if flipped: dir = -dir
+	if kb_cell.x < 0:
+		kb_cell = Vector2i(4, 7)   # nace en la primera fila propia
+	else:
+		kb_cell = (kb_cell + dir).clamp(Vector2i.ZERO,
+			Vector2i(7, 7))
+	# el cursor también alimenta el tooltip/hover de la casilla
+	hover = kb_cell
+	queue_redraw()
+	accept_event()
+	_announce_cell(kb_cell)
+
+## Lector de pantalla: nombra la casilla (notación algebraica) y la
+## pieza que contiene, para que el tablero sea operable sin vista.
+func _announce_cell(c: Vector2i) -> void:
+	var sq := "%c%d" % [97 + c.x, 8 - c.y]
+	var p: Variant = tm.state.at(c) if BoardState.inside(c) else null
+	if p != null and not blindfold:
+		var who := PiecesData.fac_name(
+			tm.state.factions[p.owner])
+		Tts.say(Lang.t("KB_CELL_PIECE") % [sq,
+			PiecesData.piece_name(p.def), who])
+	else:
+		Tts.say(Lang.t("KB_CELL_EMPTY") % sq)
+	if selected.x >= 0 and _find_move(selected, c) != null:
+		Tts.say(Lang.t("KB_CELL_LEGAL"))
+
+## Equivalencia teclado↔ratón: todo el ciclo selección → destino →
+## cadena/premove pasa por aquí (antes el flujo solo existía en el
+## bloque de clic izquierdo del ratón).
+func _activate_cell(cell: Vector2i) -> void:
 		if not BoardState.inside(cell): return
 		# resolución de cadena pendiente: 2º tramo o solo el 1er tramo
 		if not chain_cands.is_empty():

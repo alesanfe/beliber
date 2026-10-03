@@ -45,6 +45,7 @@ var tutorial := false            # partida guiada con objetivos
 var tut_steps: Array = []        # {text, done, check(mv)->bool}
 var tut_box: VBoxContainer
 var side_panel: VBoxContainer
+var _side_scroll: ScrollContainer   # scroll del panel (modo compacto)
 var _opt_toggles := {}           # CheckButtons de Opciones (blind/coords/conf/mute)
 var _compact := false            # layout apilado (ventana estrecha)
 var _low_warned := [false, false]  # aviso <10 s ya emitido por bando
@@ -872,7 +873,7 @@ func _process(dt: float) -> void:
 		if want != game_ui.vertical:
 			_compact = want
 			game_ui.vertical = want
-			side_panel.custom_minimum_size = \
+			_side_scroll.custom_minimum_size = \
 				Vector2(0, 200) if want else Vector2(300, 0)
 			_apply_zoom()
 		# auto-encaje: si el viewport no da para el tablero a 1:1 se

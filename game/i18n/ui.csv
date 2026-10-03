@@ -465,3 +465,6 @@ HUD_TTS,Lector de pantalla,Screen reader
 HUD_TTS_TIP,"Anuncia pantallas, toasts, confirmaciones y turnos con la voz del sistema (TTS).","Announces screens, toasts, confirmations and turns with the system voice (TTS)."
 HUD_TTS_ON,Lector de pantalla activado,Screen reader enabled
 UI_BACK_TIP,Volver a la pantalla anterior (Esc),Back to the previous screen (Esc)
+KB_CELL_EMPTY,Casilla %s,Square %s
+KB_CELL_PIECE,%s: %s %s,%s: %s %s
+KB_CELL_LEGAL,Movimiento legal,Legal move

@@ -57,12 +57,25 @@ static func build(app) -> void:
 	var side_m := MarginContainer.new()
 	side_m.add_theme_constant_override("margin_bottom", 8)
 	app.game_ui.add_child(side_m)
+	# scroll: en modo compacto (<950px) el panel va debajo del
+	# tablero y su contenido puede superar el alto de la ventana;
+	# follow_focus además hace visible el control al navegar con Tab
+	var side_scroll := ScrollContainer.new()
+	side_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	side_scroll.follow_focus = true
+	side_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	# el mínimo vive en el scroll (el de un ScrollContainer no
+	# propaga el de sus hijos); el propio scroll estira el VBox al
+	# alto visible cuando cabe y activa la barra cuando no
+	side_scroll.custom_minimum_size = Vector2(300, 0)
+	side_m.add_child(side_scroll)
+	app._side_scroll = side_scroll
 	var side := VBoxContainer.new()
+	side.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	app.side_panel = side
 	side.name = "SideVBox"
-	side.custom_minimum_size = Vector2(300, 0)
 	side.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	side_m.add_child(side)
+	side_scroll.add_child(side)
 	# tarjeta del rival (emblema + faccion, estilo chess.com)
 	var rc := HBoxContainer.new()
 	side.add_child(rc)

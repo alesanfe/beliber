@@ -11,6 +11,8 @@ var _app
 var _queue: Array = []
 var _wait := 0
 var _name := ""
+var _suffix := ""
+var _subset: Array = []
 
 func _init() -> void:
 	_app = load("res://scenes/main.tscn").instantiate()
@@ -18,7 +20,18 @@ func _init() -> void:
 	# Fijar ventana ancha: si el SO abre la ventana pequeña (<950px)
 	# el HUD entra en modo compacto (panel debajo del tablero) y las
 	# capturas game_opts/game_chat salen sin el panel.
-	root.size = Vector2i(1280, 800)
+	# tamaño por CLI: godot -s screenshots.gd -- 800 600 [subset]
+	# (con argumentos se confía el tamaño a --resolution del launcher;
+	# root.size en _init no llega a redimensionar la ventana real)
+	var argv := OS.get_cmdline_user_args()
+	if argv.size() >= 2:
+		var want := Vector2i(int(argv[0]), int(argv[1]))
+		root.size = want
+		_suffix = "_%dx%d" % [want.x, want.y]
+	else:
+		root.size = Vector2i(1280, 800)
+	if argv.size() > 2:
+		_subset = argv.slice(2)
 	_queue = [
 		["menu", func(): pass],
 		["online", func(): _app._open_online()],
@@ -84,12 +97,19 @@ func _process(_dt: float) -> bool:
 		_wait -= 1
 		if _wait == 0:
 			var img := root.get_texture().get_image()
-			img.save_png(OUT + "/" + _name + ".png")
+			var dir := OUT
+			if _suffix != "":
+				dir = ProjectSettings.globalize_path(
+					"res://../tools/_shots")
+				DirAccess.make_dir_recursive_absolute(dir)
+			img.save_png(dir + "/" + _name + _suffix + ".png")
 			print("shot %s %s" % [_name, img.get_size()])
 		return false
 	if _queue.is_empty():
 		return true
 	var s: Array = _queue.pop_front()
+	if not _subset.is_empty() and not _subset.has(s[0]):
+		return false
 	_name = s[0]
 	s[1].call()
 	_wait = WAIT
