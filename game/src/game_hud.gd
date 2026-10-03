@@ -383,9 +383,21 @@ static func build(app) -> void:
 	b_rm.toggled.connect(func(on):
 		Juice.reduce = on; app._save_settings())
 	btn_row6.add_child(b_rm)
+	var btn_row7 := HBoxContainer.new()
+	opts.add_child(btn_row7)
+	# lector de pantalla (TTS del SO): anuncia pantallas, toasts,
+	# confirmaciones y turnos — independiente del mute de SFX
+	var b_tts := CheckButton.new()
+	b_tts.text = Lang.t("HUD_TTS")
+	b_tts.tooltip_text = Lang.t("HUD_TTS_TIP")
+	b_tts.button_pressed = Tts.enabled
+	b_tts.toggled.connect(func(on):
+		Tts.enabled = on; app._save_settings()
+		if on: Tts.say(Lang.t("HUD_TTS_ON")))
+	btn_row7.add_child(b_tts)
 	app._opt_toggles = {
 		"blind": b_blind, "coords": b_coords,
-		"conf": b_conf, "mute": b_mute, "reduce": b_rm}
+		"conf": b_conf, "mute": b_mute, "reduce": b_rm, "tts": b_tts}
 	var b_png := Button.new()
 	b_png.text = "PNG"
 	b_png.tooltip_text = Lang.t("HUD_PNG_TIP")
@@ -448,6 +460,7 @@ static func build(app) -> void:
 	app._opt_toggles.conf.set_pressed_no_signal(app.board.confirm_moves)
 	app._opt_toggles.mute.set_pressed_no_signal(app.muted)
 	app._opt_toggles.reduce.set_pressed_no_signal(Juice.reduce)
+	app._opt_toggles.tts.set_pressed_no_signal(Tts.enabled)
 	app._update_hud()
 	app._maybe_bot()
 
@@ -470,6 +483,9 @@ static func update(app) -> void:
 			else Lang.t("HUD_HUMAN_B"))
 	app.hud_turn.text = Lang.t("HUD_TURN") % who
 	app.hud_turn.add_theme_color_override("font_color", f.color)
+	# lector de pantalla: anunciar a quién le toca (Tts deduplica —
+	# update() se llama varias veces por jugada)
+	Tts.say(app.hud_turn.text)
 	# tarjeta del rival (arriba del panel): facción + bando
 	var riv: int = 1 - app.my_net if app.online else \
 		(1 if not app.board.flipped else 0)

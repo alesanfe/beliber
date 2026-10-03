@@ -68,6 +68,7 @@ static func screen(title: String, w := 480) -> Control:
 	Juice.pop_in(root, 0.18)
 	# foco inicial: deferred — los hijos se añaden tras return
 	focus_first(root)
+	Tts.say(title)   # lector de pantalla: anunciar la pantalla
 	return root
 
 ## El panel interior (hijos) de una screen.
@@ -131,3 +132,4 @@ static func confirm(host: Control, title: String, text: String,
 	dlg.confirmed.connect(func(): on_ok.call(); dlg.queue_free())
 	dlg.canceled.connect(dlg.queue_free)
 	dlg.popup_centered()
+	Tts.say("%s. %s" % [title, text])   # lector: aviso de la decisión

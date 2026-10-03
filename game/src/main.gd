@@ -148,6 +148,7 @@ func _build_menu() -> void:
 ## Pantalla "Jugar online" (delegada a OnlineScreen).
 func _open_online() -> void:
 	OnlineScreen.build(self)
+	Tts.say(Lang.t("ONLINE_TITLE"))
 
 ## ===== Red (ENet) =====
 ## Host = J1 (jugador 0), cliente = J2 (jugador 1). Solo se sincronizan
@@ -700,6 +701,7 @@ func _open_draft() -> void:
 	menu_root.visible = false
 	add_child(d)
 	Widgets.focus_first(d)
+	Tts.say(Lang.t("DRAFT_TITLE"))
 	d.done.connect(func(pos: Array):
 		var o := _tm_opts()
 		o["pos"] = pos
@@ -738,11 +740,13 @@ func _open_editor() -> void:
 	editor_ui = PieceEditor.new(factions)
 	add_child(editor_ui)
 	Widgets.focus_first(editor_ui)
+	Tts.say(Lang.t("MENU_PIECE_EDITOR"))
 	# botón volver dedicado para no depender del nombre del nodo raíz;
 	# debe colgar de editor_ui — antes era hijo de app y quedaba
 	# huérfano encima del menú tras cada visita
 	var back := Button.new()
 	back.text = tr("UI_BACK")
+	back.tooltip_text = tr("UI_BACK_TIP")   # Esc documentado junto al comando
 	back.position = Vector2(8, 8)
 	back.z_index = 10
 	back.pressed.connect(func():
@@ -757,16 +761,19 @@ func _open_editor() -> void:
 ## Panel de perfil (delegado a ProfileScreen).
 func _open_profile() -> void:
 	ProfileScreen.build(self)
+	Tts.say(Lang.t("MENU_PROFILE"))
 
 func _open_guide() -> void:
 	menu_root.queue_free()
 	editor_ui = GuideScreen.new(factions)
 	add_child(editor_ui)
 	_add_back()
+	Tts.say(Lang.t("GUIDE_TITLE"))
 
 func _open_puzzles() -> void:
 	menu_root.queue_free()
 	editor_ui = PuzzleScreen.new(factions)
+	Tts.say(Lang.t("PUZ_TITLE"))
 	# récord de Puzzle Rush en el perfil (antes se perdía al cerrar)
 	editor_ui.rush_done.connect(func(s: int):
 		if s > int(stats.get("rush_best", 0)):
@@ -799,6 +806,7 @@ func _close_editor() -> void:
 ## Botón volver compartido por guía, editor, constructor y puzzles.
 func _add_back() -> void:
 	var back := Widgets.secondary(tr("UI_BACK"), 36)
+	back.tooltip_text = tr("UI_BACK_TIP")   # atajo Esc junto al comando
 	back.position = Vector2(8, 8)
 	back.z_index = 10
 	back.pressed.connect(_close_editor)
@@ -816,11 +824,13 @@ func _open_builder() -> void:
 	add_child(editor_ui)
 	var back := Button.new()
 	back.text = tr("UI_BACK")
+	back.tooltip_text = tr("UI_BACK_TIP")
 	back.position = Vector2(8, 8)
 	back.z_index = 10
 	back.pressed.connect(_close_editor)
 	editor_ui.add_child(back)   # hijo de la pantalla: se libera con ella
 	Widgets.focus_first(editor_ui)
+	Tts.say(Lang.t("AB_TITLE"))
 
 ## Construcción del HUD de partida (delegada a GameHUD).
 func _build_game() -> void:
@@ -1023,6 +1033,7 @@ func _save_settings() -> void:
 	c.set_value("ui", "confirm", board.confirm_moves)
 	c.set_value("ui", "mute", muted)
 	c.set_value("ui", "reduce_motion", Juice.reduce)
+	c.set_value("ui", "tts", Tts.enabled)
 	c.save(CFG_PATH)
 
 func _apply_settings() -> void:
@@ -1039,6 +1050,7 @@ func _apply_settings() -> void:
 	board.confirm_moves = bool(c.get_value("ui", "confirm", false))
 	muted = bool(c.get_value("ui", "mute", false))
 	Juice.reduce = bool(c.get_value("ui", "reduce_motion", false))
+	Tts.enabled = bool(c.get_value("ui", "tts", false))
 
 ## Escala efectiva del tablero = zoom del usuario × factor de encaje
 ## (ventanas < ~536 px encogen el tablero en vez de desbordarlo).
@@ -1090,6 +1102,7 @@ func _open_pos_editor() -> void:
 	editor_ui = ed
 	menu_root.visible = false
 	add_child(ed)
+	Tts.say(Lang.t("MENU_POS_EDITOR"))
 	ed.start.connect(func(pos: Array, first: int):
 		# partida desde posición = local; limpiar red y estado de una
 		# partida anterior (sin esto, un bot de antes seguiría jugando

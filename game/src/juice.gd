@@ -94,6 +94,7 @@ static func toast(parent: Control, text: String, dur := 3.5) -> Label:
 	l.add_theme_constant_override("shadow_offset_x", 1)
 	l.add_theme_constant_override("shadow_offset_y", 1)
 	parent.add_child(l)
+	Tts.say(text)   # lector de pantalla: los toasts son live-regions
 	var t := l.create_tween().set_parallel()
 	if not reduce:
 		t.tween_property(l, "modulate:a", 1.0, 0.15)

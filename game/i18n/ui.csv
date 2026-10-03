@@ -461,3 +461,7 @@ PE_DEP_RESET_C,Se descartará el despliegue editado y se restaurará el oficial.
 MENU_LOAD_NONE,No hay partida guardada — el botón se activa al guardar.,No saved game — the button activates once a save exists.
 MENU_COOP_NOAI,Solo disponible contra una IA (J2 Humano o IA vs IA no aplica).,Only available against an AI (P2 Human or AI vs AI does not apply).
 DRAFT_NO_BUDGET,Sin presupuesto — quedan %d puntos.,Over budget — %d points left.
+HUD_TTS,Lector de pantalla,Screen reader
+HUD_TTS_TIP,"Anuncia pantallas, toasts, confirmaciones y turnos con la voz del sistema (TTS).","Announces screens, toasts, confirmations and turns with the system voice (TTS)."
+HUD_TTS_ON,Lector de pantalla activado,Screen reader enabled
+UI_BACK_TIP,Volver a la pantalla anterior (Esc),Back to the previous screen (Esc)
