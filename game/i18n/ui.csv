@@ -458,3 +458,6 @@ PE_RESET_T,Restablecer la pieza,Reset the piece
 PE_RESET_C,Se descartarán los cambios sin guardar y se restaurará la plantilla.,Unsaved changes will be discarded and the template restored.
 PE_DEP_RESET_T,Restablecer el despliegue,Reset the deployment
 PE_DEP_RESET_C,Se descartará el despliegue editado y se restaurará el oficial.,The edited deployment will be discarded and the official one restored.
+MENU_LOAD_NONE,No hay partida guardada — el botón se activa al guardar.,No saved game — the button activates once a save exists.
+MENU_COOP_NOAI,Solo disponible contra una IA (J2 Humano o IA vs IA no aplica).,Only available against an AI (P2 Human or AI vs AI does not apply).
+DRAFT_NO_BUDGET,Sin presupuesto — quedan %d puntos.,Over budget — %d points left.

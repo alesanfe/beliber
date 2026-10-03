@@ -13,6 +13,18 @@ const CELL := 64
 var f0: Dictionary
 var f1: Dictionary
 var grid := {}                    # Vector2i -> {l, o}
+var _undo: Array = []             # snapshots de grid para Ctrl+Z
+
+func _push_undo() -> void:
+	_undo.append(grid.duplicate(true))
+	if _undo.size() > 60: _undo.pop_front()
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed \
+			and event.ctrl_pressed and event.keycode == KEY_Z:
+		if _undo.is_empty(): return
+		grid = _undo.pop_back()
+		_board.queue_redraw()
 var sel_letter := "P"
 var sel_owner := 0
 var first := 0
@@ -88,7 +100,7 @@ func _ready() -> void:
 	b_clear.pressed.connect(func():
 		Widgets.confirm(self, Lang.t("POSE_CLEAR_T"),
 			Lang.t("POSE_CLEAR_C"), Lang.t("POSE_CLEAR"),
-			func(): grid.clear(); board.queue_redraw()))
+			func(): _push_undo(); grid.clear(); board.queue_redraw()))
 	side.add_child(b_clear)
 	# línea de errores persistente — antes cada fallo APILABA un
 	# Label nuevo en el panel (nunca se limpiaban)
@@ -156,6 +168,7 @@ func _import_bel(s: String) -> String:
 			return Lang.t("POSE_IMPORT_ERR") % [f.name, e.l]
 		tmp[Vector2i(int(e.x), int(e.y))] = {"l": e.l, "o": e.o,
 			"has_moved": bool(e.get("has_moved", false))}
+	_push_undo()
 	grid = tmp   # propagar '*' de BEL-FEN (has_moved)
 	if r.has("turn"): first = int(r.turn)
 	return ""
@@ -223,6 +236,7 @@ func _on_board_input(event: InputEvent) -> void:
 	var cell := Vector2i(int(event.position.x / CELL),
 		int(event.position.y / CELL))
 	if not BoardState.inside(cell): return
+	_push_undo()
 	if event.button_index == MOUSE_BUTTON_LEFT:
 		grid[cell] = {"l": sel_letter, "o": sel_owner}
 	elif event.button_index == MOUSE_BUTTON_RIGHT:

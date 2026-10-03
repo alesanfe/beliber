@@ -100,8 +100,12 @@ func _refresh() -> void:
 		var b := Button.new()
 		b.text = "%s %s (%d)" % [letter, PiecesData.piece_name(p), v]
 		b.disabled = spent[turn] + v > budget[turn]
-		b.tooltip_text = Lang.t("DRAFT_VALUE_TIP") % [v,
-			Lang.t("DRAFT_LEADER") if p.get("leader", false) else ""]
+		# deshabilitado justificado: si no entra en el presupuesto el
+		# tooltip lo dice, no el tooltip normal de la pieza
+		b.tooltip_text = Lang.t("DRAFT_NO_BUDGET") % [
+			budget[turn] - spent[turn]] if b.disabled \
+			else Lang.t("DRAFT_VALUE_TIP") % [v,
+				Lang.t("DRAFT_LEADER") if p.get("leader", false) else ""]
 		b.pressed.connect(func(): _pick(letter))
 		pool.add_child(b)
 

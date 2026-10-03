@@ -202,7 +202,13 @@ static func build(app) -> void:
 	var _coop_gate := func(_i: int = -1):
 		app.chk_coop.disabled = app.opt_ai.selected == 0 \
 			or app.opt_ai.selected == 4
-		if app.chk_coop.disabled: app.chk_coop.button_pressed = false
+		if app.chk_coop.disabled:
+			app.chk_coop.button_pressed = false
+			# explicar POR QUÉ está deshabilitado (tooltip del estado,
+			# no el de la función)
+			app.chk_coop.tooltip_text = Lang.t("MENU_COOP_NOAI")
+		else:
+			app.chk_coop.tooltip_text = Lang.t("MENU_COOP_TIP")
 	app.opt_ai.item_selected.connect(_coop_gate)
 	_coop_gate.call()
 	opt_row2.add_child(app.chk_coop)
@@ -294,8 +300,11 @@ static func build(app) -> void:
 	var btn_load := Button.new()
 	btn_load.text = Lang.t("MENU_LOAD")
 	btn_load.custom_minimum_size = Vector2(80, 36)
-	btn_load.tooltip_text = Lang.t("MENU_LOAD_TIP")
 	btn_load.disabled = not FileAccess.file_exists(app.SAVE_PATH)
+	# deshabilitado JUSTIFICADO: el tooltip explica por qué (heurística
+	# Nielsen — controles deshabilitados sin explicación = antipatrón)
+	btn_load.tooltip_text = Lang.t("MENU_LOAD_TIP") \
+		if not btn_load.disabled else Lang.t("MENU_LOAD_NONE")
 	btn_load.pressed.connect(app._load_game)
 	row3.add_child(btn_load)
 

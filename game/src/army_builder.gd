@@ -12,6 +12,18 @@ const ROWS := 5
 var factions: Array = []
 var faction: Dictionary
 var grid := {}          # Vector2i(col,fila 0=top) -> letra
+var _undo: Array = []   # snapshots de grid para Ctrl+Z
+
+func _push_undo() -> void:
+	_undo.append(grid.duplicate())
+	if _undo.size() > 60: _undo.pop_front()
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed \
+			and event.ctrl_pressed and event.keycode == KEY_Z:
+		if _undo.is_empty(): return
+		grid = _undo.pop_back()
+		_update_cost()
 var paint := "P"
 var budget := 60        # presupuesto por defecto ≈ suma del setup oficial
 
@@ -132,7 +144,7 @@ func _ready() -> void:
 	b_clear.pressed.connect(func():
 		Widgets.confirm(self, Lang.t("AB_CLEAR_T"),
 			Lang.t("AB_CLEAR_C"), Lang.t("AB_CLEAR"),
-			func(): grid.clear(); _update_cost()))
+			func(): _push_undo(); grid.clear(); _update_cost()))
 	right.add_child(b_clear)
 	right.add_child(HSeparator.new())
 	var b_save := Button.new(); b_save.text = Lang.t("AB_SAVE")
@@ -187,6 +199,7 @@ func _reload() -> void:
 	_copy_official()
 
 func _copy_official() -> void:
+	_push_undo()
 	grid.clear()
 	var rows: Array = faction.setups[0]
 	var h := rows.size()
@@ -299,10 +312,13 @@ func _update_compare() -> void:
 		bars[m][1].value = clampf(float(mo[m]), 0, 100)
 
 func on_cell(cell: Vector2i, button: int) -> void:
+	_push_undo()
 	if button == MOUSE_BUTTON_LEFT:
 		grid[cell] = paint
 	elif button == MOUSE_BUTTON_RIGHT:
 		grid.erase(cell)
+	else:
+		_undo.pop_back()   # ni clic izq ni der: nada que deshacer
 	_update_cost()
 
 func _to_rows() -> Array:
@@ -331,6 +347,7 @@ func _load() -> void:
 	# JSON semi-válido: {"humenex": 3} o sin 'rows' crasheaba al abrir
 	if not (data.get(faction.id) is Dictionary): return
 	if not (data[faction.id].get("rows") is Array): return
+	_push_undo()
 	grid.clear()
 	var rows: Array = data[faction.id].rows
 	for y in mini(rows.size(), ROWS):
