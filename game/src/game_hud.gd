@@ -132,6 +132,9 @@ static func build(app) -> void:
 	app.hud_opening.add_theme_font_size_override("font_size", 13)
 	app.hud_opening.add_theme_color_override("font_color",
 		Color(0.75, 0.7, 0.55))
+	# el nombre combinado "Apertura — Elfos: … · Humenex: …" se
+	# cortaba en el borde del panel de 300px
+	app.hud_opening.autowrap_mode = TextServer.AUTOWRAP_WORD
 	tg.add_child(app.hud_opening)
 	app.hud_info = Label.new()
 	app.hud_info.autowrap_mode = TextServer.AUTOWRAP_WORD
@@ -189,7 +192,9 @@ static func build(app) -> void:
 	app.btn_cov.text = Lang.t("HUD_INFLUENCE")
 	app.btn_cov.toggled.connect(func(on):
 		app.board.show_coverage = on; app.board.queue_redraw())
-	var btn_row := HBoxContainer.new()
+	# flow: el panel lateral mide ~300px y 4 botones en una fila
+	# fija cortaban "Guardar" en ventanas de 800px
+	var btn_row := HFlowContainer.new()
 	opts.add_child(btn_row)
 	var b_undo := Button.new()
 	b_undo.text = Lang.t("HUD_UNDO")
@@ -256,7 +261,7 @@ static func build(app) -> void:
 
 	# ===== Tablero =====
 	_opts_sec(opts, "OPT_SEC_BOARD")
-	var btn_row2 := HBoxContainer.new()
+	var btn_row2 := HFlowContainer.new()
 	opts.add_child(btn_row2)
 	var b_flip := Button.new()
 	b_flip.text = Lang.t("HUD_FLIP")
@@ -272,7 +277,7 @@ static func build(app) -> void:
 		app.board.queue_redraw(); app._save_settings())
 	btn_row2.add_child(b_theme)
 	btn_row2.add_child(app.btn_cov)
-	var btn_row3 := HBoxContainer.new()
+	var btn_row3 := HFlowContainer.new()
 	opts.add_child(btn_row3)
 	var b_thr := CheckButton.new()
 	b_thr.text = Lang.t("HUD_THREATS")

@@ -67,6 +67,31 @@ func _init() -> void:
 			var d: DraftScreen = _app.editor_ui
 			d._pick("Y"); d._pick("X"); d._pick("C"); d._pick("T")],
 		["game", func(): _close(); _app._start_game()],
+		# partida en curso: 8 plies de bots para que la captura
+		# muestre lista con marcas !/?, bandejas con piezas y eval
+		# real — las demás entradas capturan solo el estado inicial
+		["game_moves", func():
+			# _restart reconstruye el menú: _start_game lee los
+			# opt_* del menú, que se liberan con la partida previa
+			_close(); _app._restart(); _app._start_game()
+			var bots := [BeliberBot.new(1, "normal", 0.0),
+				BeliberBot.new(1, "normal", 0.0)]
+			var tm: TurnManager = _app.tm
+			var b: BoardView = _app.board
+			for i in 8:
+				if tm.over: break
+				var mv: Dictionary = bots[tm.current].best_move(
+					tm, tm.current)
+				if mv.is_empty(): break
+				for cell in [mv.from, mv.to]:
+					var s: Vector2i = b._scr(cell)
+					var ev := InputEventMouseButton.new()
+					ev.button_index = MOUSE_BUTTON_LEFT
+					ev.position = Vector2(
+						s.x * BoardView.CELL + BoardView.CELL * 0.5,
+						s.y * BoardView.CELL + BoardView.CELL * 0.5)
+					ev.pressed = (cell == mv.from)
+					b._gui_input(ev)],
 		# pestañas Opciones/Chat del HUD (TabContainer del side_panel)
 		["game_opts", func(): _hud_tab(1)],
 		["game_chat", func(): _hud_tab(2)],
@@ -82,10 +107,13 @@ func _init() -> void:
 	]
 
 ## Cambia la pestaña del HUD (0 Partida / 1 Opciones / 2 Chat).
+## Si se pide solo esta captura no hay partida previa — la crea.
 func _hud_tab(i: int) -> void:
-	var tabs := _app.find_children("*", "TabContainer",
-		true, false)[0] as TabContainer
-	if tabs: tabs.current_tab = i
+	if _app.tm == null: _app._start_game()
+	var t: Array[Node] = _app.find_children("*", "TabContainer",
+		true, false)
+	if not t.is_empty():
+		(t[0] as TabContainer).current_tab = i
 
 func _close() -> void:
 	if _app.editor_ui != null or (

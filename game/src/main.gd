@@ -866,9 +866,16 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _process(dt: float) -> void:
 	if ws != null: _ws_poll()
-	# breakpoint: <950 px → panel debajo del tablero (estilo compacto)
+	# breakpoint dinámico: el panel va debajo solo cuando ese
+	# layout da un tablero mayor. Un ancho fijo (<950) elegía mal
+	# en ventanas bajas tipo 800×600 (horizontal cabe y escala
+	# ~0.78 vs ~0.64) e intermedias tipo 940×650 (~1.0 vs ~0.73)
 	if game_ui != null:
-		var want := get_viewport_rect().size.x < 950.0
+		var v := get_viewport_rect().size
+		var w := float(8 * BoardView.CELL)
+		var want := minf((v.x - 48.0) / w,
+			(v.y - 230.0) / w) > minf((v.x - 348.0) / w,
+			(v.y - 60.0) / w)
 		# comparar con el estado real, no con _compact: tras
 		# _restart la flag quedaba true y la game_ui nueva nacía
 		# horizontal en ventana estrecha (panel cortado a la
@@ -1070,7 +1077,9 @@ func _apply_settings() -> void:
 func _fit_factor() -> float:
 	var v := get_viewport_rect().size
 	var w := float(8 * BoardView.CELL)
-	return minf((v.x - 48.0) / w,
+	# horizontal: resta el panel (300px) + eval bar + márgenes;
+	# compacto: solo eval bar + márgenes (el panel va debajo)
+	return minf((v.x - (48.0 if _compact else 348.0)) / w,
 		(v.y - (230.0 if _compact else 60.0)) / w)
 
 func _apply_zoom() -> void:
