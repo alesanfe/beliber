@@ -222,7 +222,11 @@ func _ready() -> void:
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		b.tooltip_text = "%s — %s" % [code, PiecesData.code_name(code)]
 		b.custom_minimum_size = Vector2(0, 26)
-		b.clip_text = true   # nombres largos no derraman fuera
+		# nombres largos ("Mover/Capturar atravesando") envuelven a
+		# dos líneas dentro de la columna — antes clip_text los
+		# cortaba a mitad de palabra
+		b.clip_text = true
+		b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var sb := StyleBoxFlat.new()
 		var bg := PiecesData.code_color(code)
