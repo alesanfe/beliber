@@ -193,16 +193,17 @@ static func to_bel(state: BoardState, fi0: int, eq0: int,
 ## turn} o {"err": ...}.
 static func from_bel(s: String) -> Dictionary:
 	var parts := s.strip_edges().split(" ", false)
+	# códigos de error, no texto — la UI los traduce vía Lang.t
 	if parts.size() < 5 or parts[0] != "BEL1":
-		return {"err": "formato: BEL1 <f0>.<eq0> <f1>.<eq1> <filas> <turno>"}
+		return {"err": "BEL_ERR_FORMAT"}
 	var f0 := parts[1].split("."); var f1 := parts[2].split(".")
 	# campos de facción/equipo obligatorios ("0.0"): antes un campo
 	# sin punto indexaba fuera de rango y tumbaba el editor
 	if f0.size() != 2 or f1.size() != 2:
-		return {"err": "facciones malformadas: se esperaba <f>.<eq>"}
+		return {"err": "BEL_ERR_FACS"}
 	for f in f0 + f1:
 		if not f.is_valid_int():
-			return {"err": "facción/equipo no numérico: '%s'" % f}
+			return {"err": "BEL_ERR_NONNUM", "v": f}
 	var pos := []
 	var y := 0
 	for row in parts[3].split("/"):
@@ -220,12 +221,11 @@ static func from_bel(s: String) -> Dictionary:
 				pos.append(prev)
 				x += 1
 		if x > SIZE:
-			return {"err": "fila %d desborda el tablero (%d celdas)" % [
-				y + 1, x]}
+			return {"err": "BEL_ERR_ROW", "row": y + 1, "x": x}
 		y += 1
 	if y != SIZE:
-		return {"err": "se esperaban 8 filas, hay %d" % y}
+		return {"err": "BEL_ERR_ROWS", "n": y}
 	if not parts[4].is_valid_int() or int(parts[4]) not in [0, 1]:
-		return {"err": "turno inválido: '%s'" % parts[4]}
+		return {"err": "BEL_ERR_TURN", "v": parts[4]}
 	return {"fac": [int(f0[0]), int(f0[1]), int(f1[0]), int(f1[1])],
 		"pos": pos, "turn": int(parts[4])}

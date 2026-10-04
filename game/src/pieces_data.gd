@@ -178,6 +178,12 @@ static func fac_name(f: Dictionary) -> String:
 	var t := Lang.t(k)
 	return t if t != k else String(f.get("name", "?"))
 
+## Igual pero con el id suelto ("humenex" → FAC_HUMENEX → "Humenex").
+static func fac_name_id(fid: String) -> String:
+	var k := "FAC_" + fid.to_upper()
+	var t := Lang.t(k)
+	return t if t != k else fid.capitalize()
+
 ## Nombre localizado de una pieza (PIECE_<FID>_<LETRA>).
 static func piece_name(p: Dictionary) -> String:
 	var k := "PIECE_%s_%s" % [

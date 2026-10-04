@@ -43,6 +43,10 @@ static func build(app) -> void:
 	app.ws_name = LineEdit.new()
 	app.ws_name.placeholder_text = Lang.t("ONLINE_NICK_PH")
 	app.ws_name.text = app._ws_last_nick
+	# sin mínimo/expand el campo quedaba aplastado por el label
+	# "Servidor:" + la URL y el placeholder se leía cortado
+	app.ws_name.custom_minimum_size = Vector2(120, 0)
+	app.ws_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	app.ws_name.text_changed.connect(
 		func(t): app._ws_last_nick = t)
 	srv.add_child(app.ws_name)

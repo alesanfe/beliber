@@ -856,6 +856,8 @@ func _unhandled_input(event: InputEvent) -> void:
 				dlg.dialog_text = tr("DLG_QUIT_CONFIRM")
 				add_child(dlg)
 				dlg.confirmed.connect(_restart)
+				# también al confirmar: quedaba oculto colgado de app
+				dlg.confirmed.connect(dlg.queue_free)
 				dlg.canceled.connect(dlg.queue_free)
 				dlg.popup_centered()
 			else:
@@ -1151,9 +1153,13 @@ func _restart() -> void:
 	ai_both = false
 	tm = null   # el manager muere con la partida (su tick de reloj
 	#         tocaría hud_clock, ya liberado por game_ui)
-	var ov := find_child("PostGameOverlay", false, false)
-	if ov != null: ov.queue_free()   # cuelga de app, no de game_ui
-	game_ui.queue_free()
+	# overlays y diálogos cuelgan de app, no de game_ui: BoonOverlay
+	# y los confirm abiertos sobrevivían al restart (panel fantasma
+	# visible tras el tablero en la siguiente pantalla)
+	for c in get_children():
+		if c.name.ends_with("Overlay") or c is Window:
+			c.queue_free()
+	if game_ui != null: game_ui.queue_free()
 	_build_menu()
 
 ## Cierra cualquier conexión activa y deja el estado de red limpio.
@@ -1203,9 +1209,13 @@ func _close_net() -> void:
 func _load_game() -> void:
 	# load_json recupera desde .bak si el save está corrupto
 	var data = StatsStore.load_json(SAVE_PATH)
-	if typeof(data) != TYPE_DICTIONARY: return
+	if typeof(data) != TYPE_DICTIONARY:
+		hud_alert(Lang.t("LOAD_CORRUPT"))
+		return
 	var loaded := TurnManager.load_game(data, factions)
-	if loaded == null: return
+	if loaded == null:
+		hud_alert(Lang.t("LOAD_CORRUPT"))
+		return
 	tm = loaded
 	# partida cargada = hotseat limpio: sin bot, sin IA vs IA, sin
 	# estado de una partida anterior (sin esto un bot activo

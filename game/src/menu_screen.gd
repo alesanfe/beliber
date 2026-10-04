@@ -55,13 +55,13 @@ static func build(app) -> void:
 	btn.pressed.connect(app._start_game)
 	row1.add_child(btn)
 	var btn_onl := Button.new()
-	btn_onl.text = "Online"
+	btn_onl.text = Lang.t("MENU_ONLINE")
 	btn_onl.custom_minimum_size = Vector2(145, 64)
 	btn_onl.tooltip_text = Lang.t("MENU_ONLINE_TIP")
 	btn_onl.pressed.connect(app._open_online)
 	row1.add_child(btn_onl)
 	var btn_tut := Button.new()
-	btn_tut.text = "Tutorial"
+	btn_tut.text = Lang.t("MENU_TUTORIAL")
 	btn_tut.custom_minimum_size = Vector2(135, 64)
 	btn_tut.tooltip_text = Lang.t("MENU_TUTORIAL_TIP")
 	btn_tut.pressed.connect(app._start_tutorial)
@@ -257,13 +257,13 @@ static func build(app) -> void:
 	btn_run.pressed.connect(app._start_run)
 	row2.add_child(btn_run)
 	var btn_draft := Button.new()
-	btn_draft.text = "Draft"
+	btn_draft.text = Lang.t("MENU_DRAFT")
 	btn_draft.custom_minimum_size = Vector2(90, 42)
 	btn_draft.tooltip_text = Lang.t("MENU_DRAFT_TIP")
 	btn_draft.pressed.connect(app._open_draft)
 	row2.add_child(btn_draft)
 	var btn_puz := Button.new()
-	btn_puz.text = "Puzzles"
+	btn_puz.text = Lang.t("MENU_PUZZLES")
 	btn_puz.custom_minimum_size = Vector2(100, 42)
 	btn_puz.tooltip_text = Lang.t("MENU_PUZZLES_TIP")
 	btn_puz.pressed.connect(app._open_puzzles)
@@ -326,13 +326,13 @@ static func build(app) -> void:
 	var parts := []
 	parts.append(Lang.t("STATS_GAMES") % int(app.stats.games))
 	for fid in app.stats.wins:
-		parts.append(Lang.t("STATS_WINS") % [fid,
+		parts.append(Lang.t("STATS_WINS") % [PiecesData.fac_name_id(fid),
 			app.stats.wins[fid]])
 	# dominio por facción (XP): nivel = xp/100 + 1
 	if app.stats.has("xp") and app.stats.xp.size() > 0:
 		var lvls := []
 		for fid in app.stats.xp:
-			lvls.append(Lang.t("STATS_LV") % [fid,
+			lvls.append(Lang.t("STATS_LV") % [PiecesData.fac_name_id(fid),
 				app._faction_level(fid)])
 		parts.append(Lang.t("STATS_MASTERY") + " · ".join(lvls))
 	if app.stats.ach.size() > 0:

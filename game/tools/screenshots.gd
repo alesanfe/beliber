@@ -13,6 +13,8 @@ var _wait := 0
 var _name := ""
 var _suffix := ""
 var _subset: Array = []
+var _want := Vector2i.ZERO
+var _sized := false
 
 func _init() -> void:
 	_app = load("res://scenes/main.tscn").instantiate()
@@ -25,11 +27,10 @@ func _init() -> void:
 	# root.size en _init no llega a redimensionar la ventana real)
 	var argv := OS.get_cmdline_user_args()
 	if argv.size() >= 2:
-		var want := Vector2i(int(argv[0]), int(argv[1]))
-		root.size = want
-		_suffix = "_%dx%d" % [want.x, want.y]
+		_want = Vector2i(int(argv[0]), int(argv[1]))
+		_suffix = "_%dx%d" % [_want.x, _want.y]
 	else:
-		root.size = Vector2i(1280, 800)
+		_want = Vector2i(1280, 800)
 	if argv.size() > 2:
 		_subset = argv.slice(2)
 	_queue = [
@@ -93,8 +94,17 @@ func _close() -> void:
 		_app._close_editor()
 
 func _process(_dt: float) -> bool:
+	if not _sized:
+		_sized = true
+		# root.size en _init no llega a la ventana real — hay que
+		# pedirlo al SO cuando ya está mapeada (1er frame)
+		DisplayServer.window_set_size(_want)
+		_wait = WAIT
+		return false
 	if _wait > 0:
 		_wait -= 1
+		if _wait == 0 and _name == "":
+			return false   # espera inicial del resize, nada que capturar
 		if _wait == 0:
 			var img := root.get_texture().get_image()
 			var dir := OUT

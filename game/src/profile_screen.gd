@@ -35,12 +35,12 @@ static func build(app) -> void:
 			var wr := 100.0 * int(fs.w) / maxi(int(fs.g), 1)
 			box.add_child(Widgets.lbl(
 				Lang.t("PROF_FAC_LINE") % [
-					fid.capitalize(), app._faction_level(fid),
+					PiecesData.fac_name_id(fid), app._faction_level(fid),
 					int(fs.g), int(wr)]))
 			if int(fs.g) > fav_g: fav = fid; fav_g = int(fs.g)
 			if int(fs.g) >= 3 and wr > eff_wr: eff = fid; eff_wr = wr
-		var extra := Lang.t("PROF_FAV") % fav.capitalize()
-		if eff != "": extra += Lang.t("PROF_EFF") % eff.capitalize()
+		var extra := Lang.t("PROF_FAV") % PiecesData.fac_name_id(fav)
+		if eff != "": extra += Lang.t("PROF_EFF") % PiecesData.fac_name_id(eff)
 		box.add_child(Widgets.lbl(extra))
 
 	# — historial reciente —
@@ -54,8 +54,8 @@ static func build(app) -> void:
 			var h: Dictionary = hist[i]
 			box.add_child(Widgets.lbl(
 				Lang.t("PROF_HIST_LINE") % [
-					marks.get(h.r, "?"), String(h.me).capitalize(),
-					String(h.vs).capitalize(), int(h.mv), h.mode]))
+					marks.get(h.r, "?"), PiecesData.fac_name_id(String(h.me)),
+					PiecesData.fac_name_id(String(h.vs)), int(h.mv), h.mode]))
 
 	# — récords —
 	box.add_child(HSeparator.new())

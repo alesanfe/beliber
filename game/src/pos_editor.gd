@@ -73,12 +73,14 @@ func _ready() -> void:
 		side.add_child(_lbl(Lang.t("POSE_PLAYER") % [
 			who + 1, PiecesData.fac_name(f)], 16))
 		var flow := GridContainer.new()
-		flow.columns = 8
+		# 6 columnas → casillas de 40px (objetivo táctil ≥44 rozaba el
+		# ancho del panel; 40px es el compromiso con 8 por fila fuera)
+		flow.columns = 6
 		side.add_child(flow)
 		for letter in _letters(who):
 			var b := Button.new()
 			b.text = letter
-			b.custom_minimum_size = Vector2(30, 30)
+			b.custom_minimum_size = Vector2(40, 40)
 			b.tooltip_text = PiecesData.piece_name(f.pieces[letter])
 			var w: int = who; var l: String = letter
 			b.pressed.connect(func():
@@ -120,11 +122,18 @@ func _ready() -> void:
 	b_fexp.text = Lang.t("POSE_COPY")
 	b_fexp.pressed.connect(func():
 		fen_edit.text = _export_bel()
-		DisplayServer.clipboard_set(fen_edit.text))
+		DisplayServer.clipboard_set(fen_edit.text)
+		# confirmación visible: antes solo cambiaba el campo, sin
+		# feedback de que el portapapeles se actualizó
+		_err_lbl.add_theme_color_override("font_color",
+			Color(0.55, 0.85, 0.55))
+		_err_lbl.text = Lang.t("POSE_COPIED"))
 	fen_row.add_child(b_fexp)
 	var b_fimp := Button.new()
 	b_fimp.text = Lang.t("POSE_IMPORT")
 	b_fimp.pressed.connect(func():
+		_err_lbl.add_theme_color_override("font_color",
+			Color(0.95, 0.45, 0.4))
 		_err_lbl.text = _import_bel(fen_edit.text)
 		board.queue_redraw())
 	fen_row.add_child(b_fimp)
@@ -133,6 +142,8 @@ func _ready() -> void:
 	b_play.custom_minimum_size = Vector2(0, 40)
 	b_play.pressed.connect(func():
 		if _leaders(0) == 0 or _leaders(1) == 0:
+			_err_lbl.add_theme_color_override("font_color",
+				Color(0.95, 0.45, 0.4))
 			_err_lbl.text = Lang.t("POSE_NEED_LEADERS")
 			return
 		start.emit(_to_array(), first))
@@ -158,14 +169,24 @@ func _export_bel() -> String:
 ## Importa un BEL-FEN usando las facciones actuales del editor.
 func _import_bel(s: String) -> String:
 	var r: Dictionary = BoardState.from_bel(s)
-	if r.has("err"): return r.err
+	if r.has("err"):
+		# el parser devuelve códigos; aquí se traducen con parámetros
+		match String(r.err):
+			"BEL_ERR_ROW":
+				return Lang.t("BEL_ERR_ROW") % [r.row, r.x]
+			"BEL_ERR_ROWS":
+				return Lang.t("BEL_ERR_ROWS") % r.n
+			"BEL_ERR_NONNUM", "BEL_ERR_TURN":
+				return Lang.t(r.err) % r.v
+			_:
+				return Lang.t(r.err)
 	# validar ANTES de tocar el grid: un BEL con una letra ajena dejaba
 	# la posición importada a medias junto al mensaje de error
 	var tmp := {}
 	for e in r.pos:
 		var f: Dictionary = f0 if e.o == 0 else f1
 		if not f.pieces.has(e.l):
-			return Lang.t("POSE_IMPORT_ERR") % [f.name, e.l]
+			return Lang.t("POSE_IMPORT_ERR") % [PiecesData.fac_name(f), e.l]
 		tmp[Vector2i(int(e.x), int(e.y))] = {"l": e.l, "o": e.o,
 			"has_moved": bool(e.get("has_moved", false))}
 	_push_undo()

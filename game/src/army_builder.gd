@@ -64,9 +64,10 @@ class ABCanvas extends Control:
 					if def.get("leader", false):
 						draw_circle(r.get_center() + Vector2(0, -CELL*0.32),
 							5.0, Color(1, 0.85, 0.2))
-		# etiquetas de filas
-		draw_string(font, Vector2(4, -6), "zona de despliegue (filas propias)",
-			HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(0.6, 0.6, 0.6))
+		# etiquetas de filas — dibujada por encima de la primera casilla
+		# (a y=-6 quedaba fuera del control y se recortaba)
+		draw_string(font, Vector2(4, 14), Lang.t("AB_ZONE"),
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1, 1, 1, 0.55))
 
 	func _gui_input(e: InputEvent) -> void:
 		if e is InputEventMouseButton and e.pressed:
@@ -165,11 +166,18 @@ func _ready() -> void:
 		var bc := ProgressBar.new()
 		bc.max_value = 100; bc.show_percentage = false
 		bc.custom_minimum_size = Vector2(0, 10)
+		bc.tooltip_text = Lang.t("AB_MET_YOURS")
+		# la barra "tuya" lleva acento — antes ambas barras eran del
+		# mismo gris y era imposible saber cuál era cuál
+		var fill := StyleBoxFlat.new()
+		fill.bg_color = Color(0.4, 0.65, 1.0)
+		bc.add_theme_stylebox_override("fill", fill)
 		right.add_child(bc)
 		var bo := ProgressBar.new()
 		bo.max_value = 100; bo.show_percentage = false
 		bo.custom_minimum_size = Vector2(0, 6)
 		bo.modulate.a = 0.4   # tenue = ejército oficial
+		bo.tooltip_text = Lang.t("AB_MET_OFFICIAL")
 		right.add_child(bo)
 		bars[m] = [bc, bo]
 
@@ -345,8 +353,11 @@ func _save() -> void:
 func _load() -> void:
 	var data := _load_all()
 	# JSON semi-válido: {"humenex": 3} o sin 'rows' crasheaba al abrir
-	if not (data.get(faction.id) is Dictionary): return
-	if not (data[faction.id].get("rows") is Array): return
+	if not (data.get(faction.id) is Dictionary) \
+			or not (data[faction.id].get("rows") is Array):
+		# sin datos guardados: feedback en vez de botón muerto
+		cost_lbl.text = Lang.t("AB_LOAD_NONE")
+		return
 	_push_undo()
 	grid.clear()
 	var rows: Array = data[faction.id].rows

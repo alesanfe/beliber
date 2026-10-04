@@ -26,6 +26,7 @@ static func build(app) -> void:
 	app.eval_bar = EvalBar.new()
 	app.eval_bar.col0 = tm.state.factions[0].color
 	app.eval_bar.col1 = tm.state.factions[1].color
+	app.eval_bar.tooltip_text = Lang.t("HUD_EVAL_TIP")
 	board_row.add_child(app.eval_bar)
 	center.add_child(board_row)
 	app.board = BoardView.new(tm)
@@ -85,16 +86,19 @@ static func build(app) -> void:
 	app.hud_rival = Label.new()
 	app.hud_rival.add_theme_font_size_override("font_size", 18)
 	rc.add_child(app.hud_rival)
-	# checklist del tutorial (walkthrough estilo Root)
+	# checklist del tutorial (walkthrough estilo Root): en tarjeta
+	# propia para separarlo visualmente del bloque de pestañas
 	if app.tutorial:
+		var tut_card := PanelContainer.new()
+		side.add_child(tut_card)
 		app.tut_box = VBoxContainer.new()
+		tut_card.add_child(app.tut_box)
 		app.tut_box.add_child(Widgets.lbl(Lang.t("TUT_GOALS")))
 		for s in app.tut_steps:
 			var l := Widgets.lbl("• " + s.t)
 			l.autowrap_mode = TextServer.AUTOWRAP_WORD
 			l.add_theme_font_size_override("font_size", 13)
 			app.tut_box.add_child(l)
-		side.add_child(app.tut_box)
 	# pestanas: Partida / Opciones / Chat (panel estilo lichess)
 	var tabs := TabContainer.new()
 	tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -106,7 +110,7 @@ static func build(app) -> void:
 	tab_opts.name = Lang.t("TAB_OPTIONS")
 	tabs.add_child(tab_opts)
 	var tab_chat := VBoxContainer.new()
-	tab_chat.name = "Chat"
+	tab_chat.name = Lang.t("TAB_CHAT")
 	tabs.add_child(tab_chat)
 	var tg := tab_game
 	var opts := tab_opts
@@ -119,6 +123,7 @@ static func build(app) -> void:
 	tg.add_child(app.hud_clock)
 	app.hud_eval = Label.new()
 	app.hud_eval.add_theme_font_size_override("font_size", 16)
+	app.hud_eval.tooltip_text = Lang.t("HUD_EVAL_TIP")
 	tg.add_child(app.hud_eval)
 	app.hud_opening = Label.new()
 	app.hud_opening.add_theme_font_size_override("font_size", 13)
@@ -128,6 +133,11 @@ static func build(app) -> void:
 	app.hud_info = Label.new()
 	app.hud_info.autowrap_mode = TextServer.AUTOWRAP_WORD
 	tg.add_child(app.hud_info)
+	# las marcas/flechas de análisis (clic/arrastre derecho) eran un
+	# gesto indescubrible — una línea dim lo hace explícito
+	var marks_hint := Widgets.lbl(Lang.t("HUD_MARKS_HINT"), 0, true)
+	marks_hint.autowrap_mode = TextServer.AUTOWRAP_WORD
+	tg.add_child(marks_hint)
 	# bandejas de capturadas — sección colapsable (clic en el toggle
 	# oculta/muestra; estilo panel lichess)
 	var cap_t := CheckButton.new()
@@ -169,12 +179,13 @@ static func build(app) -> void:
 	app.hud_log = Label.new()
 	app.hud_log.autowrap_mode = TextServer.AUTOWRAP_WORD
 	tab_chat.add_child(app.hud_log)
+	# ===== Partida =====
+	_opts_sec(opts, "TAB_GAME")
 	app.btn_cov = CheckButton.new()
 	# también marca destinos MOVER — es influencia, no solo amenaza
 	app.btn_cov.text = Lang.t("HUD_INFLUENCE")
 	app.btn_cov.toggled.connect(func(on):
 		app.board.show_coverage = on; app.board.queue_redraw())
-	opts.add_child(app.btn_cov)
 	var btn_row := HBoxContainer.new()
 	opts.add_child(btn_row)
 	var b_undo := Button.new()
@@ -211,35 +222,18 @@ static func build(app) -> void:
 			if app.tm == null or app.tm.over: return
 			var me: int = app.tm.current if not app.online else app.my_net
 			app._do_resign(me))
+		# también al confirmar: quedaba oculto colgado de app
+		dlg.confirmed.connect(dlg.queue_free)
 		dlg.canceled.connect(dlg.queue_free)
 		dlg.popup_centered())
 	btn_row.add_child(b_resign)
-	var b_export := Button.new()
-	b_export.text = Lang.t("HUD_EXPORT")
-	b_export.pressed.connect(func():
-		var p: String = app.tm.export_log(app.EXPORT_PATH)
-		app.hud_alert(Lang.t("HUD_EXPORTED") + p if p != "" \
-			else Lang.t("HUD_EXPORT_ERR")))
-	btn_row.add_child(b_export)
-	var btn_row2 := HBoxContainer.new()
-	opts.add_child(btn_row2)
-	var b_flip := Button.new()
-	b_flip.text = Lang.t("HUD_FLIP")
-	b_flip.pressed.connect(func():
-		app.board.flipped = not app.board.flipped
-		app.board.queue_redraw())
-	btn_row2.add_child(b_flip)
-	var b_hint := Button.new()
-	b_hint.text = Lang.t("HUD_HINT")
-	b_hint.pressed.connect(app._suggest)
-	btn_row2.add_child(b_hint)
 	var b_draw := Button.new()
 	b_draw.text = Lang.t("HUD_DRAW_OFFER") if app.online \
 		else Lang.t("HUD_DRAW")
 	# online ahora es oferta→aceptar/rechazar real, no tablas
 	# unilaterales: el rival decide con un diálogo
 	b_draw.pressed.connect(app._offer_draw)
-	btn_row2.add_child(b_draw)
+	btn_row.add_child(b_draw)
 	var b_save := Button.new()
 	b_save.text = Lang.t("HUD_SAVE")
 	b_save.pressed.connect(func():
@@ -251,16 +245,54 @@ static func build(app) -> void:
 		StatsStore.atomic_write(app.SAVE_PATH,
 			JSON.stringify(app.tm.save_game()))
 		app.hud_alert(Lang.t("HUD_SAVED")))
-	btn_row2.add_child(b_save)
-	var btn_row3 := HBoxContainer.new()
-	opts.add_child(btn_row3)
+	btn_row.add_child(b_save)
+	var btn := Button.new()
+	btn.text = Lang.t("HUD_NEW_GAME")
+	btn.pressed.connect(app._restart)
+	opts.add_child(btn)
+
+	# ===== Tablero =====
+	_opts_sec(opts, "OPT_SEC_BOARD")
+	var btn_row2 := HBoxContainer.new()
+	opts.add_child(btn_row2)
+	var b_flip := Button.new()
+	b_flip.text = Lang.t("HUD_FLIP")
+	b_flip.pressed.connect(func():
+		app.board.flipped = not app.board.flipped
+		app.board.queue_redraw())
+	btn_row2.add_child(b_flip)
 	var b_theme := Button.new()
 	b_theme.text = Lang.t("HUD_THEME")
 	b_theme.pressed.connect(func():
 		app.board.theme_i = (app.board.theme_i + 1) \
 			% BoardView.THEMES.size()
 		app.board.queue_redraw(); app._save_settings())
-	btn_row3.add_child(b_theme)
+	btn_row2.add_child(b_theme)
+	btn_row2.add_child(app.btn_cov)
+	var btn_row3 := HBoxContainer.new()
+	opts.add_child(btn_row3)
+	var b_thr := CheckButton.new()
+	b_thr.text = Lang.t("HUD_THREATS")
+	b_thr.toggled.connect(func(on):
+		app.board.show_threats = on; app.board.queue_redraw()
+		app._save_settings())
+	btn_row3.add_child(b_thr)
+	var b_coords := CheckButton.new()
+	b_coords.text = Lang.t("HUD_COORDS")
+	b_coords.button_pressed = true
+	b_coords.toggled.connect(func(on):
+		app.board.show_coords = on; app.board.queue_redraw()
+		app._save_settings())
+	btn_row3.add_child(b_coords)
+	var b_blind := CheckButton.new()
+	b_blind.text = Lang.t("HUD_BLIND")
+	b_blind.tooltip_text = Lang.t("HUD_BLIND_TIP")
+	b_blind.toggled.connect(func(on):
+		app.board.blindfold = on; app.board.queue_redraw()
+		app._save_settings())
+	btn_row3.add_child(b_blind)
+	var btn_row4 := HBoxContainer.new()
+	opts.add_child(btn_row4)
 	var b_prev := Button.new()
 	b_prev.text = "◀"
 	b_prev.pressed.connect(func():
@@ -269,7 +301,7 @@ static func build(app) -> void:
 		else:
 			app.board.view_i = maxi(0, app.board.view_i - 1)
 		app.board.queue_redraw())
-	btn_row3.add_child(b_prev)
+	btn_row4.add_child(b_prev)
 	var b_next := Button.new()
 	b_next.text = "▶"
 	b_next.pressed.connect(func():
@@ -277,22 +309,16 @@ static func build(app) -> void:
 		app.board.view_i += 1
 		if app.board.view_i >= app.tm.replay_len(): app.board.view_i = -1
 		app.board.queue_redraw())
-	btn_row3.add_child(b_next)
+	btn_row4.add_child(b_next)
 	var b_live := Button.new()
 	b_live.text = Lang.t("HUD_LIVE")
 	b_live.pressed.connect(func():
 		app.board.view_i = -1; app.board.queue_redraw())
-	btn_row3.add_child(b_live)
-	# amenazas + zoom + velocidad de animación
-	var btn_row4 := HBoxContainer.new()
-	opts.add_child(btn_row4)
-	var b_thr := CheckButton.new()
-	b_thr.text = Lang.t("HUD_THREATS")
-	b_thr.toggled.connect(func(on):
-		app.board.show_threats = on; app.board.queue_redraw()
-		app._save_settings())
-	btn_row4.add_child(b_thr)
-	btn_row4.add_child(Widgets.lbl("Zoom"))
+	btn_row4.add_child(b_live)
+	# zoom + velocidad de animación
+	var btn_row5 := HBoxContainer.new()
+	opts.add_child(btn_row5)
+	btn_row5.add_child(Widgets.lbl("Zoom"))
 	var zoom := HSlider.new()
 	zoom.min_value = 0.7; zoom.max_value = 1.4
 	zoom.step = 0.05
@@ -306,7 +332,7 @@ static func build(app) -> void:
 		app.zoom_v = v
 		app._apply_zoom()
 		app._save_settings())
-	btn_row4.add_child(zoom)
+	btn_row5.add_child(zoom)
 	var opt_anim := OptionButton.new()
 	for t in [Lang.t("ANIM_SLOW"), Lang.t("ANIM_NORMAL"),
 			Lang.t("ANIM_FAST"), Lang.t("ANIM_OFF")]:
@@ -322,12 +348,16 @@ static func build(app) -> void:
 	opt_anim.item_selected.connect(func(i):
 		app.board.anim_dur = [0.35, 0.18, 0.08, 0.001][i]
 		app._save_settings())
-	btn_row4.add_child(opt_anim)
+	btn_row5.add_child(opt_anim)
+
+	# ===== Jugada =====
+	_opts_sec(opts, "OPT_SEC_MOVE")
 	# entrada por teclado: "e2e4" o "e2 e4"
 	var key_row := HBoxContainer.new()
 	opts.add_child(key_row)
 	var inp := LineEdit.new()
 	inp.placeholder_text = "e2e4"
+	inp.tooltip_text = Lang.t("HUD_MOVE_TIP")
 	inp.custom_minimum_size = Vector2(80, 0)
 	key_row.add_child(inp)
 	var b_go := Button.new()
@@ -358,36 +388,28 @@ static func build(app) -> void:
 	b_go.pressed.connect(do_key_move)
 	inp.text_submitted.connect(func(_t): do_key_move.call())
 	key_row.add_child(b_go)
-	# toggles: ciego, coordenadas, confirmación, mute, PNG
-	var btn_row5 := HBoxContainer.new()
-	opts.add_child(btn_row5)
-	var b_blind := CheckButton.new()
-	b_blind.text = Lang.t("HUD_BLIND")
-	b_blind.tooltip_text = Lang.t("HUD_BLIND_TIP")
-	b_blind.toggled.connect(func(on):
-		app.board.blindfold = on; app.board.queue_redraw()
-		app._save_settings())
-	btn_row5.add_child(b_blind)
-	var b_coords := CheckButton.new()
-	b_coords.text = "Coords"
-	b_coords.button_pressed = true
-	b_coords.toggled.connect(func(on):
-		app.board.show_coords = on; app.board.queue_redraw()
-		app._save_settings())
-	btn_row5.add_child(b_coords)
+	var b_hint := Button.new()
+	b_hint.text = Lang.t("HUD_HINT")
+	b_hint.pressed.connect(app._suggest)
+	key_row.add_child(b_hint)
+	var btn_row6 := HBoxContainer.new()
+	opts.add_child(btn_row6)
 	var b_conf := CheckButton.new()
 	b_conf.text = Lang.t("HUD_CONFIRM")
 	b_conf.tooltip_text = Lang.t("HUD_CONFIRM_TIP")
 	b_conf.toggled.connect(func(on):
 		app.board.confirm_moves = on; app._save_settings())
-	btn_row5.add_child(b_conf)
-	var btn_row6 := HBoxContainer.new()
-	opts.add_child(btn_row6)
+	btn_row6.add_child(b_conf)
+
+	# ===== Accesibilidad =====
+	_opts_sec(opts, "OPT_SEC_A11Y")
+	var btn_row7 := HBoxContainer.new()
+	opts.add_child(btn_row7)
 	var b_mute := CheckButton.new()
 	b_mute.text = Lang.t("HUD_MUTE")
 	b_mute.toggled.connect(func(on):
 		app.muted = on; app._save_settings())
-	btn_row6.add_child(b_mute)
+	btn_row7.add_child(b_mute)
 	# reduce motion (WCAG 2.3.3): pop_in, hover, toasts y confetti
 	# se vuelven instantáneos
 	var b_rm := CheckButton.new()
@@ -396,9 +418,9 @@ static func build(app) -> void:
 	b_rm.button_pressed = Juice.reduce
 	b_rm.toggled.connect(func(on):
 		Juice.reduce = on; app._save_settings())
-	btn_row6.add_child(b_rm)
-	var btn_row7 := HBoxContainer.new()
-	opts.add_child(btn_row7)
+	btn_row7.add_child(b_rm)
+	var btn_row8 := HBoxContainer.new()
+	opts.add_child(btn_row8)
 	# lector de pantalla (TTS del SO): anuncia pantallas, toasts,
 	# confirmaciones y turnos — independiente del mute de SFX
 	var b_tts := CheckButton.new()
@@ -408,15 +430,27 @@ static func build(app) -> void:
 	b_tts.toggled.connect(func(on):
 		Tts.enabled = on; app._save_settings()
 		if on: Tts.say(Lang.t("HUD_TTS_ON")))
-	btn_row7.add_child(b_tts)
+	btn_row8.add_child(b_tts)
 	app._opt_toggles = {
 		"blind": b_blind, "coords": b_coords,
 		"conf": b_conf, "mute": b_mute, "reduce": b_rm, "tts": b_tts}
+
+	# ===== Exportar =====
+	_opts_sec(opts, "OPT_SEC_DATA")
+	var btn_row9 := HBoxContainer.new()
+	opts.add_child(btn_row9)
+	var b_export := Button.new()
+	b_export.text = Lang.t("HUD_EXPORT")
+	b_export.pressed.connect(func():
+		var p: String = app.tm.export_log(app.EXPORT_PATH)
+		app.hud_alert(Lang.t("HUD_EXPORTED") + p if p != "" \
+			else Lang.t("HUD_EXPORT_ERR")))
+	btn_row9.add_child(b_export)
 	var b_png := Button.new()
 	b_png.text = "PNG"
 	b_png.tooltip_text = Lang.t("HUD_PNG_TIP")
 	b_png.pressed.connect(app._export_png)
-	btn_row6.add_child(b_png)
+	btn_row9.add_child(b_png)
 	var b_bel := Button.new()
 	b_bel.text = "BEL-FEN"
 	b_bel.tooltip_text = Lang.t("HUD_BEL_TIP")
@@ -428,21 +462,12 @@ static func build(app) -> void:
 			app.tm.current)
 		DisplayServer.clipboard_set(s)
 		app.hud_alert(Lang.t("HUD_BEL_COPIED") + s.left(48) + "…"))
-	btn_row6.add_child(b_bel)
-	var b_bel2 := Button.new()
-	b_bel2.text = "Zen"
-	b_bel2.tooltip_text = Lang.t("HUD_ZEN_TIP")
-	b_bel2.pressed.connect(func(): app._toggle_zen())
-	btn_row6.add_child(b_bel2)
-	var btn := Button.new()
-	btn.text = Lang.t("HUD_NEW_GAME")
-	btn.pressed.connect(app._restart)
-	opts.add_child(btn)
+	btn_row9.add_child(b_bel)
 	# botón Zen SIEMPRE visible: fuera de lo que se oculta, si no no
 	# se podía salir del modo concentración (el propio botón se ocultaba)
 	var zen_btn := Button.new()
 	zen_btn.name = "ZenToggle"
-	zen_btn.text = "Zen"
+	zen_btn.text = Lang.t("HUD_ZEN")
 	zen_btn.custom_minimum_size = Vector2(0, 32)
 	zen_btn.pressed.connect(func(): app._toggle_zen())
 	side.add_child(zen_btn)
@@ -460,11 +485,17 @@ static func build(app) -> void:
 			chat.text = "")
 		tab_chat.add_child(chat)
 	else:
-		# local/hotseat: sin input, pero un aviso explica por qué la
-		# pestaña queda vacía (en vez de un panel en blanco)
-		var hint := Widgets.lbl(Lang.t("CHAT_OFFLINE"), 13, true)
-		hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		tab_chat.add_child(hint)
+		# local/hotseat: sin input — el aviso va centrado como estado
+		# vacío intencional, no una etiqueta suelta arriba
+		var chat_cc := CenterContainer.new()
+		chat_cc.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		tab_chat.add_child(chat_cc)
+		var hint := Widgets.lbl(Lang.t("CHAT_OFFLINE"), 13, true, true)
+		# CenterContainer usa el min-size del hijo: sin ancho el wrap
+		# cortaba palabra a palabra en una columna ilegible
+		hint.custom_minimum_size = Vector2(240, 0)
+		hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		chat_cc.add_child(hint)
 
 	app._wire_tm()
 	app._apply_settings()
@@ -539,10 +570,12 @@ static func update(app) -> void:
 	# nombre de apertura (primeras jugadas, estilo lichess)
 	app.hud_opening.text = "" if tm.log.size() > 10 \
 		else PostGame.opening_name(tm)
-	# barra de evaluación (motor propio, vista de J1)
+	# barra de evaluación (motor propio): el signo no decía a quién
+	# favorecía — ahora el texto nombra el jugador que va por delante
 	var ev := BeliberBot.evaluate(tm.state, 0)
-	app.hud_eval.text = "Eval: %s  (J1 %+d)" % [
-		"+" if ev > 0 else ("-" if ev < 0 else "="), ev]
+	app.hud_eval.text = Lang.t("HUD_EVAL_TIE") if ev == 0 \
+		else Lang.t("HUD_EVAL_LEAD") % [
+			"J1" if ev > 0 else "J2", absi(int(ev))]
 	app.eval_bar.frac = clampf(0.5 + ev / 400.0, 0.0, 1.0)
 	app.eval_bar.queue_redraw()
 	# lista de jugadas clickeable (solo reconstruir si cambia)
@@ -571,3 +604,11 @@ static func update(app) -> void:
 				app.board.view_i = idx + 1   # snapshot tras la jugada idx
 				app.board.queue_redraw())
 			app.move_list.add_child(b)
+
+## Cabecera de sección de la pestaña Opciones: texto dim pequeño +
+## separador — la lista plana de ~20 controles no tenía jerarquía.
+static func _opts_sec(opts: Control, key: String) -> void:
+	var l := Widgets.lbl(Lang.t(key), 12, true)
+	l.add_theme_color_override("font_color", Color(0.55, 0.62, 0.78))
+	opts.add_child(l)
+	opts.add_child(HSeparator.new())

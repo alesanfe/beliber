@@ -1,4 +1,4 @@
-keys,es,en
+﻿keys,es,en
 MENU_SUBTITLE,Ajedrez asimétrico por facciones,Asymmetric faction chess
 MENU_PLAY,Jugar,Play
 MENU_PLAY_TIP,Partida local con la configuración elegida,Local game with the chosen settings
@@ -58,7 +58,7 @@ MENU_VALUE,"Valor: %d
 %s","Value: %d
 %s"
 STATS_GAMES,Partidas: %d,Games: %d
-STATS_WINS,%s: %dV,%s: %dW
+STATS_WINS,%s: %d victorias,%s: %d wins
 STATS_LV,%s nv%d,%s lv%d
 STATS_MASTERY,Dominio: ,Mastery:
 STATS_ACH,Logros: ,Achievements:
@@ -187,7 +187,7 @@ ONLINE_LADDER_VIEW,Ver clasificación,View ladder
 ONLINE_LADDER_TIP,Clasificación ELO del servidor,Server ELO ladder
 ONLINE_CONN_FAIL,No se pudo conectar,Could not connect
 PROF_GENERAL,General,General
-PROF_GAMES,Partidas: %d   ·   %dV %dE %dD   ·   %d%% de victorias,Games: %d   ·   %dW %dD %dL   ·   %d%% win rate
+PROF_GAMES,"Partidas: %d · %d ganadas, %d empatadas, %d perdidas · %d%% de victorias","Games: %d · %d won, %d drawn, %d lost · %d%% win rate"
 PROF_BY_FACTION,Por facción,By faction
 PROF_FAC_LINE,"  %s  nv%d  —  %d partidas, %d%% victorias","  %s  lv%d  —  %d games, %d%% wins"
 PROF_FAV,  Favorita: %s,  Favorite: %s
@@ -280,7 +280,7 @@ PE_SYM_ALL_SHORT,simétrico,symmetric
 PE_DEPLOY_FOOT,fila inferior = fila trasera del jugador,bottom row = player's back rank
 AB_ZONE,zona de despliegue (filas propias),deploy zone (your ranks)
 AB_TITLE,Constructor de ejército,Army builder
-AB_PIECES_LBL,"Piezas (clic izq coloca, der borra)","Pieces (left click places, right erases)"
+AB_PIECES_LBL,"Piezas (clic izq coloca, der borra, Ctrl+Z deshacer)","Pieces (left click places, right erases, Ctrl+Z undo)"
 AB_BUDGET,Presupuesto de puntos,Points budget
 AB_COPY,Copiar setup oficial,Copy official setup
 AB_CLEAR,Vaciar,Clear
@@ -303,7 +303,7 @@ AB_IDENTICAL,Idéntico al oficial,Identical to official
 AB_NEED_LEADER,¡Necesitas al menos 1 líder!,You need at least 1 leader!
 AB_OVER_BUDGET,¡Sobre el presupuesto!,Over budget!
 AB_SAVED,Guardado. Disponible como '%s' al elegir equipo.,Saved. Available as '%s' when picking an army.
-POSE_HINT,Clic izq: colocar · Clic der: borrar,Left click: place · Right click: erase
+POSE_HINT,"Clic izq: colocar · Clic der: borrar · Ctrl+Z deshacer","Left click: place · Right click: erase · Ctrl+Z undo"
 POSE_PLAYER,J%d — %s,P%d — %s
 POSE_FIRST,Mueve primero:,Moves first:
 POSE_P1,Jugador 1,Player 1
@@ -470,3 +470,36 @@ KB_CELL_PIECE,%s: %s %s,%s: %s %s
 KB_CELL_LEGAL,Movimiento legal,Legal move
 HUD_MV_TO,a,to
 HUD_MV_CAPTURE,captura,capture
+MENU_ONLINE,Online,Online
+MENU_TUTORIAL,Tutorial,Tutorial
+MENU_DRAFT,Draft,Draft
+MENU_PUZZLES,Puzzles,Puzzles
+BEL_ERR_FORMAT,"formato: BEL1 <f0>.<eq0> <f1>.<eq1> <filas> <turno>","format: BEL1 <f0>.<eq0> <f1>.<eq1> <rows> <turn>"
+BEL_ERR_FACS,facciones malformadas: se esperaba <f>.<eq>,malformed factions: expected <f>.<eq>
+BEL_ERR_NONNUM,"facción/equipo no numérico: '%s'","non-numeric faction/setup: '%s'"
+BEL_ERR_ROW,fila %d desborda el tablero (%d celdas),row %d overflows the board (%d cells)
+BEL_ERR_ROWS,"se esperaban 8 filas, hay %d","expected 8 rows, got %d"
+BEL_ERR_TURN,"turno inválido: '%s'","invalid turn: '%s'"
+POSE_COPIED,✓ BEL-FEN copiado al portapapeles,✓ BEL-FEN copied to clipboard
+PE_TPL_OVERWRITE_TITLE,Sustituir el lienzo,Replace the canvas
+PE_TPL_OVERWRITE,La plantilla reemplaza lo pintado,The template replaces what's painted
+PE_TPL_APPLY,Aplicar plantilla,Apply template
+LOAD_CORRUPT,"⚠ El guardado está dañado o no se pudo cargar","⚠ The save file is corrupt or could not be loaded"
+AB_LOAD_NONE,No hay despliegue guardado para esta facción,No saved deployment for this faction
+HUD_MARKS_HINT,"clic der/arrastre: marcas y flechas","right click/drag: marks and arrows"
+PE_UNSAVED,"⚠ Cambios sin guardar en el lienzo","⚠ Unsaved changes in the canvas"
+PE_UNSAVED_T,Cambios sin guardar,Unsaved changes
+PE_DISCARD,Descartar cambios,Discard changes
+TAB_CHAT,Chat,Chat
+HUD_COORDS,Coords,Coords
+HUD_ZEN,Zen,Zen
+AB_MET_YOURS,Tu ejército,Your army
+AB_MET_OFFICIAL,Despliegue oficial,Official deployment
+OPT_SEC_BOARD,Tablero,Board
+OPT_SEC_MOVE,Jugada,Move
+OPT_SEC_A11Y,Accesibilidad,Accessibility
+OPT_SEC_DATA,Exportar,Export
+HUD_MOVE_TIP,"Escribe la jugada en coordenadas (e2e4 o e2 e4); fuera de turno vale como premove","Type the move in coordinates (e2e4 or e2 e4); off-turn it works as a premove"
+HUD_EVAL_TIE,Eval: equilibrio,Eval: even
+HUD_EVAL_LEAD,"Eval: %s +%d","Eval: %s +%d"
+HUD_EVAL_TIP,"Ventaja aproximada estimada por el motor en puntos de material; el jugador indicado va por delante","Approximate engine-estimated advantage in material points; the named player is ahead"

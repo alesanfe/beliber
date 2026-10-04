@@ -179,10 +179,10 @@ func _ready() -> void:
 	opt_f = OptionButton.new()
 	for i in factions.size():
 		opt_f.add_item(PiecesData.fac_name(factions[i]))
-	opt_f.item_selected.connect(func(_i): _reload_pieces())
+	opt_f.item_selected.connect(func(_i): _guard_dirty(_reload_pieces))
 	left.add_child(opt_f)
 	opt_p = OptionButton.new()
-	opt_p.item_selected.connect(func(_i): _load_piece())
+	opt_p.item_selected.connect(func(_i): _guard_dirty(_load_piece))
 	left.add_child(opt_p)
 
 	left.add_child(_lbl(Lang.t("PE_EFFECT_LBL")))
@@ -206,8 +206,16 @@ func _ready() -> void:
 		b.custom_minimum_size = Vector2(0, 26)
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var sb := StyleBoxFlat.new()
-		sb.bg_color = PiecesData.code_color(code)
+		var bg := PiecesData.code_color(code)
+		sb.bg_color = bg
 		b.add_theme_stylebox_override("normal", sb)
+		# contraste: filas claras (al paso, despliegue) pedían texto
+		# oscuro — el color por defecto del tema era ilegible encima
+		var lum := 0.2126 * bg.r + 0.7152 * bg.g + 0.0722 * bg.b
+		var fg := Color(0.08, 0.08, 0.1) if lum > 0.45 else Color.WHITE
+		b.add_theme_color_override("font_color", fg)
+		b.add_theme_color_override("font_hover_color", fg)
+		b.add_theme_color_override("font_pressed_color", fg)
 		b.pressed.connect(func(): paint = code)
 		pal.add_child(b)
 
@@ -220,7 +228,8 @@ func _ready() -> void:
 			"teleport"]:
 		var tb := Button.new()
 		tb.text = Lang.t("TPL_" + tn.to_upper())
-		tb.custom_minimum_size = Vector2(0, 26)
+		tb.custom_minimum_size = Vector2(0, 44)
+		tb.tooltip_text = Lang.t("PE_TPL_OVERWRITE")
 		var tname: String = tn
 		tb.pressed.connect(func(): _template(tname))
 		tpl.add_child(tb)
@@ -320,14 +329,12 @@ func _ready() -> void:
 			Lang.t("PE_RESET_C"), Lang.t("PE_RESET"), _reset))
 	right.add_child(b_reset)
 	var b_wipe := Widgets.danger(Lang.t("PE_WIPE_BTN"))
+	# Widgets.confirm: botón con nombre de acción + TTS + libera el
+	# diálogo — el diálogo ad-hoc no hacía ninguna de las tres cosas
 	b_wipe.pressed.connect(func():
-		var dlg := ConfirmationDialog.new()
-		dlg.title = Lang.t("PE_WIPE_TITLE")
-		dlg.dialog_text = Lang.t("PE_WIPE_CONFIRM")
-		add_child(dlg)
-		dlg.confirmed.connect(_wipe_all)
-		dlg.canceled.connect(dlg.queue_free)
-		dlg.popup_centered())
+		Widgets.confirm(self, Lang.t("PE_WIPE_TITLE"),
+			Lang.t("PE_WIPE_CONFIRM"), Lang.t("PE_WIPE_BTN"),
+			_wipe_all))
 	right.add_child(b_wipe)
 	right.add_child(HSeparator.new())
 	status_lbl = Label.new()
@@ -422,6 +429,22 @@ func _reset_deploy() -> void:
 	_load_deploy()
 	status_lbl.text = Lang.t("PE_DEPLOY_RESTORED")
 
+## El lienzo difiere de la definición cargada: cambiar de pieza o
+## facción lo descartaba en silencio — ahora pide confirmación.
+func _is_dirty() -> bool:
+	if piece_def.is_empty(): return false
+	return cells != piece_def.cells \
+		or leg2_cells != piece_def.get("leg2", {}) \
+		or name_edit.text != piece_def.name \
+		or int(value_spin.value) != int(piece_def.get("value", 0))
+
+func _guard_dirty(action: Callable) -> void:
+	if _is_dirty():
+		Widgets.confirm(self, Lang.t("PE_UNSAVED_T"),
+			Lang.t("PE_UNSAVED"), Lang.t("PE_DISCARD"), action)
+	else:
+		action.call()
+
 func _load_piece() -> void:
 	var letters: Array = faction.pieces.keys()
 	if opt_p.selected < 0 or opt_p.selected >= letters.size(): return
@@ -442,16 +465,31 @@ func _load_piece() -> void:
 ## lo pintado). 'j' salta obstáculos; 'o' mueve y captura; 'c' solo
 ## captura; 'm' solo mueve.
 func _template(tname: String) -> void:
+	# aplicar una plantilla borra el lienzo — solo pide confirmación
+	# si el usuario pintó algo encima de la definición cargada
+	if cells != piece_def.cells:
+		Widgets.confirm(self, Lang.t("PE_TPL_OVERWRITE_TITLE"),
+			Lang.t("PE_TPL_OVERWRITE") + " «" +
+			Lang.t("TPL_" + tname.to_upper()) + "»",
+			Lang.t("PE_TPL_APPLY"), func(): _apply_template(tname))
+		return
+	_apply_template(tname)
+
+
+func _apply_template(tname: String) -> void:
 	cells.clear()
 	var put := func(dx: int, dy: int, code: String) -> void:
 		cells["%d,%d" % [dx, dy]] = code
+	# los botones pasan la clave inglesa (knight/archer/…), no el
+	# nombre traducido — antes el match nunca entraba y el canvas
+	# se vaciaba con un falso "Plantilla aplicada"
 	match tname:
-		"Caballero":
+		"knight":
 			for d in [Vector2i(1,2),Vector2i(2,1),Vector2i(-1,2),
 					Vector2i(-2,1),Vector2i(1,-2),Vector2i(2,-1),
 					Vector2i(-1,-2),Vector2i(-2,-1)]:
 				put.call(d.x, d.y, "J")
-		"Arquero":
+		"archer":
 			# mueve 1 ortogonal, dispara (captura) a distancia 2
 			for d in [Vector2i(1,0),Vector2i(-1,0),Vector2i(0,1),
 					Vector2i(0,-1)]:
@@ -460,24 +498,24 @@ func _template(tname: String) -> void:
 				for dy in [-2,-1,0,1,2]:
 					if maxi(absi(dx), absi(dy)) == 2:
 						put.call(dx, dy, "c")
-		"Torre":
+		"rook":
 			for n in range(1, 8):
 				for d in [Vector2i(n,0),Vector2i(-n,0),
 						Vector2i(0,n),Vector2i(0,-n)]:
 					put.call(d.x, d.y, "o")
-		"Alfil":
+		"bishop":
 			for n in range(1, 8):
 				for d in [Vector2i(n,n),Vector2i(-n,n),
 						Vector2i(n,-n),Vector2i(-n,-n)]:
 					put.call(d.x, d.y, "o")
-		"Salto":
+		"leap":
 			for d in [Vector2i(1,2),Vector2i(2,1),Vector2i(-1,2),
 					Vector2i(-2,1),Vector2i(1,-2),Vector2i(2,-1),
 					Vector2i(-1,-2),Vector2i(-2,-1),
 					Vector2i(2,0),Vector2i(-2,0),
 					Vector2i(0,2),Vector2i(0,-2)]:
 				put.call(d.x, d.y, "j")
-		"Teleport":
+		"teleport":
 			for dx in range(-3, 4):
 				for dy in range(-3, 4):
 					if dx == 0 and dy == 0: continue
@@ -485,7 +523,7 @@ func _template(tname: String) -> void:
 	_refresh_preview()
 	canvas.queue_redraw()
 	status_lbl.text = Lang.t("PE_TPL_APPLIED") \
-		% tname
+		% Lang.t("TPL_" + tname.to_upper())
 
 func on_cell(cell: Vector2i, button: int) -> void:
 	if placing_piece:
