@@ -241,6 +241,9 @@ func _ready() -> void:
 	var cv := VBoxContainer.new()
 	center.add_child(cv)
 	move_box = VBoxContainer.new()
+	# respiro entre la cabecera "PIEZA (…)" y la cuadrícula — quedaba
+	# pegada al borde superior del lienzo
+	move_box.add_theme_constant_override("separation", 8)
 	cv.add_child(move_box)
 	canvas_lbl = Label.new()
 	canvas_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

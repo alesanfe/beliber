@@ -121,11 +121,22 @@ func _ready() -> void:
 
 	var center := CenterContainer.new()
 	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	center.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(center)
 	var cv := VBoxContainer.new()
 	center.add_child(cv)
 	canvas = ABCanvas.new(self)
 	cv.add_child(canvas)
+	# el lienzo base es 448×280 — en ventanas grandes quedaba un
+	# tercio de pantalla vacío; escalar el Control para llenar el
+	# hueco disponible (sin pasar de ~1.7× o pixela mucho)
+	center.resized.connect(func():
+		var s: float = clampf(minf(
+			center.size.x / (CELL * 8.0),
+			center.size.y / (CELL * ROWS + 8.0)), 1.0, 1.7)
+		canvas.scale = Vector2(s, s)
+		canvas.custom_minimum_size = \
+			Vector2(CELL * 8, CELL * ROWS) * s)
 
 	var right := VBoxContainer.new()
 	right.custom_minimum_size = Vector2(240, 0)

@@ -21,6 +21,7 @@ var info: Label
 var pool: GridContainer
 var cost_lbl: Label
 var picks_lbl: Array = []       # resumen de picks por jugador
+var pick_chips: Array = []      # fichas coloreadas por pick
 
 func _init(p_factions: Array, p_f0 := 0, p_f1 := 1) -> void:
 	factions = p_factions
@@ -50,15 +51,21 @@ func _ready() -> void:
 	col.add_child(info)
 	cost_lbl = Label.new()
 	col.add_child(cost_lbl)
-	# resumen de lo ya elegido por cada uno (antes solo se veía el
-	# contador del turno actual — sin contexto del rival)
+	# resumen de lo ya elegido por cada uno: etiqueta de puntos +
+	# fila de fichas coloreadas con las letras (antes "Y C" en texto
+	# plano — no se veía a qué facción pertenecía cada pick)
 	for pl in [0, 1]:
+		var pbox := VBoxContainer.new()
+		col.add_child(pbox)
 		var pl_lbl := Label.new()
 		pl_lbl.add_theme_font_size_override("font_size", 13)
 		pl_lbl.add_theme_color_override("font_color",
 			factions[fi[pl]].color)
-		col.add_child(pl_lbl)
+		pbox.add_child(pl_lbl)
 		picks_lbl.append(pl_lbl)
+		var chips := HFlowContainer.new()
+		pbox.add_child(chips)
+		pick_chips.append(chips)
 	pool = GridContainer.new()
 	pool.columns = 3
 	col.add_child(pool)
@@ -90,9 +97,19 @@ func _refresh() -> void:
 		var pj: Array = picked[pl]
 		picks_lbl[pl].text = Lang.t("DRAFT_PICKS") % [
 			pl + 1, PiecesData.fac_name(factions[fi[pl]]),
-			" ".join(pj) if not pj.is_empty() else "—",
 			spent[pl], budget[pl],
 			Lang.t("DRAFT_PASSED") if passed[pl] else ""]
+		var chips: HFlowContainer = pick_chips[pl]
+		for c in chips.get_children(): c.queue_free()
+		var fc: Color = factions[fi[pl]].color
+		for l in pj:
+			var chip := PanelContainer.new()
+			var cl := Label.new()
+			cl.text = l
+			cl.add_theme_font_size_override("font_size", 13)
+			cl.add_theme_color_override("font_color", fc)
+			chip.add_child(cl)
+			chips.add_child(chip)
 	for c in pool.get_children(): c.queue_free()
 	for letter in f.pieces:
 		var p: Dictionary = f.pieces[letter]

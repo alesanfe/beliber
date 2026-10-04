@@ -335,16 +335,21 @@ static func build(app) -> void:
 			lvls.append(Lang.t("STATS_LV") % [PiecesData.fac_name_id(fid),
 				app._faction_level(fid)])
 		parts.append(Lang.t("STATS_MASTERY") + " · ".join(lvls))
-	if app.stats.ach.size() > 0:
-		var names := []
-		for a in app.stats.ach:
-			names.append(StatsStore.ach_name(a))
-		parts.append(Lang.t("STATS_ACH") + ", ".join(names))
 	st.text = " · ".join(parts)
 	# los logros acumulados desbordaban el ancho de la ventana —
 	# autowrap en vez de clippear por el borde derecho
 	st.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	select_ui.add_child(st)
+	# logros en su propia línea: en la misma cadena de stats hacían un
+	# párrafo denso difícil de escanear (los nombres son largos)
+	if app.stats.ach.size() > 0:
+		var names := []
+		for a in app.stats.ach:
+			names.append(StatsStore.ach_name(a))
+		var ach := Widgets.lbl(Lang.t("STATS_ACH") + ", ".join(names),
+			13, true)
+		ach.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		select_ui.add_child(ach)
 	app._refresh_values()
 	Widgets.focus_first(margin)
 

@@ -227,7 +227,7 @@ POST_CLEAN,Sin errores graves detectados.,No major blunders detected.
 DRAFT_TITLE,Draft — elegid piezas por turnos,Draft — take turns picking pieces
 DRAFT_TURN,Turno de J%d — %s,P%d's turn — %s
 DRAFT_POINTS,Puntos: %d / %d   ·   Piezas: %d,Points: %d / %d   ·   Pieces: %d
-DRAFT_PICKS,J%d (%s): %s — %d/%d pts%s,P%d (%s): %s — %d/%d pts%s
+DRAFT_PICKS,J%d (%s): %d/%d pts%s,P%d (%s): %d/%d pts%s
 DRAFT_PASSED, (pasó), (passed)
 DRAFT_PASS,Pasar turno,Pass turn
 DRAFT_PLAY,¡A jugar!,Let's play!
