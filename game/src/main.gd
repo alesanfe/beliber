@@ -884,7 +884,8 @@ func _process(dt: float) -> void:
 		# (en compacto también limita el alto: el panel lateral va
 		# debajo y necesita ~230px)
 		if board != null:
-			if absf(board.scale.x - zoom_v * _fit_factor()) > 0.001:
+			if absf(board.scale.x - minf(zoom_v,
+					_fit_factor())) > 0.001:
 				_apply_zoom()
 	if tm != null and not tm.over and not tm.clock.is_empty():
 		# con árbitro autoritativo el fin por tiempo lo decide el servidor
@@ -1029,7 +1030,10 @@ func _save_settings() -> void:
 		c.save(CFG_PATH)
 		return
 	c.set_value("ui", "theme", board.theme_i)
-	c.set_value("ui", "zoom", board.scale.x)
+	# zoom_v (preferencia del usuario), no board.scale.x — la escala
+	# efectiva incluye el encaje y cada sesión con ventana pequeña
+	# iba reduciendo el zoom guardado permanentemente
+	c.set_value("ui", "zoom", zoom_v)
 	c.set_value("ui", "anim", board.anim_dur)
 	c.set_value("ui", "threats", board.show_threats)
 	c.set_value("ui", "coords", board.show_coords)
@@ -1056,22 +1060,25 @@ func _apply_settings() -> void:
 	Juice.reduce = bool(c.get_value("ui", "reduce_motion", false))
 	Tts.enabled = bool(c.get_value("ui", "tts", false))
 
-## Escala efectiva del tablero = zoom del usuario × factor de encaje
-## (ventanas < ~536 px encogen el tablero en vez de desbordarlo).
-## Factor de encaje del tablero: por ancho siempre, y por alto en
-## modo compacto (el panel lateral va debajo y necesita ~230px).
+## Escala efectiva del tablero = min(zoom del usuario, encaje).
+## El factor de encaje es el mayor valor que cabe en la ventana:
+## por ancho siempre (eval bar 22 + márgenes) y por alto — en modo
+## compacto el panel va debajo y necesita ~230px.
+## (Antes dividía entre 512 pero el tablero mide 8×CELL=576, y el
+## min_size también usaba 512 → el dibujo se salía ~60px a la
+## derecha con zoom>1 en ventanas estrechas.)
 func _fit_factor() -> float:
 	var v := get_viewport_rect().size
-	var f := minf(1.0, (v.x - 24.0) / 512.0)
-	if _compact:
-		f = minf(f, (v.y - 230.0) / 512.0)
-	return f
+	var w := float(8 * BoardView.CELL)
+	return minf((v.x - 48.0) / w,
+		(v.y - (230.0 if _compact else 60.0)) / w)
 
 func _apply_zoom() -> void:
 	if board == null: return
-	var s: float = zoom_v * _fit_factor()
+	var s: float = minf(zoom_v, _fit_factor())
 	board.scale = Vector2(s, s)
-	board.custom_minimum_size = Vector2(512 * s, 512 * s)
+	board.custom_minimum_size = \
+		Vector2(s, s) * 8 * BoardView.CELL
 
 func _rematch() -> void:
 	var s0: int = _last_sel[0]   # el menú original ya está freed

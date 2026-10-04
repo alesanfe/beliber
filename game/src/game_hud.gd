@@ -27,6 +27,9 @@ static func build(app) -> void:
 	app.eval_bar.col0 = tm.state.factions[0].color
 	app.eval_bar.col1 = tm.state.factions[1].color
 	app.eval_bar.tooltip_text = Lang.t("HUD_EVAL_TIP")
+	# estira a la altura del tablero (antes alto fijo 512 — con el
+	# tablero escalado quedaban desalineados)
+	app.eval_bar.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	board_row.add_child(app.eval_bar)
 	center.add_child(board_row)
 	app.board = BoardView.new(tm)

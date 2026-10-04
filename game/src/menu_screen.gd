@@ -271,8 +271,10 @@ static func build(app) -> void:
 
 	# ── NIVEL 3: herramientas (discretas) ──
 	select_ui.add_child(Widgets.lbl(Lang.t("MENU_TOOLS")))
-	var row3 := HBoxContainer.new()
-	row3.alignment = BoxContainer.ALIGNMENT_CENTER
+	# flow: los 5 botones con icono (~740px) desbordan ventanas
+	# estrechas — envuelven a una segunda fila centrada
+	var row3 := HFlowContainer.new()
+	row3.alignment = FlowContainer.ALIGNMENT_CENTER
 	row3.add_theme_constant_override("separation", 6)
 	select_ui.add_child(row3)
 	var btn_ed := Button.new()
