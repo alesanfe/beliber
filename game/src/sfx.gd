@@ -8,6 +8,13 @@ extends Node
 var muted := false
 var _player: AudioStreamPlayer
 
+func _exit_tree() -> void:
+	# el AudioStreamGeneratorPlayback queda referenciado por el
+	# servidor de audio mientras el player sigue sonando — sin
+	# stop() al salir cuenta como instancia ObjectDB filtrada
+	if _player != null:
+		_player.stop()
+
 func _ensure() -> AudioStreamGeneratorPlayback:
 	if _player == null:
 		_player = AudioStreamPlayer.new()
