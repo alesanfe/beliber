@@ -45,6 +45,12 @@ func _init(p_factions: Array) -> void:
 	b_rush.pressed.connect(_start_rush)
 	side.add_child(b_rush)
 	_board_holder = center
+
+func _ready() -> void:
+	# _gen() await process_frame: en _init el nodo aún no está en el
+	# árbol y get_tree() devuelve null — si el primer intento no
+	# halla una captura de líder, el await petaba y la pantalla
+	# quedaba congelada en "Generando…" sin reintentos
 	_gen()
 
 var _board_holder: Control
