@@ -250,11 +250,11 @@ PE_PROPS,Propiedades,Properties
 PE_NAME,Nombre,Name
 PE_VALUE,Valor,Value
 PE_SYM,Simetría,Symmetry
-PE_SYM_ALL,Simétrica (8 direcciones),Symmetric (8 directions)
-PE_SYM_LIT,Literal (solo hacia adelante),Literal (forward only)
+PE_SYM_ALL,Simétrica (8 dir.),Symmetric (8 dirs)
+PE_SYM_LIT,Literal (adelante),Literal (forward)
 PE_LEADER,Líder (victoria),Leader (victory)
-PE_SWAP,Roba movimientos al capturar,Steals moves on capture
-PE_CASTLE,Pareja de enroque (estilo torre),Castling partner (rook-style)
+PE_SWAP,Roba al capturar,Steal on capture
+PE_CASTLE,Pareja de enroque,Castling partner
 PE_TEAM_EDIT,Equipo a editar,Army to edit
 PE_EQ1,Eq1,Army 1
 PE_EQ2,Eq2,Army 2
@@ -263,7 +263,7 @@ PE_DEP_SAVE,Guardar despliegue,Save deployment
 PE_DEP_RESET,Restaurar despliegue,Reset deployment
 PE_SAVE,Guardar pieza,Save piece
 PE_RESET,Restaurar por defecto,Restore defaults
-PE_WIPE_BTN,Borrar TODAS las sobrescrituras,Delete ALL overrides
+PE_WIPE_BTN,Borrar sobrescrituras,Delete overrides
 PE_WIPE_TITLE,Borrar sobrescrituras,Delete overrides
 PE_WIPE_CONFIRM,¿Eliminar TODAS las piezas y despliegues personalizados de todas las facciones? No se puede deshacer.,Delete ALL custom pieces and deployments for all factions? This cannot be undone.
 PE_DEPLOY_HINT,Modo despliegue: pinta las casillas iniciales.,Deploy mode: paint the starting squares.
@@ -282,9 +282,9 @@ AB_ZONE,zona de despliegue (filas propias),deploy zone (your ranks)
 AB_TITLE,Constructor de ejército,Army builder
 AB_PIECES_LBL,"Piezas (clic izq coloca, der borra, Ctrl+Z deshacer)","Pieces (left click places, right erases, Ctrl+Z undo)"
 AB_BUDGET,Presupuesto de puntos,Points budget
-AB_COPY,Copiar setup oficial,Copy official setup
+AB_COPY,Copiar oficial,Copy official
 AB_CLEAR,Vaciar,Clear
-AB_SAVE,Guardar como Eq personalizado,Save as custom army
+AB_SAVE,Guardar equipo,Save army
 AB_LOAD,Cargar guardado,Load saved
 AB_VS_OFFICIAL,vs. despliegue oficial (Eq1),vs. official deployment (Army 1)
 AB_MET_AGGRO,Agresión,Aggression
@@ -325,7 +325,7 @@ RULE_FIRST,Siempre mueve primero,Always moves first
 RULE_SECOND,Siempre mueve segundo,Always moves second
 RULE_DOUBLE_OPEN,Su primer turno tiene 2 movimientos,Its first turn has 2 moves
 RULE_DOUBLE_LEAD,Tiene dos líderes (hay que caer ambos),Has two leaders (both must fall)
-GUIDE_QUIZ_BTN,🎯 Entrenamiento: ¿dónde puede mover?,🎯 Training: where can it move?
+GUIDE_QUIZ_BTN,🎯 Entrenamiento,🎯 Training
 GUIDE_QUIZ_TIP,Te pregunta por los movimientos legales de piezas al azar,Asks you for the legal moves of random pieces
 GUIDE_NEXT,Otra pieza,Another piece
 GUIDE_CLICK,Haz clic en una pieza para ver sus movimientos.,Click a piece to see its moves.

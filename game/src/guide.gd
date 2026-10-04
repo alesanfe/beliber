@@ -25,9 +25,15 @@ var quiz_btn: Button
 func _init(p_factions: Array) -> void:
 	factions = p_factions
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	# tablero + panel (≈890px) desbordan ventanas compactas — con
+	# scroll el texto de la derecha sigue siendo alcanzable
+	var sc := ScrollContainer.new()
+	sc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(sc)
 	var row := HBoxContainer.new()
-	row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(row)
+	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	sc.add_child(row)
 
 	var center := CenterContainer.new()
 	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -37,11 +43,35 @@ func _init(p_factions: Array) -> void:
 	tm = TurnManager.new(f0, 0, f0, 0, {})
 	board = BoardView.new(tm)
 	board.inspect = true
-	center.add_child(board)
+	# wrapper no gestionado por contenedor — el Center resetearía
+	# el scale del tablero en cada ordenado
+	var wrap := Control.new()
+	center.add_child(wrap)
+	wrap.add_child(board)
+	# tablero flexible: el BoardView tiene 576px fijos — con panel
+	# desbordaba ventanas compactas y desaprovechaba las grandes.
+	# Se mide el viewport del scroll, no center.size (circular).
+	# Deferred: el primer 'resized' puede disparar antes del connect
+	var fit := func():
+		if sc.size.x <= 0: return
+		var s: float = clampf(minf(
+			(sc.size.x - 308.0) / 576.0,
+			sc.size.y / 596.0), 0.6, 1.2)
+		board.size = Vector2(576, 576)
+		board.scale = Vector2(s, s)
+		wrap.custom_minimum_size = Vector2(576, 576) * s
+	sc.resized.connect(fit)
+	fit.call_deferred()
 
+	# wrapper plano: topea el mínimo que el contenido propaga (el
+	# botón de entrenamiento es largo y empujaba el panel > 300)
+	var sw := Control.new()
+	sw.custom_minimum_size = Vector2(300, 0)
+	sw.clip_contents = true
+	row.add_child(sw)
 	var side := VBoxContainer.new()
-	side.custom_minimum_size = Vector2(340, 0)
-	row.add_child(side)
+	side.set_anchors_preset(Control.PRESET_FULL_RECT)
+	sw.add_child(side)
 	side.add_child(_lbl(Lang.t("GUIDE_TITLE"), 26))
 	opt = OptionButton.new()
 	for f in factions:
@@ -55,6 +85,9 @@ func _init(p_factions: Array) -> void:
 	quiz_btn = Button.new()
 	quiz_btn.text = Lang.t("GUIDE_QUIZ_BTN")
 	quiz_btn.tooltip_text = Lang.t("GUIDE_QUIZ_TIP")
+	# el texto es largo y el panel topea a 300px (clip_contents):
+	# sin wrap el botón se cortaba a mitad de glifo
+	quiz_btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	quiz_btn.toggled.connect(_quiz_toggle)
 	quiz_btn.toggle_mode = true
 	side.add_child(quiz_btn)

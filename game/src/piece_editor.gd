@@ -33,6 +33,7 @@ var castle_chk: CheckBox
 var status_lbl: Label
 var canvas: EditorCanvas
 var dep_canvas: DeployCanvas
+var dep_wrap: Control          # wrapper del lienzo de despliegue
 var canvas_lbl: Label          # título "PIEZA (literal)" / "2º TRAMO"
 var move_box: Control          # UI de edición de movimiento
 var dep_sec: VBoxContainer     # sección de despliegue (modo Posición)
@@ -154,17 +155,34 @@ func _init(p_factions: Array) -> void:
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	# las 3 columnas fijas (~980px) desbordan ventanas compactas —
+	# con scroll el panel de propiedades sigue siendo alcanzable
+	var sc := ScrollContainer.new()
+	sc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(sc)
 	var root := HBoxContainer.new()
-	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	root.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	# sin margen el texto de la columna izquierda se corta en el
-	# borde de la ventana ("ditor de piezas")
-	root.offset_left = 12
-	add_child(root)
+	# borde de la ventana ("ditor de piezas"). OJO: offset_left no
+	# sirve — el ScrollContainer recoloca a sus hijos al ordenar y
+	# pisa cualquier offset. El margen tiene que participar en el
+	# layout: un espaciador como primer hijo del HBox.
+	sc.add_child(root)
+	var margin_l := Control.new()
+	margin_l.custom_minimum_size.x = 12
+	root.add_child(margin_l)
+	root.move_child(margin_l, 0)
 
 	# ---------- columna izquierda: selección + paleta ----------
+	# wrapper plano: topea el mínimo que el contenido propaga
+	var lw := Control.new()
+	lw.custom_minimum_size = Vector2(230, 0)
+	lw.clip_contents = true
+	root.add_child(lw)
 	var left := VBoxContainer.new()
-	left.custom_minimum_size = Vector2(280, 0)
-	root.add_child(left)
+	left.set_anchors_preset(Control.PRESET_FULL_RECT)
+	lw.add_child(left)
 
 	# hueco para el botón "← Volver" (absolute en 8,8 sobre esta UI)
 	var pad := Control.new()
@@ -185,7 +203,7 @@ func _ready() -> void:
 	opt_p.item_selected.connect(func(_i): _guard_dirty(_load_piece))
 	left.add_child(opt_p)
 
-	left.add_child(_lbl(Lang.t("PE_EFFECT_LBL")))
+	left.add_child(Widgets.lbl(Lang.t("PE_EFFECT_LBL"), 13, true, true))
 	# Paleta en una columna con scroll: en 2 columnas de ~132px los nombres
 	# largos ("Mover/Capturar atravesando") se cortaban con elipsis y el
 	# efecto solo se leía por tooltip.
@@ -204,6 +222,7 @@ func _ready() -> void:
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		b.tooltip_text = "%s — %s" % [code, PiecesData.code_name(code)]
 		b.custom_minimum_size = Vector2(0, 26)
+		b.clip_text = true   # nombres largos no derraman fuera
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var sb := StyleBoxFlat.new()
 		var bg := PiecesData.code_color(code)
@@ -222,12 +241,16 @@ func _ready() -> void:
 	# plantillas rápidas: patrones clásicos de un clic
 	left.add_child(_lbl(Lang.t("PE_TEMPLATES")))
 	var tpl := GridContainer.new()
-	tpl.columns = 3
+	tpl.columns = 2   # a 3 columnas (~72px) "Teleport" se cortaba
 	left.add_child(tpl)
 	for tn in ["knight", "archer", "rook", "bishop", "leap",
 			"teleport"]:
 		var tb := Button.new()
 		tb.text = Lang.t("TPL_" + tn.to_upper())
+		tb.clip_text = true
+		# con clip_text el mínimo cae al padding — sin expand el
+		# GridContainer les daba celdas de ~25px
+		tb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		tb.custom_minimum_size = Vector2(0, 44)
 		tb.tooltip_text = Lang.t("PE_TPL_OVERWRITE")
 		var tname: String = tn
@@ -250,11 +273,36 @@ func _ready() -> void:
 	canvas_lbl.add_theme_color_override("font_color",
 		Color(0.4, 0.4, 0.4))
 	move_box.add_child(canvas_lbl)
+	# wrappers no gestionados por contenedor (los Container resetean
+	# scale a 1.0 al ordenar) — el lienzo escala dentro del wrapper
+	var wrap_canvas := Control.new()
+	move_box.add_child(wrap_canvas)
 	canvas = EditorCanvas.new(self)
-	move_box.add_child(canvas)
+	wrap_canvas.add_child(canvas)
+	var wrap_dep := Control.new()
+	wrap_dep.visible = false
+	cv.add_child(wrap_dep)
 	dep_canvas = DeployCanvas.new(self)
-	dep_canvas.visible = false
-	cv.add_child(dep_canvas)
+	wrap_dep.add_child(dep_canvas)
+	dep_wrap = wrap_dep
+	# como en el constructor: lienzo flexible midiendo el viewport
+	# del scroll (no center.size — dentro del ScrollContainer viene
+	# del mínimo del propio lienzo y nunca encogería). Deferred:
+	# el primer 'resized' puede disparar antes del connect
+	var fit := func():
+		if sc.size.x <= 0: return
+		var s: float = clampf(minf(
+			(sc.size.x - 470.0) / (EDIT_CELL * 8.0),
+			sc.size.y / (EDIT_CELL * 8.0 + 160.0)), 0.5, 1.4)
+		for e in [[canvas, wrap_canvas], [dep_canvas, wrap_dep]]:
+			var c: Control = e[0]
+			var w: Control = e[1]
+			c.size = Vector2(EDIT_CELL * 8, EDIT_CELL * 8)
+			c.scale = Vector2(s, s)
+			w.custom_minimum_size = \
+				Vector2(EDIT_CELL * 8, EDIT_CELL * 8) * s
+	sc.resized.connect(fit)
+	fit.call_deferred()
 	var btn_preview := Button.new()
 	btn_preview.text = Lang.t("PE_PREVIEW")
 	btn_preview.pressed.connect(_toggle_preview)
@@ -273,9 +321,13 @@ func _ready() -> void:
 	move_box.add_child(btn_leg2)
 
 	# ---------- derecha: propiedades ----------
+	var rw := Control.new()
+	rw.custom_minimum_size = Vector2(200, 0)
+	rw.clip_contents = true
+	root.add_child(rw)
 	var right := VBoxContainer.new()
-	right.custom_minimum_size = Vector2(260, 0)
-	root.add_child(right)
+	right.set_anchors_preset(Control.PRESET_FULL_RECT)
+	rw.add_child(right)
 	right.add_child(_title(Lang.t("PE_PROPS")))
 	right.add_child(_lbl(Lang.t("PE_NAME")))
 	name_edit = LineEdit.new()
@@ -324,14 +376,17 @@ func _ready() -> void:
 
 	right.add_child(HSeparator.new())
 	var b_save := Button.new(); b_save.text = Lang.t("PE_SAVE")
+	b_save.clip_text = true
 	b_save.pressed.connect(_save)
 	right.add_child(b_save)
 	var b_reset := Button.new(); b_reset.text = Lang.t("PE_RESET")
+	b_reset.clip_text = true
 	b_reset.pressed.connect(func():
 		Widgets.confirm(self, Lang.t("PE_RESET_T"),
 			Lang.t("PE_RESET_C"), Lang.t("PE_RESET"), _reset))
 	right.add_child(b_reset)
 	var b_wipe := Widgets.danger(Lang.t("PE_WIPE_BTN"))
+	b_wipe.clip_text = true
 	# Widgets.confirm: botón con nombre de acción + TTS + libera el
 	# diálogo — el diálogo ad-hoc no hacía ninguna de las tres cosas
 	b_wipe.pressed.connect(func():
@@ -383,7 +438,7 @@ func _load_deploy() -> void:
 func _switch_mode() -> void:
 	mode = "deploy" if opt_mode.selected == 1 else "moves"
 	move_box.visible = mode == "moves"
-	dep_canvas.visible = mode == "deploy"
+	dep_wrap.visible = mode == "deploy"
 	dep_sec.visible = mode == "deploy"
 	opt_p.get_parent().visible = mode == "moves"  # selector de pieza
 	status_lbl.text = Lang.t("PE_DEPLOY_HINT") \

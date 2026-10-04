@@ -45,28 +45,52 @@ func _ready() -> void:
 	# pantalla quedaba con size 0 — el tablero se cortaba tras la
 	# columna lateral en vez de centrarse en el área disponible
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	# scroll: tablero + panel (≈800px) rozaban el borde en compactas
+	var sc := ScrollContainer.new()
+	sc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(sc)
 	var hbox := HBoxContainer.new()
-	hbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(hbox)
+	hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	sc.add_child(hbox)
 
 	# tablero
 	var center := CenterContainer.new()
 	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hbox.add_child(center)
 	var board := Control.new()
-	board.custom_minimum_size = Vector2(CELL * 8, CELL * 8)
 	board.draw.connect(_draw_board.bind(board))
 	board.gui_input.connect(_on_board_input)
 	board.mouse_exited.connect(func(): board.queue_redraw())
 	_board = board
-	center.add_child(board)
+	# wrapper plano: el Center resetearía el scale del tablero —
+	# el wrapper reserva el espacio escalado en el layout
+	var wrap := Control.new()
+	center.add_child(wrap)
+	wrap.add_child(board)
+	var fit := func():
+		if sc.size.x <= 0: return
+		var s: float = clampf(minf(
+			(sc.size.x - 300.0) / (CELL * 8.0),
+			sc.size.y / (CELL * 8.0 + 20.0)), 0.6, 1.3)
+		board.size = Vector2(CELL * 8, CELL * 8)
+		board.scale = Vector2(s, s)
+		wrap.custom_minimum_size = \
+			Vector2(CELL * 8, CELL * 8) * s
+	sc.resized.connect(fit)
+	fit.call_deferred()
 
-	# lateral: paleta + controles
+	# lateral: paleta + controles — wrapper plano: topea el mínimo
+	# que el contenido propaga (el hint es una línea muy larga)
+	var sw := Control.new()
+	sw.custom_minimum_size = Vector2(280, 0)
+	sw.clip_contents = true
+	hbox.add_child(sw)
 	var side := VBoxContainer.new()
-	side.custom_minimum_size = Vector2(280, 0)
-	hbox.add_child(side)
+	side.set_anchors_preset(Control.PRESET_FULL_RECT)
+	sw.add_child(side)
 	side.add_child(_lbl(Lang.t("MENU_POS_EDITOR"), 22))
-	side.add_child(_lbl(Lang.t("POSE_HINT")))
+	side.add_child(Widgets.lbl(Lang.t("POSE_HINT"), 0, false, true))
 
 	for who in [0, 1]:
 		var f: Dictionary = f0 if who == 0 else f1
@@ -116,7 +140,9 @@ func _ready() -> void:
 	side.add_child(fen_row)
 	var fen_edit := LineEdit.new()
 	fen_edit.placeholder_text = "BEL1 …"
-	fen_edit.custom_minimum_size = Vector2(150, 0)
+	# 150px + 2 botones no cabían en el panel de 280 → Importar
+	# quedaba cortado en el borde de la ventana
+	fen_edit.custom_minimum_size = Vector2(80, 0)
 	fen_row.add_child(fen_edit)
 	var b_fexp := Button.new()
 	b_fexp.text = Lang.t("POSE_COPY")

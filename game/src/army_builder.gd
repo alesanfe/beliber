@@ -82,23 +82,42 @@ func _init(p_factions: Array) -> void:
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	# las 3 columnas fijas (~970px) desbordan ventanas compactas —
+	# con scroll el panel de presupuesto sigue siendo alcanzable
+	var sc := ScrollContainer.new()
+	sc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(sc)
 	var root := HBoxContainer.new()
-	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	root.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	# sin margen el texto de la columna izquierda se corta en el
-	# borde de la ventana ("onstructor de ejército")
-	root.offset_left = 12
-	add_child(root)
+	# borde de la ventana ("onstructor de ejército"). OJO: offset_left
+	# no sirve — el ScrollContainer recoloca a sus hijos al ordenar
+	# y pisa cualquier offset. El margen tiene que participar en el
+	# layout: un espaciador como primer hijo del HBox.
+	sc.add_child(root)
+	var margin_l := Control.new()
+	margin_l.custom_minimum_size.x = 12
+	root.add_child(margin_l)
+	root.move_child(margin_l, 0)
 
+	# columna fija: el Control wrapper topea el mínimo que el
+	# contenido propaga (el título a 24px empujaba left a 307px)
+	var lw := Control.new()
+	lw.custom_minimum_size = Vector2(230, 0)
+	lw.clip_contents = true
+	root.add_child(lw)
 	var left := VBoxContainer.new()
-	left.custom_minimum_size = Vector2(280, 0)
-	root.add_child(left)
+	left.set_anchors_preset(Control.PRESET_FULL_RECT)
+	lw.add_child(left)
 	# hueco para el botón "← Volver" (absolute en 8,8 sobre esta UI)
 	var pad := Control.new()
 	pad.custom_minimum_size.y = 36
 	left.add_child(pad)
 	var t := Label.new()
 	t.text = Lang.t("AB_TITLE")
-	t.add_theme_font_size_override("font_size", 24)
+	t.add_theme_font_size_override("font_size", 20)
+	t.autowrap_mode = TextServer.AUTOWRAP_WORD
 	left.add_child(t)
 
 	opt_f = OptionButton.new()
@@ -107,7 +126,7 @@ func _ready() -> void:
 	opt_f.item_selected.connect(func(_i): _reload())
 	left.add_child(opt_f)
 
-	left.add_child(_lbl(Lang.t("AB_PIECES_LBL")))
+	left.add_child(Widgets.lbl(Lang.t("AB_PIECES_LBL"), 13, true, true))
 	# Columna única con scroll: en 2 columnas de 132px los nombres
 	# ("X Emperatriz (12)") se cortaban con elipsis.
 	var pal_scroll := ScrollContainer.new()
@@ -125,22 +144,38 @@ func _ready() -> void:
 	root.add_child(center)
 	var cv := VBoxContainer.new()
 	center.add_child(cv)
+	# wrapper no gestionado por contenedor: los Container resetean
+	# scale a 1.0 al ordenar — el lienzo escala dentro del wrapper,
+	# cuyo mínimo sí reserva el espacio real en el layout
+	var wrap := Control.new()
+	cv.add_child(wrap)
 	canvas = ABCanvas.new(self)
-	cv.add_child(canvas)
+	wrap.add_child(canvas)
 	# el lienzo base es 448×280 — en ventanas grandes quedaba un
-	# tercio de pantalla vacío; escalar el Control para llenar el
-	# hueco disponible (sin pasar de ~1.7× o pixela mucho)
-	center.resized.connect(func():
+	# tercio de pantalla vacío y en compactas no cabía; se escala
+	# midiendo el viewport del scroll (el hueco real). No center.size:
+	# dentro del ScrollContainer viene del mínimo del propio lienzo
+	# (dependencia circular — nunca encogía). call_deferred porque
+	# el primer 'resized' de sc puede disparar antes del connect
+	var fit := func():
+		if sc.size.x <= 0: return
 		var s: float = clampf(minf(
-			center.size.x / (CELL * 8.0),
-			center.size.y / (CELL * ROWS + 8.0)), 1.0, 1.7)
+			(sc.size.x - 462.0) / (CELL * 8.0),
+			sc.size.y / (CELL * ROWS + 8.0)), 0.5, 1.7)
+		canvas.size = Vector2(CELL * 8, CELL * ROWS)
 		canvas.scale = Vector2(s, s)
-		canvas.custom_minimum_size = \
-			Vector2(CELL * 8, CELL * ROWS) * s)
+		wrap.custom_minimum_size = \
+			Vector2(CELL * 8, CELL * ROWS) * s
+	sc.resized.connect(fit)
+	fit.call_deferred()
 
+	var rw := Control.new()
+	rw.custom_minimum_size = Vector2(200, 0)
+	rw.clip_contents = true
+	root.add_child(rw)
 	var right := VBoxContainer.new()
-	right.custom_minimum_size = Vector2(240, 0)
-	root.add_child(right)
+	right.set_anchors_preset(Control.PRESET_FULL_RECT)
+	rw.add_child(right)
 	right.add_child(_lbl(Lang.t("AB_BUDGET")))
 	budget_spin = SpinBox.new()
 	budget_spin.min_value = 10; budget_spin.max_value = 200
@@ -149,22 +184,18 @@ func _ready() -> void:
 	right.add_child(budget_spin)
 	cost_lbl = Label.new()
 	right.add_child(cost_lbl)
-	var b_eq := Button.new(); b_eq.text = Lang.t("AB_COPY")
-	b_eq.pressed.connect(_copy_official)
-	right.add_child(b_eq)
-	var b_clear := Button.new(); b_clear.text = Lang.t("AB_CLEAR")
-	b_clear.pressed.connect(func():
-		Widgets.confirm(self, Lang.t("AB_CLEAR_T"),
+	var btns: Array = [["AB_COPY", _copy_official], ["AB_CLEAR",
+		func(): Widgets.confirm(self, Lang.t("AB_CLEAR_T"),
 			Lang.t("AB_CLEAR_C"), Lang.t("AB_CLEAR"),
-			func(): _push_undo(); grid.clear(); _update_cost()))
-	right.add_child(b_clear)
-	right.add_child(HSeparator.new())
-	var b_save := Button.new(); b_save.text = Lang.t("AB_SAVE")
-	b_save.pressed.connect(_save)
-	right.add_child(b_save)
-	var b_load := Button.new(); b_load.text = Lang.t("AB_LOAD")
-	b_load.pressed.connect(_load)
-	right.add_child(b_load)
+			func(): _push_undo(); grid.clear(); _update_cost())],
+		["AB_SAVE", _save], ["AB_LOAD", _load]]
+	for i in btns.size():
+		if i == 2: right.add_child(HSeparator.new())
+		var b := Button.new()
+		b.text = Lang.t(btns[i][0])
+		b.clip_text = true   # no derramar texto fuera del botón
+		b.pressed.connect(btns[i][1])
+		right.add_child(b)
 	# comparador + métricas aproximadas vs el despliegue oficial
 	right.add_child(HSeparator.new())
 	right.add_child(_lbl(Lang.t("AB_VS_OFFICIAL")))

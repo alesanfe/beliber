@@ -55,10 +55,19 @@ static func lbl(text: String, size := 0, dim := false,
 static func screen(title: String, w := 480) -> Control:
 	var root := PanelContainer.new()
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	# scroll: el perfil con muchos logros/historial se cortaba sin
+	# alcanzarse en ventanas compactas
+	var sc := ScrollContainer.new()
+	root.add_child(sc)
+	# CenterContainer para centrar cuando el contenido es más bajo
+	# que el viewport (el hijo del scroll recibe max(viewport, min))
+	var center := CenterContainer.new()
+	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	center.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	sc.add_child(center)
 	var box := VBoxContainer.new()
-	box.set_anchors_preset(Control.PRESET_CENTER)
 	box.custom_minimum_size = Vector2(w, 0)
-	root.add_child(box)
+	center.add_child(box)
 	var t := Label.new()
 	t.text = title
 	t.add_theme_font_size_override("font_size", 30)
@@ -73,7 +82,8 @@ static func screen(title: String, w := 480) -> Control:
 
 ## El panel interior (hijos) de una screen.
 static func screen_body(scr: Control) -> VBoxContainer:
-	return scr.get_child(0)
+	# Panel → Scroll → Center → VBox
+	return scr.get_child(0).get_child(0).get_child(0)
 
 static func _style_primary(b: Button) -> void:
 	var s := StyleBoxFlat.new()
