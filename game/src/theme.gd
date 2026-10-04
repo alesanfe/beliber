@@ -20,18 +20,35 @@ const VARIANTS := {
 	"dark": {bg = Color("#14181f"), panel = Color("#1e2530"),
 		panel_hi = Color("#27303d"), edge = Color("#333d4d"),
 		accent = Color("#4f8cff"), accent_hi = Color("#6ea3ff"),
-		text = Color("#e8ecf2"), dim = Color("#9aa6b8")},
+		text = Color("#e8ecf2"), dim = Color("#9aa6b8"),
+		danger = Color("#ff6b6b"), ok = Color("#4fd07a")},
 	"light": {bg = Color("#eceadf"), panel = Color("#ffffff"),
 		panel_hi = Color("#f0ede2"), edge = Color("#c9c2b2"),
 		accent = Color("#2b63c9"), accent_hi = Color("#3f77d4"),
-		text = Color("#1c2330"), dim = Color("#5a6472")},
+		text = Color("#1c2330"), dim = Color("#5a6472"),
+		danger = Color("#b0322a"), ok = Color("#1e7a38")},
 	"contrast": {bg = Color("#000000"), panel = Color("#0b0b0b"),
 		panel_hi = Color("#1a1a1a"), edge = Color("#f0f0f0"),
 		accent = Color("#ffd166"), accent_hi = Color("#ffe08f"),
-		text = Color("#ffffff"), dim = Color("#d0d0d0")},
+		text = Color("#ffffff"), dim = Color("#d0d0d0"),
+		danger = Color("#ff8080"), ok = Color("#8aff9a")},
 }
 
 static var _v: Dictionary = VARIANTS.dark
+
+## Acceso por variante: las pantallas usaban los consts ACCENT/TEXT_DIM
+## (siempre el valor dark) — el botón primario y los labels dim no
+## cambiaban al cambiar de tema.
+static func accent() -> Color: return _v.accent
+static func accent_hi() -> Color: return _v.accent_hi
+static func dim() -> Color: return _v.dim
+static func danger() -> Color: return _v.danger
+static func ok() -> Color: return _v.ok
+
+## Texto legible sobre el acento (blanco salvo acentos claros).
+static func on_accent() -> Color:
+	return Color(0.08, 0.08, 0.1) if _v.accent.get_luminance() > 0.45 \
+		else Color.WHITE
 
 static func make(mode := "dark") -> Theme:
 	_v = VARIANTS.get(mode, VARIANTS.dark)

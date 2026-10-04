@@ -321,7 +321,7 @@ static func build(app) -> void:
 		btn_prof: "trophy", btn_daily: "bolt", btn_run: "flag",
 		btn_puz: "puzzle", btn_draft: "clock", btn_ab: "gear",
 		btn_guide: "book", btn_load: "back", btn_ed: "gear",
-		btn_pos: "gear"}, app)
+		btn_pos: "gear"}, app, BeliberTheme._v.text)
 
 	# estadísticas y logros (línea dim al pie)
 	var st := Widgets.lbl("")

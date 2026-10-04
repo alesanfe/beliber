@@ -88,8 +88,7 @@ static func toast(parent: Control, text: String, dur := 3.5) -> Label:
 	# y el slide lo subía aún más fuera — invisible por completo)
 	l.position = Vector2(16, 24 + slot * 20)
 	l.z_index = 20
-	l.add_theme_color_override("font_color",
-		Color("#e8ecf2"))
+	l.add_theme_color_override("font_color", BeliberTheme._v.text)
 	l.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
 	l.add_theme_constant_override("shadow_offset_x", 1)
 	l.add_theme_constant_override("shadow_offset_y", 1)

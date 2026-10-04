@@ -132,7 +132,7 @@ func _ready() -> void:
 	# Label nuevo en el panel (nunca se limpiaban)
 	_err_lbl = _lbl("")
 	_err_lbl.add_theme_color_override("font_color",
-		Color(0.95, 0.45, 0.4))
+		BeliberTheme.danger())
 	_err_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	side.add_child(_err_lbl)
 	# BEL-FEN: compartir posiciones como texto (estilo lichess)
@@ -152,14 +152,14 @@ func _ready() -> void:
 		# confirmación visible: antes solo cambiaba el campo, sin
 		# feedback de que el portapapeles se actualizó
 		_err_lbl.add_theme_color_override("font_color",
-			Color(0.55, 0.85, 0.55))
+			BeliberTheme.ok())
 		_err_lbl.text = Lang.t("POSE_COPIED"))
 	fen_row.add_child(b_fexp)
 	var b_fimp := Button.new()
 	b_fimp.text = Lang.t("POSE_IMPORT")
 	b_fimp.pressed.connect(func():
 		_err_lbl.add_theme_color_override("font_color",
-			Color(0.95, 0.45, 0.4))
+			BeliberTheme.danger())
 		_err_lbl.text = _import_bel(fen_edit.text)
 		board.queue_redraw())
 	fen_row.add_child(b_fimp)
@@ -169,7 +169,7 @@ func _ready() -> void:
 	b_play.pressed.connect(func():
 		if _leaders(0) == 0 or _leaders(1) == 0:
 			_err_lbl.add_theme_color_override("font_color",
-				Color(0.95, 0.45, 0.4))
+				BeliberTheme.danger())
 			_err_lbl.text = Lang.t("POSE_NEED_LEADERS")
 			return
 		start.emit(_to_array(), first))

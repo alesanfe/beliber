@@ -131,7 +131,7 @@ static func build(app) -> void:
 	app.hud_opening = Label.new()
 	app.hud_opening.add_theme_font_size_override("font_size", 13)
 	app.hud_opening.add_theme_color_override("font_color",
-		Color(0.75, 0.7, 0.55))
+		BeliberTheme.dim())
 	# el nombre combinado "Apertura — Elfos: … · Humenex: …" se
 	# cortaba en el borde del panel de 300px
 	app.hud_opening.autowrap_mode = TextServer.AUTOWRAP_WORD
@@ -603,8 +603,8 @@ static func update(app) -> void:
 			b.text = "%d. %s%s" % [i + 1, tm.log[i], mark]
 			if mark != "":
 				b.add_theme_color_override("font_color",
-					Color(0.45, 0.9, 0.5) if mark[0] == "!" \
-					else Color(1, 0.5, 0.45))
+					BeliberTheme.ok() if mark[0] == "!" \
+					else BeliberTheme.danger())
 			b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 			b.flat = true
 			b.add_theme_font_size_override("font_size", 12)
@@ -617,6 +617,5 @@ static func update(app) -> void:
 ## separador — la lista plana de ~20 controles no tenía jerarquía.
 static func _opts_sec(opts: Control, key: String) -> void:
 	var l := Widgets.lbl(Lang.t(key), 12, true)
-	l.add_theme_color_override("font_color", Color(0.55, 0.62, 0.78))
 	opts.add_child(l)
 	opts.add_child(HSeparator.new())

@@ -690,7 +690,7 @@ func _tut_check(mv: Dictionary) -> void:
 			s.done = true
 			var l: Label = tut_box.get_child(i + 1)
 			l.text = "✔ " + s.t
-			l.add_theme_color_override("font_color", Color(0.5, 0.95, 0.6))
+			l.add_theme_color_override("font_color", BeliberTheme.ok())
 	if tut_steps.all(func(s): return s.done):
 		hud_alert(tr("TUT_DONE"))
 
@@ -901,9 +901,9 @@ func _process(dt: float) -> void:
 			_fmt_time(tm.clock[0]), _fmt_time(tm.clock[1])]
 		# alerta visual: rojo al que le quedan <10 s
 		hud_clock.add_theme_color_override("font_color",
-			Color(1, 0.25, 0.25)
+			BeliberTheme.danger()
 				if tm.clock[tm.current] < 10.0
-				else Color(1, 1, 1))
+				else BeliberTheme._v.text)
 		# aviso sonoro al cruzar los 10 s (una vez por bando)
 		for pl in [0, 1]:
 			if tm.clock[pl] < 10.0 and not _low_warned[pl]:

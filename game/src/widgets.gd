@@ -27,7 +27,7 @@ static func danger(text: String, h := 40) -> Button:
 	var b := Button.new()
 	b.text = text
 	b.custom_minimum_size = Vector2(0, h)
-	b.add_theme_color_override("font_color", Color("#ff6b6b"))
+	b.add_theme_color_override("font_color", BeliberTheme.danger())
 	_juice(b)
 	return b
 
@@ -36,7 +36,7 @@ static func heading(text: String) -> Label:
 	var l := Label.new()
 	l.text = text
 	l.add_theme_font_size_override("font_size", 20)
-	l.add_theme_color_override("font_color", BeliberTheme.TEXT_DIM)
+	l.add_theme_color_override("font_color", BeliberTheme.dim())
 	return l
 
 ## Label genérico: size>0 cambia el tamaño, dim lo atenúa,
@@ -47,7 +47,7 @@ static func lbl(text: String, size := 0, dim := false,
 	var l := Label.new()
 	l.text = text
 	if size > 0: l.add_theme_font_size_override("font_size", size)
-	if dim: l.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+	if dim: l.add_theme_color_override("font_color", BeliberTheme.dim())
 	if wrap: l.autowrap_mode = TextServer.AUTOWRAP_WORD
 	return l
 
@@ -87,7 +87,7 @@ static func screen_body(scr: Control) -> VBoxContainer:
 
 static func _style_primary(b: Button) -> void:
 	var s := StyleBoxFlat.new()
-	s.bg_color = BeliberTheme.ACCENT
+	s.bg_color = BeliberTheme.accent()
 	s.set_corner_radius_all(8)
 	s.content_margin_left = 16
 	s.content_margin_right = 16
@@ -95,11 +95,15 @@ static func _style_primary(b: Button) -> void:
 	s.content_margin_bottom = 10
 	b.add_theme_stylebox_override("normal", s)
 	var h := s.duplicate()
-	h.bg_color = BeliberTheme.ACCENT_HI
+	h.bg_color = BeliberTheme.accent_hi()
 	b.add_theme_stylebox_override("hover", h)
 	var p := s.duplicate()
-	p.bg_color = BeliberTheme.ACCENT.darkened(0.25)
+	p.bg_color = BeliberTheme.accent().darkened(0.25)
 	b.add_theme_stylebox_override("pressed", p)
+	var fg := BeliberTheme.on_accent()
+	b.add_theme_color_override("font_color", fg)
+	b.add_theme_color_override("font_hover_color", fg)
+	b.add_theme_color_override("font_pressed_color", fg)
 	b.add_theme_font_size_override("font_size", 17)
 
 static func _juice(b: Button) -> void:

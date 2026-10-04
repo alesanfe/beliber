@@ -282,8 +282,8 @@ func _update_cost() -> void:
 	cost_lbl.text = Lang.t("AB_COST_FMT") % [
 		c, int(budget_spin.value), l]
 	cost_lbl.add_theme_color_override("font_color",
-		Color(0.4, 1, 0.4) if c <= budget_spin.value and l >= 1
-		else Color(1, 0.4, 0.4))
+		BeliberTheme.ok() if c <= budget_spin.value and l >= 1
+		else BeliberTheme.danger())
 	_update_compare()
 	canvas.queue_redraw()
 
