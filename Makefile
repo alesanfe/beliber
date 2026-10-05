@@ -12,7 +12,7 @@ PY    ?= python
         test test-engine test-playthrough test-ui test-e2e test-net test-server test-load \
         relay host \
         shots export-windows export-web \
-        test-all release clean
+        test-all lint release clean
 
 # ============================================================
 #  HELP / SETUP
@@ -61,6 +61,9 @@ test-load: ## Test de carga del relay
 
 test-all: ## Batería canónica completa (tools/test_all.sh)
 	bash tools/test_all.sh
+
+lint: ## gdlint sobre src/server/tests (opcional en test_all.sh)
+	gdlint game/src game/server game/tests
 
 # ============================================================
 #  RED
