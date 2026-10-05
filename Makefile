@@ -11,7 +11,8 @@ PY    ?= python
         run \
         test test-engine test-playthrough test-ui test-e2e test-net test-server test-load \
         relay host \
-        shots export-windows export-web \
+        shots gif make-gif dump-cells mkcert \
+        export-windows export-web \
         test-all lint release clean
 
 # ============================================================
@@ -81,6 +82,18 @@ host: ## Levanta un host autoritativo Godot — uso: make host PORT=7779
 
 shots: ## Capturas de UI — uso: make shots SHOTS="nombre1 nombre2"
 	$(GODOT) --path game -s res://tools/screenshots.gd -- $(SHOTS)
+
+gif: ## Graba la partida IA-vs-IA frame a frame → docs/assets/_frames/
+	$(GODOT) --path game -s res://tools/gif_demo.gd
+
+make-gif: ## Ensambla docs/assets/_frames/ en docs/assets/demo.gif (Pillow)
+	$(PY) tools/sprite-pipeline/make_gif.py
+
+dump-cells: ## Exporta el mapa de celdas de cada pieza (sprite-pipeline)
+	$(GODOT) --headless --path game -s res://tests/dump_cells.gd
+
+mkcert: ## Genera bel_key.pem + bel_cert.pem de test — uso: make mkcert DIR=<dir>
+	$(GODOT) --headless --path game -s res://tests/_mkcert.gd -- $(or $(DIR),./certs-test)
 
 export-windows: ## Exporta el preset "Windows Desktop" a builds/windows/
 	$(GODOT) --headless --path game --export-release "Windows Desktop" builds/windows/beliber.exe
