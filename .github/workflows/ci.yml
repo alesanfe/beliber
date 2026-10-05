@@ -9,8 +9,8 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
       - name: Python compile
@@ -27,7 +27,7 @@ jobs:
   engine:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Descargar Godot 4.7.2 headless
         run: |
           curl -L -o godot.zip \
@@ -54,8 +54,8 @@ jobs:
   net:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
       - run: pip install -r server/requirements.txt
@@ -92,7 +92,7 @@ jobs:
         run: |
           pip install cyclonedx-bom
           cyclonedx-py requirements server/requirements.txt -o sbom.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: sbom
           path: sbom.json
@@ -100,7 +100,7 @@ jobs:
   secrets:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Escaneo de secretos (gitleaks)
         run: |
           docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:8.18.4 \
