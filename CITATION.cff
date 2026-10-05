@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "Si usas este software, cítalo así."
+type: software
+title: "Beliber"
+abstract: "Ajedrez asimétrico con facciones, draft y cartas: motor
+  determinista, IA, editor de piezas, modo online y comunidad.
+  Godot 4 + servidor Python."
+authors:
+  - family-names: "alesanfe"
+    given-names: ""
+repository-code: "https://github.com/alesanfe/beliber"
+license: MIT

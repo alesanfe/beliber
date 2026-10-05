@@ -11,7 +11,7 @@ from PIL import Image
 from read_diagrams import clasifica, es_linea
 
 HERE = os.path.dirname(__file__)
-ROOT = os.path.dirname(HERE)
+ROOT = HERE
 
 # ventanas de panel en pixeles (x0,x1,y0,y1) por hoja
 PANELS = {

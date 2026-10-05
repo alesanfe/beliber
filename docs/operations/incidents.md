@@ -21,7 +21,7 @@
 
 ## Procedimiento
 
-1. **Detectar**: heartbeat/health check (RUNBOOK.md), reporte de
+1. **Detectar**: heartbeat/health check (runbook.md), reporte de
    usuario, o `sec:` en logs.
 2. **Contener**: reinicio del proceso, bloqueo de la versión en
    releases, regeneración de credenciales.

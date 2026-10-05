@@ -229,7 +229,7 @@ Despliegue Eq1: `X Y A A G D G D` · Eq2: `D G D G A A Y X`.
 > **Estado de la transcripción (auditoría visual celda a celda):**
 > los patrones de movimiento de las 8 facciones y los tableros de
 > despliegue Eq1/Eq2 están transcritos de las hojas (ver
-> `game/src/pieces_data.gd`). Cada celda conserva su color/efecto
+> `game/src/core/pieces_data.gd`). Cada celda conserva su color/efecto
 > literal. Glifos góticos resueltos por contexto: 'D' en Enanos = Raudo,
 > 'M' en Chlontos = Zángano (ℨ), 'P' en tableros = básico de la facción,
 > 'R' en Aquontes = Leviatán (𝔜), 'P' rojo en Bestiarios Eq2 = Rapaz (ℜ).
@@ -327,13 +327,12 @@ beliber-godot/
 │   ├── factions/          # .tres de facciones (ejércitos Eq1/Eq2)
 │   └── pieces/            # .tres por tipo de pieza (~50)
 ├── src/
-│   ├── model/             # BoardState, MoveGenerator, TurnManager
-│   ├── view/              # BoardView, PieceNode, HighlightLayer
-│   └── ui/                # menus, faction_select
+│   ├── core/              # BoardState, MoveGenerator, TurnManager,
+│   │                      # red y servicios (RefCounted/Node)
+│   ├── ui/                # BoardView, pantallas, Widgets, tema
+│   └── main.gd            # entrypoint (único script por ruta)
 ├── scenes/
-│   ├── main.tscn
-│   ├── faction_select.tscn
-│   └── game.tscn
+│   └── main.tscn
 └── assets/                # sprites de piezas (del arte conceptual)
 ```
 

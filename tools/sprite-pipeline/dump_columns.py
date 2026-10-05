@@ -10,7 +10,7 @@ from PIL import Image
 from read_diagrams import clasifica, es_linea
 
 HERE = os.path.dirname(__file__)
-ROOT = os.path.dirname(HERE)
+ROOT = HERE
 
 def vlines(px, w, h):
     col = [0] * w

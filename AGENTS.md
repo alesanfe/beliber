@@ -30,7 +30,11 @@ godot --path game -s res://tools/screenshots.gd -- [nombre ...]  # subset opcion
 ## Estructura
 
 ```
-game/       # proyecto Godot (src/, scenes/, tests/, i18n/, tools/)
+game/       # proyecto Godot
+#   src/core/   # motor, datos, red y servicios (RefCounted/Node)
+#   src/ui/     # pantallas, widgets, tema y arte (Control)
+#   src/main.gd # entrypoint (único script referenciado por ruta)
+#   scenes/ tests/ i18n/ tools/
 server/     # relay.py + PROTOCOL.md + tests Python
 tools/      # test_all, release, sprite-pipeline/ (extracción de sprites)
 docs/       # COMO_FUNCIONA, COMPETENCIA, DEPENDENCIES, decisiones, assets
@@ -39,11 +43,11 @@ builds/     # salidas de release (gitignored)
 
 ## Reglas del proyecto
 
-- **Tema**: todo el chrome de UI usa `game/src/theme.gd` (`BeliberTheme`) —
+- **Tema**: todo el chrome de UI usa `game/src/ui/theme.gd` (`BeliberTheme`) —
   nunca colores fijos en widgets; variantes dark/light/contrast conmutables
   (`ui.skin` en `BELIBER_CFG`). Los colores de piezas/tablero son arte de
   juego y sí pueden ser literales.
-- **Widgets**: usar `game/src/widgets.gd` (`Widgets.primary`, `.lbl`,
+- **Widgets**: usar `game/src/ui/widgets.gd` (`Widgets.primary`, `.lbl`,
   `.heading`…) en vez de construir botones/etiquetas ad hoc.
 - **i18n**: textos de UI en `game/i18n/ui.csv` → regenerar `.translation`
   en el editor tras cada cambio.

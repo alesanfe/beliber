@@ -10,5 +10,5 @@ labels: enhancement
 ## Propuesta
 
 ## Referencias
-<!-- competidores que lo hacen bien (ver COMPETENCIA.md), o hoja de
+<!-- competidores que lo hacen bien (ver docs/COMPETENCIA.md), o hoja de
      diseño que lo exige -->

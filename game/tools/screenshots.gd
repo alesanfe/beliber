@@ -1,10 +1,10 @@
 extends SceneTree
-## Capturas de pantalla para docs/assets/ (README, docs).
+## Capturas de pantalla para docs/assets/screenshots/ (README, docs).
 ## Uso:   godot --path game -s res://tools/screenshots.gd
 ## Recorre las pantallas reales de la app; sobrescribe los PNG.
 ## NOTA: ejecuta en ventana (no --headless): necesita GPU.
 
-const OUT := "res://../docs/assets"
+const OUT := "res://../docs/assets/screenshots"
 const WAIT := 25              # frames tras cada acción antes del shot
 
 var _app

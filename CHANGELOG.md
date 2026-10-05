@@ -71,7 +71,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
   + SBOM + attestation SLSA en GitHub Releases).
 - `docs/ARCHITECTURE.md` (mapa de capas y contratos), `docs/
   REQUIREMENTS.md` (trazabilidad), `docs/THREAT_MODEL.md`,
-  `docs/operations/RUNBOOK.md`, `server/.env.example`.
+  `docs/operations/runbook.md`, `server/.env.example`.
 - `config/version` en `project.godot`; `.gitattributes` (EOL=LF) y
   `.editorconfig` (tabs GDScript / espacios resto).
 - Lint en CI: job `lint` con `py_compile`, bandit (seguridad) y
@@ -82,7 +82,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
 - Log de seguridad en el host (`sec:<evento>`: flood cerrado,
   paquete oversize, cap de salas, id_err) — grep-able, sin datos
   sensibles.
-- `docs/DATA_MODEL.md`, `docs/PRIVACY.md`, `docs/operations/SLO.md`
+- `docs/DATA_MODEL.md`, `docs/PRIVACY.md`, `docs/operations/slo.md`
   (SLI/SLO, RPO/RTO, alertas, capacidad verificada).
 - Icono propio (`game/icon.png` + `.ico`): el ejecutable y la web ya
   no usan el genérico de Godot.
@@ -90,7 +90,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
   observabilidad).
 - `BELIBER_SEED=<n>` fija el RNG del bot → tests y partidas vs IA
   reproducibles.
-- `.well-known/security.txt` (RFC 9116), `docs/operations/INCIDENTS.md`
+- `.well-known/security.txt` (RFC 9116), `docs/operations/incidents.md`
   (severidades, contención, postmortem), `.githooks/pre-commit`
   (opt-in: gdlint + py_compile + secretos) y `tools/release.ps1`
   (bump SemVer + suite completa + tag).

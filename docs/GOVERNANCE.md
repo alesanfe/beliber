@@ -13,7 +13,7 @@ proyecto no dependa de memoria.
 | Repositorio / releases | mantenedor | CODEOWNERS, tools/release.ps1 |
 | Seguridad | mantenedor | SECURITY.md, THREAT_MODEL.md, scorecard |
 | Calidad | CI + mantenedor | tools/test_all, gdlintrc, run_tests |
-| Incidentes | mantenedor | docs/operations/INCIDENTS.md |
+| Incidentes | mantenedor | docs/operations/incidents.md |
 
 Bus factor = 1. Aceptado (ver TECH_DEBT.md). Mitigación parcial:
 toda decisión está en un ADR o en comentario junto al código.
@@ -30,7 +30,7 @@ toda decisión está en un ADR o en comentario junto al código.
 - **Deprecación**: campos de protocolo marcados primero en
   PROTOCOL.md, se retiran en la siguiente major. Nunca se borra un
   campo que un peer viejo pueda enviar sin tolerarlo.
-- **Dependencias**: DEPENDENCIES.md — sin nuevas deps sin
+- **Dependencias**: docs/DEPENDENCIES.md — sin nuevas deps sin
   justificación; lockfile pineado; dependabot semanal; pip-audit
   bloquea.
 - **Secretos**: nunca en el repo ni en logs (gitleaks + pre-commit

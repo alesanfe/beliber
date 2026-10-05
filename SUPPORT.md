@@ -4,11 +4,11 @@
 
 | Necesitas | Canal |
 |---|---|
-| Reportar un bug | [GitHub Issues](../../issues) — plantilla `bug_report` |
-| Proponer una funcionalidad | [GitHub Issues](../../issues) — plantilla `feature_request` |
+| Reportar un bug | [GitHub Issues](https://github.com/alesanfe/beliber/issues) — plantilla `bug_report` |
+| Proponer una funcionalidad | [GitHub Issues](https://github.com/alesanfe/beliber/issues) — plantilla `feature_request` |
 | Reportar una vulnerabilidad | **No** en público — ver [SECURITY.md](SECURITY.md) |
 | Contribuir código | [CONTRIBUTING.md](CONTRIBUTING.md) |
-| Entender las reglas | [COMO_FUNCIONA.md](COMO_FUNCIONA.md) |
+| Entender las reglas | [COMO_FUNCIONA.md](docs/COMO_FUNCIONA.md) |
 | Operar el host | [docs/operations/](docs/operations/) |
 
 ## Qué incluir en un reporte

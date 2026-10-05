@@ -9,7 +9,7 @@ labels: bug
 <!-- comportamiento observado -->
 
 ## Qué esperabas
-<!-- según las reglas en COMO_FUNCIONA.md, si aplica -->
+<!-- según las reglas en docs/COMO_FUNCIONA.md, si aplica -->
 
 ## Reproducir
 1.

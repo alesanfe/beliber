@@ -1,6 +1,6 @@
 # Beliber — Proyecto Godot
 
-Prototipo jugable del ajedrez asimétrico **Beliber** (ver `../COMO_FUNCIONA.md`).
+Prototipo jugable del ajedrez asimétrico **Beliber** (ver `../docs/COMO_FUNCIONA.md`).
 
 ## Ejecutar
 
@@ -62,29 +62,35 @@ game/
 ├── project.godot
 ├── scenes/main.tscn        # escena raíz (un Control con src/main.gd)
 ├── src/
-│   ├── fx.gd             # constantes de efectos + colores de la leyenda
-│   ├── pieces_data.gd    # ⭐ TODAS las piezas y facciones como datos
-│   ├── board_state.gd    # estado 8x8, despliegue, aplicar movimientos
-│   ├── move_gen.gd       # generador de movimientos legales (todos los fx)
-│   ├── turn_manager.gd   # turnos, reglas, victoria, save/load, BEL-FEN
-│   ├── bot.gd            # IA minimax con personalidades y niveles
-│   ├── board_view.gd     # tablero dibujado + input + highlights por color
-│   ├── game_hud.gd       # panel lateral, lista de jugadas, bandejas
-│   ├── main.gd           # controlador raíz: menú, pantallas, red, run
-│   ├── menu_screen.gd    # menú principal (facciones, modos, ajustes)
-│   ├── online_screen.gd  # lobby online (ENet/relay/host, ladder, chat)
-│   ├── net_client.gd     # cliente WebSocket (dispatch, resync, cfg)
-│   ├── net_codec.gd      # serialización Vector2i ↔ {x,y}
-│   ├── piece_editor.gd   # editor de piezas (celdas, leg2, overrides)
-│   ├── army_builder.gd   # constructor de ejércitos con presupuesto
-│   ├── pos_editor.gd     # editor de posición libre (BEL-FEN)
-│   ├── puzzles.gd        # puzzles, desafío diario, modo rush
-│   ├── draft.gd          # draft de piezas estilo CEO
-│   ├── postgame.gd       # resumen/análisis post-partida
-│   ├── profile_screen.gd # perfil, estadísticas, logros
-│   ├── stats_store.gd    # persistencia de stats + escritura atómica
-│   ├── guide.gd          # guía interactiva / tutorial
-│   └── juice.gd,sfx.gd,widgets.gd… # feedback, audio, helpers UI
+│   ├── main.gd               # controlador raíz: menú, pantallas, red, run
+│   ├── core/                 # motor, datos, red y servicios (sin Control)
+│   │   ├── pieces_data.gd    # ⭐ TODAS las piezas y facciones como datos
+│   │   ├── board_state.gd    # estado 8x8, despliegue, aplicar movimientos
+│   │   ├── move_gen.gd       # generador de movimientos legales
+│   │   ├── turn_manager.gd   # turnos, reglas, victoria, save/load, BEL-FEN
+│   │   ├── bot.gd            # IA minimax con personalidades y niveles
+│   │   ├── net_client.gd     # cliente WebSocket (dispatch, resync, cfg)
+│   │   ├── net_codec.gd      # serialización Vector2i ↔ {x,y}
+│   │   ├── stats_store.gd    # persistencia de stats + escritura atómica
+│   │   ├── lang.gd           # i18n (ui.csv → .translation)
+│   │   ├── tts.gd            # lector de pantalla (accesibilidad)
+│   │   └── sfx.gd            # audio sintetizado
+│   └── ui/                   # pantallas, widgets, tema y arte (Control)
+│       ├── menu_screen.gd    # menú principal (facciones, modos, ajustes)
+│       ├── online_screen.gd  # lobby online (ENet/relay/host, ladder, chat)
+│       ├── board_view.gd     # tablero dibujado + input + highlights
+│       ├── game_hud.gd       # panel lateral, lista de jugadas, bandejas
+│       ├── piece_editor.gd   # editor de piezas (celdas, leg2, overrides)
+│       ├── army_builder.gd   # constructor de ejércitos con presupuesto
+│       ├── pos_editor.gd     # editor de posición libre (BEL-FEN)
+│       ├── puzzles.gd        # puzzles, desafío diario, modo rush
+│       ├── draft.gd          # draft de piezas estilo CEO
+│       ├── postgame.gd       # resumen/análisis post-partida
+│       ├── profile_screen.gd # perfil, estadísticas, logros
+│       ├── guide.gd          # guía interactiva / tutorial
+│       ├── fx.gd             # constantes de efectos + colores de leyenda
+│       ├── theme.gd          # BeliberTheme (dark/light/contrast)
+│       └── widgets.gd,juice.gd,icons.gd,piece_art.gd… # helpers UI
 ├── server/host.gd        # árbitro autoritativo (ws://:7779, ladder)
 └── tests/                # run_tests, e2e, e2e_net, playthrough, _smoke
 ```
@@ -138,7 +144,7 @@ sirve para corregirlos casilla a casilla sin tocar código.
 - ✅ Hotseat 2 jugadores con selección de facción y Eq1/Eq2/Personalizado.
 - ✅ Highlights coloreados con la paleta oficial de la leyenda.
 - ✅ Editor visual de piezas con persistencia JSON.
-- ✅ **Funcionalidades de la competencia** (ver `../COMPETENCIA.md`):
+- ✅ **Funcionalidades de la competencia** (ver `../docs/COMPETENCIA.md`):
   - Valor de ejército por facción en el menú (equilibrio estilo Betza).
   - Material vivo en el HUD.
   - Mapa de cobertura alternable (estilo Chess Evolved Online).
