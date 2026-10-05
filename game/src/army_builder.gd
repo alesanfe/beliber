@@ -212,7 +212,7 @@ func _ready() -> void:
 		# la barra "tuya" lleva acento — antes ambas barras eran del
 		# mismo gris y era imposible saber cuál era cuál
 		var fill := StyleBoxFlat.new()
-		fill.bg_color = Color(0.4, 0.65, 1.0)
+		fill.bg_color = BeliberTheme.accent()
 		bc.add_theme_stylebox_override("fill", fill)
 		right.add_child(bc)
 		var bo := ProgressBar.new()
