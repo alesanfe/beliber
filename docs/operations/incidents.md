@@ -3,7 +3,7 @@
 ## Severidades
 
 | Sev | Ejemplo | Respuesta |
-|---|---|---|
+| --- | --- | --- |
 | S1 | Token leak publicado, exploit que suplanta pids, host down total | inmediata: contención primero, análisis después |
 | S2 | Corrupción de ratings, desync reproducible, crash del host bajo input | mismo día |
 | S3 | Bug de reglas, pérdida de un mensaje, glitch visual | backlog priorizado |

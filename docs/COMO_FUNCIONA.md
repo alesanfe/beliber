@@ -28,7 +28,7 @@ Cada color es un *efecto de movimiento*:
 ### Efectos base
 
 | Color | Efecto | Descripción |
-|---|---|---|
+| --- | --- | --- |
 | Amarillo | **Mover** | Colocar la pieza en la casilla solo si está vacía. |
 | Rojo | **Capturar** | Colocar la pieza en la casilla solo si hay una pieza enemiga; se captura. |
 | — | **Saltar** | El movimiento ignora piezas que bloqueen el paso. |
@@ -39,7 +39,7 @@ Cada color es un *efecto de movimiento*:
 ### Colores combinados
 
 | Color | Significado |
-|---|---|
+| --- | --- |
 | Naranja | "Mover" **o** "Capturar" |
 | Cian | "Mover" saltando |
 | Verde lima | "Capturar" saltando |
@@ -54,7 +54,7 @@ Cada color es un *efecto de movimiento*:
 ### Movimientos condicionados
 
 | Color | Condición |
-|---|---|
+| --- | --- |
 | Rosa | **Capturar al paso**: si el enemigo movió un peón en vertical en su último turno y quedó adyacente, mueves tu peón a esta casilla y lo capturas. |
 | Verde claro | **Despliegue**: solo si el peón aún no ha movido (equivalente al avance doble del peón). |
 | Verde oscuro | **Enroque**: si rey y torre no han movido, no hay casillas amenazadas entre posición inicial y final, y no hay piezas entre ellos. La torre queda adyacente al rey en el lado contrario. |
@@ -94,11 +94,12 @@ inicial del ejército (con variantes **Eq1** y **Eq2** = dos dotaciones
 alternativas).
 
 ### 3.1 Humenex
+
 *Regla especial: los Humenex **siempre empiezan segundos**; en su primer
 movimiento juegan **2 movimientos**.*
 
 | Pieza | Valor | Movimiento (interpretación) |
-|---|---|---|
+| --- | --- | --- |
 | **Peón** | 1 | Avanza 1 (amarillo); despliegue 2 casillas si no ha movido (verde claro); captura en diagonal frontal incl. al paso (rosa). |
 | **Emperatriz** (X) | 8 | Desliza en todas las direcciones (naranja) — la "reina" clásica. |
 | **Emperador** (Y) | — | 3 casillas frontales (naranja) + laterales M/C o enroque (lima) + enroque a lo largo de la fila (verde osc.). El rey. |
@@ -109,10 +110,11 @@ movimiento juegan **2 movimientos**.*
 Despliegue: fila trasera `T C E Y X E C T`. Es la facción más parecida al ajedrez clásico.
 
 ### 3.2 Elfos
+
 *Regla especial: los Elfos **siempre empiezan primeros**.*
 
 | Pieza | Valor | Movimiento |
-|---|---|---|
+| --- | --- | --- |
 | **Centinela** (C) | 1 | 1 casilla adyacente (naranja) — peón lento de corto alcance. |
 | **Dama** (X) | 8 | Mover/capturar atravesando cerca (verde osc.) + mover atravesando lejos (oliva) + saltos de caballo (cian). Reina con atravesar. |
 | **Monarca** (Y) | — | 1 casilla **mover/capturar atravesando** (verde oscuro). El rey. |
@@ -123,11 +125,12 @@ Despliegue: fila trasera `T C E Y X E C T`. Es la facción más parecida al ajed
 Identidad: mucha movilidad a través de piezas e inmovilización.
 
 ### 3.3 Mortifers
+
 *Regla especial: la **Consorte** (reina) puede intercambiar su gama de
 movimientos con la de una pieza tras capturarla.*
 
 | Pieza | Valor | Movimiento |
-|---|---|---|
+| --- | --- | --- |
 | **Carroñero** (K/C) | 1 | Casillas adyacentes (rojo + naranja). |
 | **Consorte** (X) | 8 | Diagonal (rojo) + ortogonal (naranja) + saltos (morado). Roba movimientos al capturar. |
 | **Tirano** (Y) | — | Adyacentes (rojo + naranja). El rey. |
@@ -138,11 +141,12 @@ movimientos con la de una pieza tras capturarla.*
 Despliegue: `I C M X Y M C I` (Eq1) / `I C M Y X M C I` (Eq2).
 
 ### 3.4 Bestiarios
+
 *Regla especial: para ganar hay que derrotar a **ambos líderes** (Líder y
 Lideresa). Facción de enjambre con más tipos de pieza (9).*
 
 | Pieza | Valor | Movimiento |
-|---|---|---|
+| --- | --- | --- |
 | **Rahez** (H) | 1 | Avanza (amarillo) + captura laterales (rojo). |
 | **Rapaz** (R) | 4 | Diagonal (naranja) + casillas (amarillo). |
 | **Fugaz** (F) | 3 | Saltos largos (1,3) en morado. |
@@ -156,10 +160,11 @@ Lideresa). Facción de enjambre con más tipos de pieza (9).*
 Despliegue Eq1: `V X R E F S Y A` · Eq2: `A Y S F E R X V`.
 
 ### 3.5 Enanos
+
 Facción orientada a **empujar**.
 
 | Pieza | Valor | Movimiento |
-|---|---|---|
+| --- | --- | --- |
 | **Vasallo** (S) | 1 | Mover/empujar frontal (teal) + captura saltando a los lados (morado). |
 | **Sultana** (X) | 6 | Naranja + morado (mixto). |
 | **Califa** (Y) | — | Adyacentes teal + morado. El rey. |
@@ -172,7 +177,7 @@ Despliegue Eq1: `Z V R V X R Y Z` · Eq2: `Z Y R X V R V Z`.
 ### 3.6 Chlontos
 
 | Pieza | Valor | Movimiento |
-|---|---|---|
+| --- | --- | --- |
 | **Zángano** (Z) | 1 | Avanza (amarillo) + captura laterales/frontal (rojo). |
 | **Matriarca** (X) | 6 | Diagonal (rojo) + saltos (morado). |
 | **Gerarca** (Y) | — | Adyacentes (cian + naranja). El rey. |
@@ -183,10 +188,11 @@ Despliegue Eq1: `Z V R V X R Y Z` · Eq2: `Z Y R X V R V Z`.
 Despliegue Eq1: `H C C R R X Y H` · Eq2: `H Y X R R C C H`.
 
 ### 3.7 Aquontes
+
 Facción con el **Salto de Aquonte** (salto condicionado sobre piezas alineadas).
 
 | Pieza | Valor | Movimiento |
-|---|---|---|
+| --- | --- | --- |
 | **Alevín** (A) | 1 | Salto de Aquonte frontal (marrón) + amarillo + rojo. |
 | **Anfitrite** (X) | 8 | Marrón + rojo + morado + naranja — reina versátil. |
 | **Leviatán** (Y) | — | Diagonal Aquonte (marrón) + naranja. El rey. |
@@ -197,10 +203,11 @@ Facción con el **Salto de Aquonte** (salto condicionado sobre piezas alineadas)
 Despliegue Eq1: `C M T T M X Y C` · Eq2: `C Y X M T T M C`.
 
 ### 3.8 Kronturs
+
 Facción de **empuje** pesada.
 
 | Pieza | Valor | Movimiento |
-|---|---|---|
+| --- | --- | --- |
 | **Mole** (M) | 1 | Empuja frontal (azul) + captura laterales (rojo) — "peón ariete". |
 | **Zarina** (X) | 6 | Saltos (morado) + azul oscuro (mover/capturar/empujar). |
 | **Zar** (Y) | — | Empujar (azul) + azul oscuro. El rey. |
@@ -284,7 +291,7 @@ class_name PieceDef extends Resource
 
 ### 5.2 Arquitectura (modelo / vista separados)
 
-```
+```text
 ┌─ MODELO (puro, testeable, sin nodos) ──────────────┐
 │ BoardState      grid 8x8 de PieceState             │
 │ PieceState      def, owner, has_moved, statuses    │
@@ -304,6 +311,7 @@ class_name PieceDef extends Resource
 ```
 
 **Sistema de efectos** — el corazón del motor:
+
 - `MoveGenerator` itera los `MoveAtom` de la pieza y produce acciones.
 - `Empujar` y `Atraer` generan movimientos *sobre casillas ocupadas* y mueven
   la pieza objetivo (a veces fuera del tablero = captura por atropello).
@@ -312,6 +320,7 @@ class_name PieceDef extends Resource
   derechos de enroque, ocupación alineada (Aquonte).
 
 **Mecánicas especiales a encapsular:**
+
 - `Tritón`: un `Move` puede ser `CompoundMove` (2 sub-movimientos encadenados).
 - `Consorte`: al capturar, guarda copia de los `moves` de la víctima
   (o reemplaza su set) → estado mutable por pieza.
@@ -320,7 +329,7 @@ class_name PieceDef extends Resource
 
 ### 5.3 Estructura de proyecto sugerida
 
-```
+```text
 beliber-godot/
 ├── project.godot
 ├── data/

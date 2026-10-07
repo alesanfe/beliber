@@ -6,11 +6,13 @@ y lecciones aplicables al diseño y la implementación.
 ## Referentes directos
 
 ### 1. Chess with Different Armies (Ralph Betza, 1979)
+
 El padre del género. 4 ejércitos "iguales en fuerza pero distintos en
 propiedades": Fabulous FIDEs, Colorbound Clobberers, Nutty Knights,
 Remarkable Rookies. Reyes y peones idénticos en todas las facciones.
 
 **Lecciones para Beliber:**
+
 - Betza mantuvo reyes y peones iguales en todas las facciones
   *deliberadamente*: facilita aprender el juego. Beliber va más lejos
   (todo es distinto) — compensar con el editor y los highlights de color.
@@ -21,13 +23,16 @@ Remarkable Rookies. Reyes y peones idénticos en todas las facciones.
   de equilibrio del ejército en la UI.
 
 ### 2. Chess 2 (Sirlin & Burns, 2014) — Steam/Ouya
+
 6 ejércitos asimétricos + dos innovaciones clave:
+
 - **Midline Invasion**: ganas si tu rey cruza el centro. Elimina las
   tablas y los finales "resueltos" de libro.
 - **Duelos con piedras**: al capturar, el defensor puede apostar piedras
   para destruir al atacante. Añade lectura de rival y valor dinámico.
 
 **Lecciones:**
+
 - Condición de victoria alternativa = anti-tablas. Beliber usa captura de
   líder (ya es anti-draw), pero se puede añadir "invasión de línea" como
   opción de reglas.
@@ -36,11 +41,13 @@ Remarkable Rookies. Reyes y peones idénticos en todas las facciones.
   cubren ese espacio sin necesidad de meta-moneda.
 
 ### 3. Chess Evolved Online (CEO)
+
 Ajedrez online con **army-building total**: minions en fila frontal,
 champions atrás, presupuesto de ~80–100 puntos, máx. 8 copias de un
 minion / 4 de un champion, 16 setups guardables.
 
 **Lecciones (las más aplicables):**
+
 - El **army builder con presupuesto de puntos** es el sueño del jugador de
   Beliber: las piezas ya tienen valores → permitir crear ejércitos propios
   dentro del editor.
@@ -50,6 +57,7 @@ minion / 4 de un champion, 16 setups guardables.
   dice Betza).
 
 ### 4. Asymmetric Chess (chessvariants.org)
+
 3 razas: Humanos (lineal), Elfos (saltadores diagonales), Orcos
 (saltadores ortogonales). Mismo tablero y misma disposición.
 
@@ -58,6 +66,7 @@ minion / 4 de un champion, 16 setups guardables.
 Kronturs empujan, Aquontes saltan sobre piezas, Mortifers roban, etc.
 
 ### 5. Otros
+
 - **Maharajah and the Sepoys**: asimetría extrema (1 pieza vs ejército).
 - **Board 8x8 Game Mix**: múltiples condiciones de victoria mezcladas.
 - **Chu Shogi / Tenjiku Shogi**: precedente histórico de piezas que
@@ -69,7 +78,7 @@ Kronturs empujan, Aquontes saltan sobre piezas, Mortifers roban, etc.
 ## Piezas "parecidas" ya vistas en el folklore (fairy chess)
 
 | Efecto Beliber | Equivalente fairy chess |
-|---|---|
+| --- | --- |
 | Saltar (morado/cian) | Leapers: Knight (1,2), Camel (1,3), Giraffe (1,4), Zebra (2,3) |
 | Deslizar | Riders: Rook, Bishop, Queen, Nightrider (caballo en línea) |
 | Atravesar | "Screenless" movimiento estilo Leo/Pao (cañón chino) |
@@ -110,6 +119,7 @@ De las plataformas y juegos listados, esto es lo que aplica a Beliber,
 ordenado por prioridad y viabilidad en el proyecto actual (local, sin red).
 
 ### Ya implementado
+
 - Log de movimientos (todas las plataformas)
 - Mapa de cobertura (Chess Evolved Online)
 - Valor de ejercito visible en HUD (valoracion de material, clasica)
@@ -120,6 +130,7 @@ ordenado por prioridad y viabilidad en el proyecto actual (local, sin red).
 - Editor visual de piezas ~ chessvariants PieceLab
 
 ### Imprescindibles de un juego de tablero (pendientes, baratas)
+
 1. **Deshacer jugada** (undo) — estandar en Lucas Chess, Chess Lv.100.
    El motor ya tiene BoardState copiable; basta guardar pila de estados.
 2. **Resaltar ultimo movimiento** (from/to en amarillo tenue) — universal
@@ -134,23 +145,26 @@ ordenado por prioridad y viabilidad en el proyecto actual (local, sin red).
    fichero de texto, como el PGN; el log ya existe.
 
 ### Recomendables (coste medio)
+
 7. **Bot/IA simple** — minimax con evaluacion de material+lider; DroidFish/
    Stockfish nivel 1 como inspiracion, no necesitamos motor externo.
-8. **Replay de la partida** — recorrer el log (flechas atras/adelante).
-9. **Sugerencia de jugada** — resaltar un movimiento "bueno" (eval de
+2. **Replay de la partida** — recorrer el log (flechas atras/adelante).
+3. **Sugerencia de jugada** — resaltar un movimiento "bueno" (eval de
    material post-jugada), estilo Aimchess/DecodeChess simplificado.
-10. **Animacion de captura/movimiento** — transicion suave estilo Battle
+4. **Animacion de captura/movimiento** — transicion suave estilo Battle
     Chess lite (sin cinematica, solo slide+fade).
-11. **Sonidos** — click de pieza, captura, victoria. Assets CC0 de kenney.nl.
-12. **Resumen post-partida** — material capturado por bando, nº movimientos,
+5. **Sonidos** — click de pieza, captura, victoria. Assets CC0 de kenney.nl.
+6. **Resumen post-partida** — material capturado por bando, nº movimientos,
     tiempo (si hay reloj), estilo pantalla de resultados de Chess.com.
 
 ### Solo relevantes si se hace online (fase futura)
+
 - Emparejamiento, ELO/clasificacion, torneos (Chess.com, ICC, FIDE Arena)
 - Ajedrez por correspondencia (GameKnot, Red Hot Pawn)
 - Espectadores, chat, clubs
 
 ### Irrelevantes o ya superados por el diseno de Beliber
+
 - Bases de datos de aperturas (ChessBase): Beliber tiene despliegues
   por faccion, no "teoria de aperturas" trasladable.
 - Repeticion espaciada/cursos (Chessable): es producto educativo, no juego.
@@ -160,6 +174,7 @@ ordenado por prioridad y viabilidad en el proyecto actual (local, sin red).
 - Chess960 aleatorio: el army builder + 2 equipos cubren la variabilidad.
 
 ### Conclusion
+
 Lo que falta para que Beliber "se sienta" como un juego de ajedrez
 profesional es barato y local: **deshacer, ultimo movimiento, peligro al
 lider, reloj, rendirse, exportar partida, bot simple y animaciones**.
@@ -168,6 +183,7 @@ Todo eso cabe en el motor/UI actual sin tocar las reglas.
 ## Oleada 3 - herramientas de analisis y partida local
 
 Implementado:
+
 - Arrastrar y soltar piezas (drag&drop) ademas de clic-clic.
 - Flechas de analisis y marcas de casilla con boton derecho
   (clic = ciclar color; arrastre = flecha; repetir = borrar).
@@ -188,6 +204,7 @@ Implementado:
 - Temas de tablero (3 paletas).
 
 Pendiente deliberado (requiere diseno/servidor):
+
 - Online, torneos, ELO, antitrampas, espectadores, chat.
 - 3D/VR, cosmeticos, campana narrativa, logros.
 - Cursos/aperturas con repeticion espaciada (producto educativo).
@@ -196,6 +213,7 @@ Pendiente deliberado (requiere diseno/servidor):
 ## Oleada 4 - acabado de plataforma local
 
 Implementado:
+
 - Barra de evaluacion del motor propio en el HUD (Eval +N/-N/=).
 - Modo ciego (oculta las piezas, memoria pura).
 - Confirmacion de jugada: primer clic = vista previa verde,
@@ -279,7 +297,7 @@ Test: server/test_host.py — 8/8 checks verdes contra el arbitro real.
 
 ---
 
-# Analisis competitivo profundo (ronda 2)
+## Analisis competitivo profundo (ronda 2)
 
 Beliber no compite solo con plataformas de ajedrez: su naturaleza
 asimetrica (8 facciones con reglas distintas) lo pone frente a
@@ -288,7 +306,7 @@ juegos de ejercitos y tactica por turnos. Matriz actualizada.
 ## Chess Evolved Online (el mas cercano)
 
 | Feature CEO | Beliber |
-|---|---|
+| --- | --- |
 | 500+ piezas coleccionables | 8 facciones x ~6 piezas, editor de piezas |
 | Ejercito: max 8 minions/4 champions, presupuesto 80→100 | ✓ Army builder con presupuesto |
 | Army Profile: huecos defensivos, stats ataque/magia | Parcial: cobertura de ejercito |
@@ -305,7 +323,7 @@ rangos) y el "Army Profile" con test contra IA.
 ## Root (asimetria referente)
 
 | Feature Root | Beliber |
-|---|---|
+| --- | --- |
 | Cada faccion con victoria propia | ✓ todas = eliminar lider (variante: linea media) |
 | IAs "Clockwork" por faccion (comportamientos distintos) | ✓ arquetipo "auto" por facción (FACTION_STYLE) |
 | Campana/tutorial interactivo por faccion | ✓ tutorial guiado + guía interactiva (guide.gd) |
@@ -316,7 +334,7 @@ rangos) y el "Army Profile" con test contra IA.
 ## Duelyst II (tactica por facciones)
 
 | Feature | Beliber |
-|---|---|
+| --- | --- |
 | 6 facciones con estilo claro (aggro, control, combo…) | ✓ 8 con estilos marcados |
 | Nombre/identidad de estrategia por faccion | ✓ arquetipos en FACTION_STYLE + guía |
 | Coleccion/progresion | ✓ XP por facción + niveles + logros |
@@ -326,7 +344,7 @@ rangos) y el "Army Profile" con test contra IA.
 ## Prismata (modelo de producto)
 
 | Feature | Beliber |
-|---|---|
+| --- | --- |
 | Bots con ELO propio | 3 niveles sin rating medido |
 | Puzzles generados | ✓ puzzles + rush + diario (puzzles.gd) |
 | Emotes/chat | ✓ chat en UI online (ENet y WS) |
@@ -401,12 +419,12 @@ Es la diferenciacion mas barata y con mas potencial viral.
 
 ---
 
-# Analisis de INTERFAZ frente a competidores (ronda 3)
+## Analisis de INTERFAZ frente a competidores (ronda 3)
 
 ## lichess / chess.com — la referencia en UI de ajedrez
 
 | Elemento UI | Ellos | Beliber (estado) |
-|---|---|---|
+| --- | --- | --- |
 | Lista de jugadas | Tabla scrolleable, clic = saltar a la posicion | Cola de texto (ultimas 16) |
 | Piezas capturadas | Bandeja de iconos + dif de material junto al nombre | Texto "Capturado J1: …" |
 | Barra de eval | Barra vertical blanco/negro junto al tablero | Texto "Eval +N" |

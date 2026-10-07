@@ -7,7 +7,7 @@ justificar límites en código.
 ## SLI y objetivos
 
 | SLI | Medición | SLO |
-|---|---|---|
+| --- | --- | --- |
 | Health check | `ping` → `pong` | responde en <500 ms en LAN |
 | Disponibilidad del host | proceso vivo + pong | 99 % mensual (autoalojado, sin HA) |
 | Jugadas | `play` → `move`/`err` | <200 ms en LAN |
@@ -38,7 +38,7 @@ justificar límites en código.
 ## Alertas sugeridas (si el host se monitoriza)
 
 | Condición | Acción |
-|---|---|
+| --- | --- |
 | `ping` sin `pong` >30 s | reiniciar proceso (no hay estado volátil que perder salvo salas activas) |
 | `rooms` ≥ 450 | revisar flood / crecer el cap deliberadamente |
 | `pending` alto sostenido | revisar origen (slowloris mitigado a 5 s) |

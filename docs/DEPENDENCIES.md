@@ -6,7 +6,7 @@ suministro mínima.
 ## Runtime
 
 | Dependencia | Versión | Uso |
-|---|---|---|
+| --- | --- | --- |
 | Godot Engine | 4.7.x (probado 4.7.2 stable) | Motor completo — la app no importa ninguna librería externa; solo `class_name` propios y API del engine. |
 | Python `websockets` | ==13.1 (`server/requirements.txt`) | Solo `server/relay.py` y los tests WS. El host autoritativo (`host.gd`) NO la necesita — es Godot puro. |
 
@@ -19,7 +19,7 @@ runtime.
 ## Toolchain / CI
 
 | Herramienta | Uso |
-|---|---|
+| --- | --- |
 | GitHub Actions + `actions/setup-python` | CI |
 | `pip-audit` | Auditoría de `websockets` (no bloqueante) |
 | `cyclonedx-bom` | SBOM de las deps Python como artefacto CI |

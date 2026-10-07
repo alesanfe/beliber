@@ -13,7 +13,7 @@
 Todo de golpe: `tools/test_all.ps1` / `tools/test_all.sh`
 (env `GODOT=…` para indicar el binario). O por suite:
 
-```
+```text
 godot --headless --path game -s res://tests/run_tests.gd
 godot --headless --path game -s res://tests/playthrough.gd
 godot --headless --path game -s res://tests/_smoke.gd

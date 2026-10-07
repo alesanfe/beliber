@@ -6,7 +6,7 @@ addons.
 
 ## Capas
 
-```
+```text
 ┌─ UI ──────────────────────────────────────────────────────────┐
 │ main.gd (controlador raíz) · menu_screen · online_screen ·    │
 │ profile_screen · game_hud · board_view · widgets · juice/fx · │
@@ -47,7 +47,7 @@ addons.
 `user://` de Godot (rutas override por env `BELIBER_*`):
 
 | Archivo | Qué | Quién |
-|---|---|---|
+| --- | --- | --- |
 | `beliber.cfg` | ConfigFile de ajustes + `net.pid`/`net.tok` | cliente |
 | `beliber_save.json` | partida en curso (`"v":1`) | cliente |
 | `beliber_stats.json` | XP, logros, rush_best | cliente |
@@ -60,7 +60,7 @@ Todas las escrituras pasan por `StatsStore.atomic_write`
 ## Modos de juego y su árbitro
 
 | Modo | Árbitro | Transporte |
-|---|---|---|
+| --- | --- | --- |
 | Hotseat / vs IA / IA-vs-IA | TurnManager local | — |
 | ENet LAN | host de la partida | ENet RPC :7777 |
 | Sala relay | receptor recalcula | WS :7778 |

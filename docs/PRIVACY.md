@@ -3,7 +3,7 @@
 ## Qué datos trata
 
 | Dato | Dónde | Por qué | Sensible |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `pid` (random local) | cliente + host (ladder) | clave anónima del ELO | pseudónimo |
 | `tok` | cliente + host | credencial anti-suplantación | **secreto** |
 | nick | sala (volátil) + `ratings.name` (display) | mostrar quién juega | elegido por el usuario |

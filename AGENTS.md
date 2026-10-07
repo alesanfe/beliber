@@ -29,7 +29,7 @@ godot --path game -s res://tools/screenshots.gd -- [nombre ...]  # subset opcion
 
 ## Estructura
 
-```
+```text
 game/       # proyecto Godot
 #   src/core/   # motor, datos, red y servicios (RefCounted/Node)
 #   src/ui/     # pantallas, widgets, tema y arte (Control)

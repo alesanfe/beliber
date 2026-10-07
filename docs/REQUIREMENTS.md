@@ -6,7 +6,7 @@ tests o documento). IDs estables — no renumerar.
 ## Funcionales (reglas del juego)
 
 | ID | Requisito | Verificación |
-|---|---|---|
+| --- | --- | --- |
 | F-01 | Las 7 facciones despliegan y se mueven según las hojas (patrones por casilla, efectos: push/attract/immob/traverse/jump/Aquonte/cadena) | `tests/run_tests.gd` (batería por facción), `tests/playthrough.gd` |
 | F-02 | Victoria por captura del líder; tablas por repetición, acuerdo y anti-stall | run_tests.gd; resign/draw en `test_relay.py`/`test_host.py` |
 | F-03 | Reglas especiales: enroque, al paso, doble apertura Humenex, Consorte, Aquonte, encadenamiento Tritón | run_tests.gd (regresiones dedicadas) |
@@ -21,7 +21,7 @@ tests o documento). IDs estables — no renumerar.
 ## No funcionales
 
 | ID | Requisito | Objetivo | Verificación |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | NF-01 | Jugable a 60 fps en escritorio modesto | 8×8, ≤64 sprites/casilla | implícito en e2e/UX; perfilable con Godot |
 | NF-02 | Arranque headless testable en CI | <30 s por suite | ci.yml |
 | NF-03 | Salvaguarda íntegra ante cortes | escritura atómica + `.bak` | stats_store.atomic_write |
@@ -38,7 +38,7 @@ tests o documento). IDs estables — no renumerar.
 ## Trazabilidad de tests
 
 | Suite | Cubre |
-|---|---|
+| --- | --- |
 | `tests/run_tests.gd` | F-01..F-04, NF-03 (reglas + persistencia + regresiones) |
 | `tests/playthrough.gd` | F-01, F-06 (partidas completas bot-vs-bot) |
 | `tests/_smoke.gd` | F-05, F-07 (UI smoke: draft, editores, puzzles) |

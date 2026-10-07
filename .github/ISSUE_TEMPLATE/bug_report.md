@@ -12,11 +12,13 @@ labels: bug
 <!-- según las reglas en docs/COMO_FUNCIONA.md, si aplica -->
 
 ## Reproducir
+
 1.
 2.
 3.
 
 ## Contexto
+
 - Versión de Godot: <!-- p.ej. 4.7.2 -->
 - Sistema: <!-- Windows 11, etc. -->
 - Modo de juego: <!-- local / IA / ENet / relay / host autoritativo -->

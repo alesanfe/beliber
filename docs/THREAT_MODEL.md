@@ -16,7 +16,7 @@ modificado. Fuera de scope: compromiso del propio servidor.
 ## Amenazas y mitigaciones
 
 | Amenaza | Activo | Mitigación implementada |
-|---|---|---|
+| --- | --- | --- |
 | Payload malformado → crash | A1/A3 | validación `typeof`/Dictionary en cliente y ambos servidores; `match_legal` solo casa from/to |
 | Efectos falsificados (captures, push) en `move` | A1 | receptor recalcula legalidad; host es autoritativo y resuelve él mismo |
 | `side` falsificado en resync/resign | A1 | relay estampa `side` con el emisor real; cliente ignora `mv.side` no estampado |

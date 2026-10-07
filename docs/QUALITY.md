@@ -6,7 +6,7 @@ Una decisión que empeore un atributo `crítico` exige justificación en el PR.
 ## Prioridades
 
 | Atributo | Prioridad | Objetivo | Medición | Umbral |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | Corrección de reglas | crítica | Motor data-driven sin trampas | `run_tests` + `playthrough` + BEL-FEN round-trip | 0 failures |
 | Fiabilidad online | crítica | Relay/host sin pérdida ni desync | `e2e_net`, `test_relay`, `test_host`, `test_ladder` | 0 desyncs en tests |
 | Usabilidad | alta | UI legible y navegable | `_smoke`, capturas por tema/resolución | usable a 800×600 |

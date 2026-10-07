@@ -6,7 +6,7 @@ riesgos — un 4 medio con un fallo crítico abierto sigue siendo un
 proyecto con un fallo crítico abierto.
 
 | Dimensión | Nivel | Evidencia |
-|---|---|---|
+| --- | --- | --- |
 | Requisitos | 3 | `docs/REQUIREMENTS.md`: 22 reqs con ID + trazabilidad a tests |
 | Arquitectura | 3 | `docs/ARCHITECTURE.md` + 3 ADRs; límites de confianza explícitos (host autoritativo / relay / cliente) |
 | Pruebas | 3 | 9 suites automatizadas por riesgo (motor, red, e2e, carga, recuperación `.bak`, regresiones del audit) |

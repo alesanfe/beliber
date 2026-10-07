@@ -105,5 +105,21 @@ jobs:
           name: sbom
           path: sbom.json
 
+  # docs/ es normativa del proyecto — markdownlint + enlaces rotos por PR
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: markdownlint
+        run: npx -y markdownlint-cli2 "**/*.md" "!node_modules/**"
+      - name: enlaces rotos (lychee)
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: >-
+            --no-progress
+            --exclude "localhost|127\.0\.0\.1|example\.com"
+            "**/*.md"
+          fail: true
+
   # El escaneo de secretos vive en security.yml (gitleaks-action@v2 con
   # fetch-depth: 0 — cubre también el historial git, no solo el árbol).

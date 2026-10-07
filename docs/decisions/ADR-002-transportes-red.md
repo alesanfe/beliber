@@ -34,10 +34,11 @@ autodeclarado pero declarar el de otro sin su token degrada a invitado.
 
 ## Consecuencias
 
-+ Cualquier jugador puede autoalojar el relay (`pip install
+- Cualquier jugador puede autoalojar el relay (`pip install
   websockets`; `python server/relay.py`).
-+ El host autoritativo da ladder y validación real sin romper los
+- El host autoritativo da ladder y validación real sin romper los
   otros transportes (mismo `net_client`).
+
 - El relay no impide que un cliente modificado juegue con reglas
   inventadas *contra otro cliente modificado* — riesgo asumido.
 - `ws://` sin TLS: para internet serio el host va detrás de proxy con

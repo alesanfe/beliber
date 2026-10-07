@@ -27,17 +27,17 @@ reprogramables, IA con niveles y estilos, y juego en red con ladder ELO.
 | ![Draft por turnos con presupuesto](docs/assets/screenshots/draft.png) | ![Panel post-partida](docs/assets/screenshots/postgame.png) |
 
 | Modos de partida | Progresión |
-|---|---|
+| --- | --- |
 | ![Tutorial guiado: objetivos del panel sobre una partida asistida](docs/assets/screenshots/tutorial.png) | ![Perfil: historial de partidas, récords y logros por facción](docs/assets/screenshots/profile.png) |
 | ![Puzzle táctico: capturar el líder rival, con modo Rush de 60 s](docs/assets/screenshots/puzzles.png) | ![Modo Run roguelike: elección de bendición tras la victoria de cada combate](docs/assets/screenshots/run_boon.png) |
 
 | Paneles en partida | Juego en red |
-|---|---|
+| --- | --- |
 | ![Panel de partida: evaluación, capturas y registro de movimientos revisable](docs/assets/screenshots/game_moves.png) | ![Panel de opciones: deshacer, rendirse, temas, accesibilidad y exportación](docs/assets/screenshots/game_opts.png) |
 | ![Panel de chat (disponible solo en partidas online)](docs/assets/screenshots/game_chat.png) | ![Jugar online: cola rápida, salas, LAN y ladder con emparejamiento automático](docs/assets/screenshots/online.png) |
 
 | Editores | |
-|---|---|
+| --- | --- |
 | ![Editor de piezas: patrón de movimiento/captura pintado por casillas, con plantillas rápidas](docs/assets/screenshots/piece_editor.png) | ![Editor de posición: disposición libre de piezas, exportación BEL-FEN y jugar desde ahí](docs/assets/screenshots/pos_editor.png) |
 | ![Constructor de ejército: presupuesto de puntos, coste y comparación con el despliegue oficial](docs/assets/screenshots/builder.png) | |
 
@@ -50,7 +50,7 @@ Todas las pantallas anteriores vuelven a capturarse a 800×600 para
 comprobar que la UI sigue siendo usable en la ventana mínima:
 
 | Pantalla | 800×600 |
-|---|---|
+| --- | --- |
 | Menú | ![Menú a 800×600 (ventana mínima)](docs/assets/screenshots/800x600/menu.png) |
 | Guía | ![Guía a 800×600 (ventana mínima)](docs/assets/screenshots/800x600/guide.png) |
 | Draft | ![Draft a 800×600 (ventana mínima)](docs/assets/screenshots/800x600/draft.png) |
@@ -119,7 +119,7 @@ comprobar que la UI sigue siendo usable en la ventana mínima:
 ## Qué incluye / qué no
 
 | Incluye | No incluye |
-|---|---|
+| --- | --- |
 | Motor completo y reglas fieles a las hojas de diseño | Arte final y animaciones |
 | Juego local, IA y online funcional | Matchmaking público con cuentas |
 | Editores de piezas/ejército/posición | Despliegue a stores |
@@ -172,7 +172,7 @@ Para aislar datos de tests: `BELIBER_CFG`, `BELIBER_SAVE`,
 
 ## Estructura
 
-```
+```text
 beliber/
 ├── game/             # proyecto Godot (src/, scenes/, tests/, i18n/)
 │   └── server/       # host.gd autoritativo (WebSocket)
@@ -205,7 +205,7 @@ godot --headless --path game -s res://server/host.gd -- 7779
 ## Documentación
 
 | Tipo | Documento |
-|---|---|
+| --- | --- |
 | Reglas | [COMO_FUNCIONA.md](docs/COMO_FUNCIONA.md) |
 | Arquitectura | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
 | Guía técnica | [game/README.md](game/README.md) |

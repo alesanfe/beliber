@@ -30,8 +30,9 @@ tokens de identidad en `user://`. Dos riesgos reales observados:
 
 ## Consecuencias
 
-+ Tests 100% aislados del perfil real (CI en máquina limpia es igual
+- Tests 100% aislados del perfil real (CI en máquina limpia es igual
   que local).
-+ Un crash durante save deja como mucho el fichero anterior íntegro.
+- Un crash durante save deja como mucho el fichero anterior íntegro.
+
 - Cada env nuevo debe añadirse a la tabla en `game/README.md` —
   documentación, no autodescubrimiento.

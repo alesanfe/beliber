@@ -5,7 +5,7 @@
 `propuesto → experimental → beta → estable → deprecado → fuera de soporte → eliminado`
 
 | Estado | Significado | Compromiso |
-|---|---|---|
+| --- | --- | --- |
 | propuesto | idea/ADR sin código | ninguno |
 | experimental | funciona pero sin garantías | puede romperse sin aviso |
 | beta | usable, puede cambiar | aviso en CHANGELOG si rompe |

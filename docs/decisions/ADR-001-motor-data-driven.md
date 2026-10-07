@@ -29,9 +29,10 @@ Los efectos raros son `cond`s y un `mv.second` para cadenas de 2 tramos
 
 ## Consecuencias
 
-+ Cualquier pieza es serializable a JSON (editor, overrides en red,
+- Cualquier pieza es serializable a JSON (editor, overrides en red,
   exports BEL-FEN/BEL-ARMY).
-+ Todas las piezas nuevas funcionan con el mismo motor ya testeado.
+- Todas las piezas nuevas funcionan con el mismo motor ya testeado.
+
 - Los patrones que no encajan en casillas estáticas (condicionales
   complejos) se resuelven como excepciones documentadas en move_gen —
   unas 4: Aquonte pivote, despliegue Humenex, enroque, Consorte.

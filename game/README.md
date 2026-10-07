@@ -4,9 +4,10 @@ Prototipo jugable del ajedrez asimétrico **Beliber** (ver `../docs/COMO_FUNCION
 
 ## Ejecutar
 
-1. Instala **Godot 4.2+** (probado con 4.7.2): https://godotengine.org/download
+1. Instala **Godot 4.2+** (probado con 4.7.2): <https://godotengine.org/download>
 2. Abre `project.godot` con el editor, o ejecuta:
-   ```
+
+   ```text
    godot --path game
    ```
 
@@ -14,20 +15,24 @@ Prototipo jugable del ajedrez asimétrico **Beliber** (ver `../docs/COMO_FUNCION
 
 - **LAN directa** (ENet): Menú → Online → pestaña LAN; puerto 7777.
 - **Salas por código** (relay Python, WebSocket):
-  ```
+
+  ```text
   python server/relay.py            # 0.0.0.0:7778
   ```
+
 - **Servidor autoritativo** (Godot, valida jugadas + reloj + ladder):
-  ```
+
+  ```text
   godot --headless --path game -s res://server/host.gd -- 7779
   ```
+
 - Tablas online = oferta → aceptar/rechazar (no cierre unilateral).
 - El protocolo completo (ops, `cfg` efectiva, modelo de confianza) está
   documentado en `server/PROTOCOL.md`.
 
 ## Tests del motor
 
-```
+```text
 godot --headless --path game -s res://tests/run_tests.gd
 ```
 
@@ -37,13 +42,15 @@ líderes, BEL-FEN (bueno y corrupto), save/load, undo tras el fin,
 enroque vía `castle_partner` y cadena del Tritón.
 
 Tests de red (requieren el servidor correspondiente):
-```
+
+```text
 python server/test_relay.py    # relay WS (guards, rejoin, resync)
 python server/test_host.py     # host autoritativo (queue, resync)
 python server/test_ladder.py   # ladder/ratings
 ```
 
 Para no contaminar tus datos reales al probar:
+
 - Los tests Godot (`e2e`, `_smoke`) ya se aíslan solos
   (`StatsStore.disabled` + `BELIBER_*` env).
 - El host acepta `BELIBER_RATINGS` / `BELIBER_TOKENS` (rutas
@@ -57,7 +64,7 @@ Para no contaminar tus datos reales al probar:
 
 ## Estructura
 
-```
+```text
 game/
 ├── project.godot
 ├── scenes/main.tscn        # escena raíz (un Control con src/main.gd)
@@ -121,6 +128,7 @@ _pc("P", "Peón", 1, _cells([
 ## Editor de piezas
 
 Menú → **Editor de piezas**. Permite:
+
 - Elegir facción y pieza, pintar celdas con la paleta de la leyenda.
 - Reubicar la pieza en el diagrama (clic con "Reubicar pieza").
 - Editar nombre, valor, simetría, líder, robo de movimientos,

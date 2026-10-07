@@ -1,0 +1,19 @@
+{
+  // Mismo criterio que NT4H2: los docs se escriben libres de la regla de
+  // 80 columnas y los README usan HTML (centrado, galerías de capturas).
+  "config": {
+    "default": true,
+    "MD013": false,
+    "MD033": false,
+    "MD041": false,
+    "MD024": { "siblings_only": true },
+    "MD029": false,
+    "MD060": false
+  },
+  "ignores": [
+    "node_modules/**",
+    "**/node_modules/**",
+    "tools/_shots/**",
+    "builds/**"
+  ]
+}

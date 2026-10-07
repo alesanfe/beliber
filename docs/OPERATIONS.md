@@ -15,7 +15,7 @@ tools/release.ps1 <version>                                  # empaquetado
 ## Documentos
 
 | Doc | Contenido |
-|---|---|
+| --- | --- |
 | [operations/incidents.md](operations/incidents.md) | Respuesta a incidentes y severidades |
 | [operations/runbook.md](operations/runbook.md) | Procedimientos de despliegue y operación |
 | [operations/slo.md](operations/slo.md) | Objetivos de servicio del relay/comunidad |

@@ -5,7 +5,7 @@ Cada entrada indica riesgo, coste de no corregir y plan. Revisar por
 release.
 
 | ID | Deuda | Tipo | Riesgo | Plan |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | TD-1 | Glifos de ajedrez Unicode como piezas | UX/arte | aspecto amateur; ambigüedad en piezas parecidas | sprites por facción (las hojas de `tools/` son la referencia) — bloqueado por arte, no por código |
 | TD-2 | Textos hardcodeados en español | i18n | no localizable | si crece el público → extraer a CSV/PO de Godot |
 | TD-3 | Relay Python + host GDScript = 2 implementaciones de sala | arquitectura | divergencia de comportamiento (tests distintos) | el relay ya es solo retransmisión; si el host madura, jubilar el relay |

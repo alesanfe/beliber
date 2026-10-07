@@ -51,7 +51,7 @@ Cada escritura es atómica y deja `.bak` con la última versión buena.
 ## Incidentes comunes
 
 | Síntoma | Acción |
-|---|---|
+| --- | --- |
 | `err=22` al arrancar | Puerto ocupado — matar proceso previo o cambiar el puerto (`-- NNNN`). |
 | `err=32` u otro | Ver `host_out`/`host_err`; el puerto se parsea de `get_cmdline_user_args` (tras `--`). |
 | Ladder vacío tras migrar host | Restaurar `beliber_idtokens.json` — sin él los pid registrados no autentican. |

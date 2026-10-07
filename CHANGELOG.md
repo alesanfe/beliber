@@ -68,7 +68,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
   ráfaga) — incluido en CI.
 - `DEPENDENCIES.md`, SBOM generado en CI, gitleaks en CI,
   `export_presets.cfg` (Windows+Web) y `release.yml` (builds + SHA256
-  + SBOM + attestation SLSA en GitHub Releases).
+  - SBOM + attestation SLSA en GitHub Releases).
 - `docs/ARCHITECTURE.md` (mapa de capas y contratos), `docs/
   REQUIREMENTS.md` (trazabilidad), `docs/THREAT_MODEL.md`,
   `docs/operations/runbook.md`, `server/.env.example`.

@@ -3,7 +3,7 @@
 ## Dónde pedir ayuda
 
 | Necesitas | Canal |
-|---|---|
+| --- | --- |
 | Reportar un bug | [GitHub Issues](https://github.com/alesanfe/beliber/issues) — plantilla `bug_report` |
 | Proponer una funcionalidad | [GitHub Issues](https://github.com/alesanfe/beliber/issues) — plantilla `feature_request` |
 | Reportar una vulnerabilidad | **No** en público — ver [SECURITY.md](SECURITY.md) |

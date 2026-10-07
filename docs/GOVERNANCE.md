@@ -7,7 +7,7 @@ proyecto no dependa de memoria.
 ## Roles y responsabilidades
 
 | Rol | Quién | Dónde se ejerce |
-|---|---|---|
+| --- | --- | --- |
 | Producto / visión | mantenedor | COMO_FUNCIONA.md, REQUIREMENTS.md |
 | Arquitectura | mantenedor | ADRs en docs/decisions/ |
 | Repositorio / releases | mantenedor | CODEOWNERS, tools/release.ps1 |

@@ -5,7 +5,7 @@
 Beliber tiene tres transportes con garantías distintas:
 
 | Transporte | Confianza |
-|---|---|
+| --- | --- |
 | **Host autoritativo** (`game/server/host.gd`, :7779) | El servidor valida jugadas con `match_legal`, resuelve efectos y es la fuente de verdad de reloj, tablas, resign y ladder. |
 | **Relay WS** (`server/relay.py`, :7778) | Retransmisión sin validación de reglas. El cliente **nunca aplica** payloads remotos directamente: casa `from`/`to`/`second` contra las legales locales e ignora campos de efecto falsificados. Pensado para grupos de confianza. |
 | **ENet LAN** (:7777) | Igual modelo que el relay (mismo `match_legal` local). Para red local. |
