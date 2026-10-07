@@ -35,9 +35,15 @@ jobs:
           unzip -q godot.zip
           mv Godot_v4.7.2-stable_linux.x86_64 godot
           chmod +x godot
+      - name: Import inicial (class cache)
+        # en checkout fresco no hay .godot/ — sin import previo los
+        # class_name (TurnManager, Lang…) no se resuelven en --check-only
+        run: ./godot --headless --path game --import
       - name: Syntax check (todos los .gd)
         run: |
-          for f in game/src/*.gd game/server/*.gd game/tests/*.gd; do
+          # game/src tiene subdirs core/ y ui/ — glob a dos niveles
+          for f in game/src/*.gd game/src/*/*.gd game/server/*.gd \
+                   game/tests/*.gd; do
             echo "== $f"
             ./godot --headless --check-only --path game \
               --script "res://${f#game/}" || exit 1
@@ -70,6 +76,8 @@ jobs:
           unzip -q godot.zip
           mv Godot_v4.7.2-stable_linux.x86_64 godot
           chmod +x godot
+      - name: Import inicial (class cache)
+        run: ./godot --headless --path game --import
       - name: Tests del relay
         run: |
           python server/relay.py &
@@ -97,11 +105,5 @@ jobs:
           name: sbom
           path: sbom.json
 
-  secrets:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Escaneo de secretos (gitleaks)
-        run: |
-          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:8.18.4 \
-            detect --source=/repo --no-git -v
+  # El escaneo de secretos vive en security.yml (gitleaks-action@v2 con
+  # fetch-depth: 0 — cubre también el historial git, no solo el árbol).
