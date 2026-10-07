@@ -13,7 +13,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Godot + export templates 4.7.2
         run: |
           curl -L -o godot.zip \
@@ -41,13 +41,13 @@ jobs:
           pip install cyclonedx-bom
           cyclonedx-py requirements server/requirements.txt -o sbom.json
       - name: Attest build provenance (SLSA)
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v4
         with:
           subject-path: |
             beliber-windows.zip
             beliber-web.zip
       - name: Publicar release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             beliber-windows.zip
