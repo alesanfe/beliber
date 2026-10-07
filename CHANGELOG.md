@@ -1,6 +1,6 @@
 # Changelog
 
-El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
+El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
